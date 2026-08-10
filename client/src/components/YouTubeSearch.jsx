@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getApiBase } from '../config.js';
+import Toast, { useToast } from './Toast.jsx';
 import './YouTubeSearch.css';
 
 const API = getApiBase();
@@ -10,6 +11,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
   const [loading, setLoading] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
   const [addedIds, setAddedIds] = useState(new Set());
+  const [toast, showToast] = useToast();
 
   const search = async () => {
     if (!query.trim()) return;
@@ -34,11 +36,13 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
         channel: item.channel,
         thumbnail: item.thumbnail,
         duration: item.duration,
+        album: '',
       })
     });
     const song = await res.json();
     setAddedIds(prev => new Set(prev).add(item.videoId));
     onAddToLibrary(song);
+    showToast('✓ Añadida a la biblioteca');
   };
 
   const fmt = (s) => {
@@ -75,6 +79,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
 
   return (
     <div className="yt-search">
+      <Toast message={toast} />
       <div className="yt-search-bar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
           <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -92,24 +97,25 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
 
       <div className="yt-results">
         {results.map((item) => (
-          <div
-            key={item.videoId}
-            className="yt-result"
-            onClick={() => playItem(item)}
-            onContextMenu={(e) => handleContext(e, item)}
-          >
-            <img src={item.thumbnail} alt="" className="yt-thumb" />
-            <div className="yt-info">
-              <span className="yt-title">{item.title}</span>
-              <span className="yt-channel">{item.channel}</span>
+          <div key={item.videoId} className="yt-result-wrap">
+            <div
+              className="yt-result"
+              onClick={() => playItem(item)}
+              onContextMenu={(e) => handleContext(e, item)}
+            >
+              <img src={item.thumbnail} alt="" className="yt-thumb" />
+              <div className="yt-info">
+                <span className="yt-title">{item.title}</span>
+                <span className="yt-channel">{item.channel}</span>
+              </div>
+              <span className="yt-duration">{fmt(item.duration)}</span>
             </div>
-            <span className="yt-duration">{fmt(item.duration)}</span>
             <button
               className={`yt-add-btn ${addedIds.has(item.videoId) ? 'added' : ''}`}
               onClick={() => addToLibrary(item)}
               disabled={addedIds.has(item.videoId)}
             >
-              {addedIds.has(item.videoId) ? '✓' : '+'}
+              {addedIds.has(item.videoId) ? 'Añadida' : '+'}
             </button>
           </div>
         ))}

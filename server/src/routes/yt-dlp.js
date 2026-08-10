@@ -168,6 +168,9 @@ router.get('/info/:videoId', async (req, res) => {
       channel: info.uploader,
       duration: info.duration,
       thumbnail: info.thumbnail,
+      album: info.album || null,
+      track: info.track || null,
+      artist: info.artist || info.artists?.[0] || null,
     });
   } catch (err) {
     console.error('yt-dlp info error:', err.message);

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { getApiBase } from '../config.js';
+import Toast, { useToast } from './Toast.jsx';
 import './Artists.css';
 
 const API = getApiBase();
@@ -11,10 +12,11 @@ const POPULAR_ARTISTS = [
   'BTS', 'SZA', 'Post Malone', 'Maluma', 'Sebastian Yatra',
 ];
 
-export default function Artists({ songs, onPlay }) {
+export default function Artists({ songs, onPlay, onAddToLibrary }) {
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [ytSongs, setYtSongs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [toast, showToast] = useToast();
   const [popularArtists, setPopularArtists] = useState([]);
   const [loadingPopular, setLoadingPopular] = useState(false);
   const [artistQuery, setArtistQuery] = useState('');
@@ -114,7 +116,7 @@ export default function Artists({ songs, onPlay }) {
   };
 
   const addToLibrary = async (item) => {
-    await fetch(`${API}/songs/youtube`, {
+    const res = await fetch(`${API}/songs/youtube`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -125,6 +127,9 @@ export default function Artists({ songs, onPlay }) {
         duration: item.duration,
       })
     });
+    const song = await res.json();
+    onAddToLibrary?.(song);
+    showToast('✓ Añadida a la biblioteca');
   };
 
   const fmt = (s) => {
@@ -139,6 +144,7 @@ export default function Artists({ songs, onPlay }) {
     const ytArtist = popularArtists.find(a => a.name === selectedArtist);
     return (
       <div className="artists">
+        <Toast message={toast} />
         <button className="back-btn" onClick={() => { setSelectedArtist(null); setYtSongs([]); }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
@@ -178,7 +184,7 @@ export default function Artists({ songs, onPlay }) {
                 <span className="col-title">{item.title}</span>
                 <span className="col-duration">{fmt(item.duration)}</span>
                 <span className="col-actions">
-                  <button className="add-lib-btn" onClick={() => addToLibrary(item)} title="Agregar a biblioteca">+</button>
+                  <button className="add-lib-btn" onClick={(e) => { e.stopPropagation(); addToLibrary(item); }} title="Agregar a biblioteca">+</button>
                 </span>
               </div>
             ))}
@@ -190,6 +196,7 @@ export default function Artists({ songs, onPlay }) {
 
   return (
     <div className="artists">
+      <Toast message={toast} />
       <h1>Artistas</h1>
 
       <div className="artist-search-bar">

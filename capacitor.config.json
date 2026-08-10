@@ -1,6 +1,6 @@
 {
   "appId": "com.musica.app",
-  "appName": "Música",
+  "appName": "Vybe",
   "webDir": "client/dist",
   "server": {
     "androidScheme": "https",

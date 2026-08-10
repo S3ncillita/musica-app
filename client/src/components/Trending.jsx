@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { getApiBase } from '../config.js';
+import Toast, { useToast } from './Toast.jsx';
 import './Trending.css';
 
 const API = getApiBase();
 
-export default function Trending({ onPlay, playlists, onAddToPlaylist }) {
+export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPlaylist }) {
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPlaylist, setExpandedPlaylist] = useState(null);
+  const [toast, showToast] = useToast();
 
   useEffect(() => {
     const load = async () => {
@@ -32,7 +34,7 @@ export default function Trending({ onPlay, playlists, onAddToPlaylist }) {
   };
 
   const addToLibrary = async (item) => {
-    await fetch(`${API}/songs/youtube`, {
+    const res = await fetch(`${API}/songs/youtube`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -43,6 +45,9 @@ export default function Trending({ onPlay, playlists, onAddToPlaylist }) {
         duration: item.duration,
       })
     });
+    const song = await res.json();
+    onAddToLibrary?.(song);
+    showToast('✓ Añadida a la biblioteca');
   };
 
   const fmt = (s) => {
@@ -63,6 +68,7 @@ export default function Trending({ onPlay, playlists, onAddToPlaylist }) {
 
   return (
     <div className="trending">
+      <Toast message={toast} />
       <h1>Tendencias</h1>
       <p className="trending-subtitle">Lo más escuchado ahora en YouTube</p>
 
@@ -108,7 +114,7 @@ export default function Trending({ onPlay, playlists, onAddToPlaylist }) {
                       <span className="col-artist">{song.channel}</span>
                     </div>
                     <span className="col-duration">{fmt(song.duration)}</span>
-                    <button className="add-lib-btn" onClick={() => addToLibrary(song)} title="Agregar a biblioteca">+</button>
+                    <button className="add-lib-btn" onClick={(e) => { e.stopPropagation(); addToLibrary(song); }} title="Agregar a biblioteca">+</button>
                   </div>
                 ))}
               </div>

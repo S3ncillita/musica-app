@@ -51,17 +51,27 @@
   overflow-y: auto;
 }
 
+.yt-result-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.1s;
+}
+.yt-result-wrap:hover {
+  background: var(--bg-hover);
+}
+
 .yt-result {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 6px 8px;
   border-radius: 6px;
-  transition: background 0.1s;
-  cursor: default;
-}
-.yt-result:hover {
-  background: var(--bg-hover);
+  cursor: pointer;
 }
 
 .yt-thumb {
@@ -122,8 +132,14 @@
 .yt-add-btn.added {
   background: var(--accent);
   color: #000;
-  opacity: 0.7;
+  opacity: 0.9;
   cursor: default;
+  border-radius: 999px;
+  width: auto;
+  height: auto;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .yt-empty {
@@ -160,6 +176,11 @@
     font-size: 0.8rem;
   }
 
+  .yt-result-wrap {
+    padding: 2px;
+    gap: 6px;
+  }
+
   .yt-result {
     padding: 8px 8px;
     gap: 10px;
@@ -186,5 +207,10 @@
     width: 28px;
     height: 28px;
     font-size: 1rem;
+  }
+
+  .yt-add-btn.added {
+    padding: 3px 8px;
+    font-size: 0.68rem;
   }
 }

@@ -58,7 +58,7 @@ export function addSong(title, filename) {
   return song;
 }
 
-export function addYoutubeTrack(videoId, title, channel, thumbnail, duration) {
+export function addYoutubeTrack(videoId, title, channel, thumbnail, duration, album) {
   const db = load();
   const existing = db.songs.find(s => s.videoId === videoId);
   if (existing) return existing;
@@ -67,7 +67,7 @@ export function addYoutubeTrack(videoId, title, channel, thumbnail, duration) {
     type: 'youtube',
     title,
     artist: channel || 'Desconocido',
-    album: 'YouTube',
+    album: album || '',
     duration: duration || 0,
     videoId,
     thumbnail,

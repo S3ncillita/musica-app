@@ -32,13 +32,13 @@ export default function App() {
   const [playlists, setPlaylists] = useState([]);
   const [currentView, setCurrentView] = useState('library');
   const [currentPlaylistId, setCurrentPlaylistId] = useState(null);
-  const [currentSong, setCurrentSong] = useState(saved.current?.currentSong || null);
-  const [queue, setQueue] = useState(saved.current?.queue || []);
-  const [queueIndex, setQueueIndex] = useState(saved.current?.queueIndex ?? -1);
+  const [currentSong, setCurrentSong] = useState(null);
+  const [queue, setQueue] = useState([]);
+  const [queueIndex, setQueueIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [shuffle, setShuffle] = useState(saved.current?.shuffle || false);
   const [repeat, setRepeat] = useState(saved.current?.repeat || 0);
-  const [ytVideoId, setYtVideoId] = useState(saved.current?.currentSong?.videoId || null);
+  const [ytVideoId, setYtVideoId] = useState(null);
   const [ytMuted, setYtMuted] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
@@ -47,7 +47,7 @@ export default function App() {
   const ytPlayerRef = useRef(null);
   const progressInterval = useRef(null);
   const playingFromClick = useRef(false);
-  const restoringRef = useRef(!!saved.current?.currentSong);
+  const restoringRef = useRef(false);
 
   useEffect(() => {
     const unlockAudio = () => {
@@ -116,6 +116,13 @@ export default function App() {
   }, [user, loadSongs, loadPlaylists]);
 
   useEffect(() => {
+    if (currentView === 'library' && user) {
+      loadSongs();
+      loadPlaylists();
+    }
+  }, [currentView, user, loadSongs, loadPlaylists]);
+
+  useEffect(() => {
     if (!currentSong) return;
     localStorage.setItem('musicPlayerState', JSON.stringify({
       currentSong,
@@ -134,6 +141,7 @@ export default function App() {
       : songs.some(x => x.id === s.id);
     if (!exists) return;
     setCurrentSong(s);
+    restoringRef.current = true;
     setQueue(saved.current.queue);
     setQueueIndex(saved.current.queueIndex);
     if (s.videoId || s.type === 'youtube') {
@@ -143,6 +151,7 @@ export default function App() {
   }, [songs]);
 
   const nextSong = useCallback(() => {
+    restoringRef.current = false;
     if (queue.length === 0) return;
     if (shuffle) {
       setQueueIndex(Math.floor(Math.random() * queue.length));
@@ -179,10 +188,9 @@ export default function App() {
         return;
       }
 
-      if (restoringRef.current) {
-        restoringRef.current = false;
-        return;
-      }
+    if (restoringRef.current) {
+      return;
+    }
 
       if (song.videoId || song.type === 'youtube') {
         audioRef.current.pause();
@@ -212,6 +220,7 @@ export default function App() {
   }, [ytVideoId]);
 
   const playSong = (song, list = null) => {
+    restoringRef.current = false;
     const targetList = list || songs;
     const idx = targetList.findIndex(s =>
       (song.videoId || song.type === 'youtube') ? s.videoId === song.videoId : s.id === song.id
@@ -238,6 +247,7 @@ export default function App() {
   };
 
   const togglePlay = () => {
+    restoringRef.current = false;
     if (currentSong?.videoId || currentSong?.type === 'youtube') {
       if (isPlaying && !ytMuted) {
         ytPlayerRef.current?.pause();
@@ -277,6 +287,7 @@ export default function App() {
   };
 
   const prev = () => {
+    restoringRef.current = false;
     if (currentSong?.videoId || currentSong?.type === 'youtube') {
       const t = ytPlayerRef.current?.getCurrentTime() || 0;
       if (t > 3) {
@@ -378,7 +389,7 @@ export default function App() {
             <circle cx="12" cy="12" r="12"/>
             <path d="M8 15V9l8-3v10" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span>Música</span>
+          <span>Vybe</span>
         </div>
         {user && (
           <button className="mobile-logout-btn" onClick={handleLogout}>
@@ -449,6 +460,7 @@ export default function App() {
           <Artists
             songs={songs}
             onPlay={playSong}
+            onAddToLibrary={loadSongs}
             playlists={playlists}
             onAddToPlaylist={addToPlaylist}
           />
@@ -456,6 +468,7 @@ export default function App() {
         {currentView === 'trending' && (
           <Trending
             onPlay={playSong}
+            onAddToLibrary={loadSongs}
             playlists={playlists}
             onAddToPlaylist={addToPlaylist}
           />

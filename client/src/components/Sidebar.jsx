@@ -20,7 +20,7 @@ export default function Sidebar({ playlists, currentView, isOpen, onViewLibrary,
           <circle cx="12" cy="12" r="12"/>
           <path d="M8 15V9l8-3v10" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        <span>Música</span>
+        <span>Vybe</span>
       </div>
 
       <div className="sidebar-user">
