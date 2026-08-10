@@ -1,0 +1,41 @@
+# Dependencias
+node_modules/
+
+# Builds
+client/dist/
+client/android/.gradle/
+client/android/build/
+client/android/app/build/
+client/android/capacitor-cordova-android-plugins/build/
+android/.gradle/
+android/build/
+android/app/build/
+
+# APK e instaladores
+*.apk
+*.aab
+jdk*.zip
+
+# Datos de usuarios (no subir)
+server/data/
+server/uploads/
+server/temp_audio/
+
+# Certificado y secretos
+server/cert.pfx
+.env
+.env.local
+*.pem
+*.key
+
+# Logs
+*.log
+server/server.err
+server/stderr.log
+server/stdout.log
+
+# Sistema / IDE
+.DS_Store
+*.swp
+.idea/
+.vscode/

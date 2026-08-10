@@ -1,0 +1,190 @@
+.yt-search {
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.yt-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 10px 16px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.yt-search-bar input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.yt-search-bar input::placeholder {
+  color: var(--text-muted);
+}
+
+.yt-search-btn {
+  padding: 8px 20px;
+  border-radius: 20px;
+  background: #ff0000;
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.15s;
+}
+.yt-search-btn:hover {
+  background: #cc0000;
+}
+.yt-search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.yt-results {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.yt-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  transition: background 0.1s;
+  cursor: default;
+}
+.yt-result:hover {
+  background: var(--bg-hover);
+}
+
+.yt-thumb {
+  width: 80px;
+  height: 45px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+}
+
+.yt-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.yt-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.yt-channel {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.yt-duration {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  min-width: 40px;
+  text-align: right;
+}
+
+.yt-add-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.yt-add-btn:hover {
+  background: var(--accent);
+  color: #000;
+}
+.yt-add-btn.added {
+  background: var(--accent);
+  color: #000;
+  opacity: 0.7;
+  cursor: default;
+}
+
+.yt-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .yt-search {
+    padding: 16px;
+  }
+
+  .yt-search-bar {
+    padding: 8px 12px;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .yt-search-bar svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .yt-search-bar input {
+    font-size: 0.9rem;
+  }
+
+  .yt-search-btn {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+
+  .yt-result {
+    padding: 8px 8px;
+    gap: 10px;
+  }
+
+  .yt-thumb {
+    width: 60px;
+    height: 34px;
+  }
+
+  .yt-title {
+    font-size: 0.82rem;
+  }
+
+  .yt-channel {
+    font-size: 0.72rem;
+  }
+
+  .yt-duration {
+    display: none;
+  }
+
+  .yt-add-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
+}

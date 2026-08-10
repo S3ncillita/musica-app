@@ -1,0 +1,12 @@
+{
+  "appId": "com.musica.app",
+  "appName": "Música",
+  "webDir": "client/dist",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": ["*"]
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

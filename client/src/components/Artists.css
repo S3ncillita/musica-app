@@ -1,0 +1,279 @@
+.artists {
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.artists h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.artist-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 24px;
+}
+
+.artist-search-bar input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.artist-search-bar input::placeholder {
+  color: var(--text-muted);
+}
+
+.artists-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  margin-top: 32px;
+  color: var(--text-secondary);
+}
+.section-title:first-of-type {
+  margin-top: 0;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.15s;
+}
+.back-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.artist-detail-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.artist-detail-img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-tertiary);
+}
+
+.artist-placeholder-lg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artist-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.artist-detail-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+}
+
+.artist-detail-info h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+.artist-detail-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.artist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+}
+
+.artist-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.artist-card:hover {
+  background: var(--bg-hover);
+}
+
+.artist-card-img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-tertiary);
+}
+
+.artist-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artist-card-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.artist-card-count {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.artist-grid .song-list {
+  margin-top: 0;
+}
+
+.artist-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.col-duration {
+  width: 60px;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.add-lib-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s;
+}
+.song-row:hover .add-lib-btn {
+  opacity: 1;
+}
+.add-lib-btn:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+@media (max-width: 768px) {
+  .artists {
+    padding: 16px;
+  }
+
+  .artists h1 {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+
+  .artist-detail-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .artist-detail-img {
+    width: 120px;
+    height: 120px;
+  }
+
+  .artist-detail-info h1 {
+    font-size: 1.6rem;
+  }
+
+  .artist-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .artist-card {
+    padding: 12px;
+  }
+
+  .artist-card-img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .artist-card-name {
+    font-size: 0.85rem;
+  }
+
+  .song-list-header {
+    grid-template-columns: 28px 1fr 44px 36px;
+  }
+
+  .song-row {
+    grid-template-columns: 28px 1fr 44px 36px;
+    padding: 8px 10px;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .col-duration {
+    min-width: 0;
+    width: auto;
+    text-align: right;
+    padding-right: 4px;
+  }
+
+  .col-actions {
+    width: auto;
+    display: flex;
+    justify-content: center;
+  }
+
+  .add-lib-btn {
+    opacity: 1;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2rem;
+  }
+}

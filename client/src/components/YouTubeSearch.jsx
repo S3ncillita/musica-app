@@ -1,0 +1,151 @@
+import { useState } from 'react';
+import { getApiBase } from '../config.js';
+import './YouTubeSearch.css';
+
+const API = getApiBase();
+
+export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAddToPlaylist }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [addedIds, setAddedIds] = useState(new Set());
+
+  const search = async () => {
+    if (!query.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(query.trim())}`);
+      const data = await res.json();
+      setResults(data);
+    } catch {
+      setResults([]);
+    }
+    setLoading(false);
+  };
+
+  const addToLibrary = async (item) => {
+    const res = await fetch(`${API}/songs/youtube`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        videoId: item.videoId,
+        title: item.title,
+        channel: item.channel,
+        thumbnail: item.thumbnail,
+        duration: item.duration,
+      })
+    });
+    const song = await res.json();
+    setAddedIds(prev => new Set(prev).add(item.videoId));
+    onAddToLibrary(song);
+  };
+
+  const fmt = (s) => {
+    if (!s) return '';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const handleContext = (e, item) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, item });
+  };
+
+  const playItem = (item) => {
+    onPlay({
+      id: null,
+      type: 'youtube',
+      videoId: item.videoId,
+      title: item.title,
+      artist: item.channel,
+      thumbnail: item.thumbnail,
+      duration: item.duration,
+    }, results.map(r => ({
+      id: null,
+      type: 'youtube',
+      videoId: r.videoId,
+      title: r.title,
+      artist: r.channel,
+      thumbnail: r.thumbnail,
+      duration: r.duration,
+    })));
+  };
+
+  return (
+    <div className="yt-search">
+      <div className="yt-search-bar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && search()}
+          placeholder="Buscar música..."
+        />
+        <button className="yt-search-btn" onClick={search} disabled={loading}>
+          {loading ? 'Buscando...' : 'Buscar'}
+        </button>
+      </div>
+
+      <div className="yt-results">
+        {results.map((item) => (
+          <div
+            key={item.videoId}
+            className="yt-result"
+            onClick={() => playItem(item)}
+            onContextMenu={(e) => handleContext(e, item)}
+          >
+            <img src={item.thumbnail} alt="" className="yt-thumb" />
+            <div className="yt-info">
+              <span className="yt-title">{item.title}</span>
+              <span className="yt-channel">{item.channel}</span>
+            </div>
+            <span className="yt-duration">{fmt(item.duration)}</span>
+            <button
+              className={`yt-add-btn ${addedIds.has(item.videoId) ? 'added' : ''}`}
+              onClick={() => addToLibrary(item)}
+              disabled={addedIds.has(item.videoId)}
+            >
+              {addedIds.has(item.videoId) ? '✓' : '+'}
+            </button>
+          </div>
+        ))}
+        {results.length === 0 && !loading && (
+          <div className="yt-empty">Buscá tu música favorita</div>
+        )}
+      </div>
+
+      {contextMenu && (
+        <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={() => setContextMenu(null)}>
+          <button onClick={() => { playItem(contextMenu.item); setContextMenu(null); }}>
+            Reproducir
+          </button>
+          <button onClick={() => { addToLibrary(contextMenu.item); setContextMenu(null); }}>
+            Agregar a biblioteca
+          </button>
+          <div className="context-divider" />
+          <div className="context-submenu">
+            <span>Agregar a playlist</span>
+            {playlists.map(p => (
+              <button key={p.id} onClick={() => {
+                addToLibrary(contextMenu.item).then(() => {
+                  fetch(`${API}/songs`).then(r => r.json()).then(songs => {
+                    const yt = songs.find(s => s.videoId === contextMenu.item.videoId);
+                    if (yt) onAddToPlaylist(p.id, yt.id);
+                  });
+                });
+                setContextMenu(null);
+              }}>
+                {p.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
