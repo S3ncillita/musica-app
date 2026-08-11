@@ -1,0 +1,27 @@
+# Vybe - auto-deploy en Windows (corre cada 2 min via Task Scheduler)
+# Trae los cambios de master, si hay nuevos rebuilda y reinicia el server (pm2).
+$ErrorActionPreference = 'Stop'
+$repo = 'C:\musica'
+$state = Join-Path $env:TEMP 'musica_last_deploy'
+
+Set-Location $repo
+
+git fetch origin master 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) { exit 0 }
+git pull --ff-only origin master 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) { exit 0 }
+
+$head = (git rev-parse HEAD).Trim()
+$last = ''
+if (Test-Path $state) { $last = (Get-Content $state -Raw).Trim() }
+if ($head -eq $last) { exit 0 }
+
+Set-Location (Join-Path $repo 'client')
+npm run build 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'El build falló' }
+
+pm2 restart musica
+if ($LASTEXITCODE -ne 0) { throw 'El restart de pm2 falló' }
+
+Set-Content $state $head
+Write-Output ("[{0}] Deploy a {1}" -f (Get-Date), $head)
