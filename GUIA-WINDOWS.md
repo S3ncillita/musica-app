@@ -53,6 +53,50 @@ En el navegador: `http://IP_DE_LA_NUC:48292`
 
 ---
 
+## ☑️ PASO 4 — Migrar los usuarios a MySQL (para administrarlos desde MySQL Workbench)
+
+> Opcional. Canciones y playlists siguen en `server\data\db.json`. Solo los usuarios viven en MySQL.
+
+1. Instalar **MySQL Server** en la NUC → https://dev.mysql.com/downloads/mysql/ (elegir **Server Only**, con usuario `root` y contraseña).
+2. En un **cmd como Administrador**, crear la base y el usuario de la app:
+
+```bat
+mysql -u root -p
+```
+
+```sql
+CREATE DATABASE vybe;
+CREATE USER 'vybe'@'localhost' IDENTIFIED BY 'vybe2026';
+CREATE USER 'vybe'@'127.0.0.1' IDENTIFIED BY 'vybe2026';
+GRANT ALL PRIVILEGES ON vybe.* TO 'vybe'@'localhost';
+GRANT ALL PRIVILEGES ON vybe.* TO 'vybe'@'127.0.0.1';
+FLUSH PRIVILEGES;
+```
+
+3. Agregar al final de `C:\musica\server\.env`:
+
+```ini
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=vybe
+DB_PASSWORD=vybe2026
+DB_NAME=vybe
+```
+
+4. Migrar los usuarios que ya existen en `users.json` (mantiene las contraseñas actuales) y reiniciar:
+
+```bat
+cd C:\musica\server
+node migrate-mysql.js
+pm2 restart musica
+```
+
+> A partir de acá el registro y login de la app usan MySQL. El `users.json` queda como respaldo.
+
+5. **Administrar usuarios**: instalar MySQL Workbench (https://dev.mysql.com/downloads/workbench/), conectar con `root` y editar la tabla `vybe.users`. Para cambiar una contraseña también sirve `node reset-password.js <usuario> <nueva-contrasena>`.
+
+---
+
 ## ☑️ CÓMO FUNCIONA EL AUTO-DEPLOY
 
 - La tarea `musica-deploy` (Task Scheduler) corre **cada 2 minutos**.
@@ -87,3 +131,5 @@ En el navegador: `http://IP_DE_LA_NUC:48292`
 | Se abre una ventana cada 2 minutos | Es la tarea de auto-deploy. Ya está configurada oculta con `deploy-hidden.vbs`. Si reaparece, recrear el VBS y reprogramar la tarea con `wscript.exe C:\musica\deploy\deploy-hidden.vbs` |
 | No conecta desde el celular | Verificar IP, firewall (48292) y que `pm2 status` muestre `online` |
 | La canción da error | Actualizar yt-dlp: descargar `https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe` a `C:\Windows\System32\yt-dlp.exe` |
+| Error `ECONNREFUSED` al registrarse/entrar | MySQL no está corriendo o falta la config: verificar el servicio MySQL y los `DB_*` en `server\.env` (PASO 4) |
+| `ER_ACCESS_DENIED_ERROR` al migrar | El usuario `vybe` no existe o la contraseña no coincide: recrearlo con los GRANT del PASO 4 |

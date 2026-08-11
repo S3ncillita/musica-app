@@ -1,25 +1,9 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { pool } from '../mysql.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, '..', '..', 'data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const JWT_SECRET = process.env.JWT_SECRET || 'cambia-este-secreto-en-tu-env';
-
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-
-function loadUsers() {
-  if (!fs.existsSync(USERS_FILE)) return [];
-  return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
-}
-
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
 
 const router = Router();
 
@@ -31,25 +15,31 @@ router.post('/register', async (req, res) => {
   if (username.length < 3 || password.length < 4) {
     return res.status(400).json({ error: 'Usuario mínimo 3 caracteres, contraseña mínimo 4' });
   }
-  const users = loadUsers();
-  if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
-    return res.status(409).json({ error: 'El usuario ya existe' });
+  try {
+    const [dups] = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
+    if (dups.length) return res.status(409).json({ error: 'El usuario ya existe' });
+    if (email) {
+      const [emailDups] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+      if (emailDups.length) return res.status(409).json({ error: 'El correo ya está registrado' });
+    }
+    const hash = await bcrypt.hash(password, 10);
+    const user = {
+      id: Date.now(),
+      username,
+      email: email || null,
+      password: hash,
+      createdAt: new Date().toISOString()
+    };
+    await pool.query(
+      'INSERT INTO users (id, username, email, password, createdAt) VALUES (?, ?, ?, ?, ?)',
+      [user.id, user.username, user.email, user.password, user.createdAt]
+    );
+    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, username: user.username } });
+  } catch (err) {
+    console.error('register error:', err.message);
+    res.status(500).json({ error: 'Error al registrar' });
   }
-  if (email && users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase())) {
-    return res.status(409).json({ error: 'El correo ya está registrado' });
-  }
-  const hash = await bcrypt.hash(password, 10);
-  const user = {
-    id: Date.now(),
-    username,
-    email: email || null,
-    password: hash,
-    createdAt: new Date().toISOString()
-  };
-  users.push(user);
-  saveUsers(users);
-  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ token, user: { id: user.id, username: user.username } });
 });
 
 router.post('/login', async (req, res) => {
@@ -57,17 +47,22 @@ router.post('/login', async (req, res) => {
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
   }
-  const users = loadUsers();
-  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  if (!user) {
-    return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+  try {
+    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+    const user = rows[0];
+    if (!user) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, username: user.username } });
+  } catch (err) {
+    console.error('login error:', err.message);
+    res.status(500).json({ error: 'Error al iniciar sesión' });
   }
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) {
-    return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
-  }
-  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ token, user: { id: user.id, username: user.username } });
 });
 
 router.get('/me', (req, res) => {

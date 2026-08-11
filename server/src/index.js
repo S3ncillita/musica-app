@@ -13,6 +13,7 @@ import youtubeRouter from './routes/youtube.js';
 import authRouter from './routes/auth.js';
 import ytDlpRouter from './routes/yt-dlp.js';
 import { authRequired } from './middleware/auth.js';
+import { initDb } from './mysql.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -38,6 +39,11 @@ app.use(express.static(clientBuild, { setHeaders: (res, path) => {
 }}));
 app.get('*', (req, res) => {
   res.sendFile(path.join(clientBuild, 'index.html'));
+});
+
+initDb().catch(err => {
+  console.error('MySQL no disponible:', err.message);
+  console.error('Los usuarios no podrán iniciar sesión hasta configurar MySQL (ver .env DB_*).');
 });
 
 const certPath = path.join(__dirname, '..', 'cert.pfx');
