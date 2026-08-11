@@ -1,6 +1,6 @@
 # Vybe - auto-deploy en Windows (corre cada 2 min via Task Scheduler)
 # Trae los cambios de master, si hay nuevos rebuilda y reinicia el server (pm2).
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 $repo = 'C:\musica'
 $state = Join-Path $env:TEMP 'musica_last_deploy'
 
