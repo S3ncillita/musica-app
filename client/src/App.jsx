@@ -10,7 +10,9 @@ import Trending from './components/Trending.jsx';
 import Settings from './components/Settings.jsx';
 import Auth from './components/Auth.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
+import EqPanel from './components/EqPanel.jsx';
 import { getApiBase } from './config.js';
+import { api } from './api.js';
 import './App.css';
 
 const API = getApiBase();
@@ -42,6 +44,10 @@ export default function App() {
   const [ytMuted, setYtMuted] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
+  const [showEq, setShowEq] = useState(false);
+  const [eq, setEq] = useState({ preset: 'flat', low: 0, mid: 0, high: 0 });
+  const eqCtxRef = useRef(null);
+  const eqFiltersRef = useRef(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const audioRef = useRef(new Audio());
   const ytPlayerRef = useRef(null);
@@ -94,18 +100,12 @@ export default function App() {
   }, []);
 
   const loadSongs = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
-    const res = await fetch(`${API}/songs`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
+    const res = await api('/songs');
     setSongs(await res.json());
   }, []);
 
   const loadPlaylists = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
-    const res = await fetch(`${API}/playlists`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
+    const res = await api('/playlists');
     setPlaylists(await res.json());
   }, []);
 
@@ -309,17 +309,17 @@ export default function App() {
   const handleFiles = async (files) => {
     const fd = new FormData();
     for (const f of files) fd.append('files', f);
-    await fetch(`${API}/songs/upload`, { method: 'POST', body: fd });
+    await api('/songs/upload', { method: 'POST', body: fd });
     loadSongs();
   };
 
   const deleteSong = async (id) => {
-    await fetch(`${API}/songs/${id}`, { method: 'DELETE' });
+    await api(`/songs/${id}`, { method: 'DELETE' });
     loadSongs();
   };
 
   const createPlaylist = async (name) => {
-    await fetch(`${API}/playlists`, {
+    await api('/playlists', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
@@ -328,13 +328,13 @@ export default function App() {
   };
 
   const deletePlaylist = async (id) => {
-    await fetch(`${API}/playlists/${id}`, { method: 'DELETE' });
+    await api(`/playlists/${id}`, { method: 'DELETE' });
     loadPlaylists();
     if (currentPlaylistId === id) setCurrentView('library');
   };
 
   const addToPlaylist = async (playlistId, songId) => {
-    await fetch(`${API}/playlists/${playlistId}/songs`, {
+    await api(`/playlists/${playlistId}/songs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ songId })
@@ -342,7 +342,7 @@ export default function App() {
   };
 
   const removeFromPlaylist = async (playlistId, songId) => {
-    await fetch(`${API}/playlists/${playlistId}/songs/${songId}`, { method: 'DELETE' });
+    await api(`/playlists/${playlistId}/songs/${songId}`, { method: 'DELETE' });
     if (currentPlaylistId === playlistId) setCurrentView('playlist');
   };
 
@@ -367,7 +367,47 @@ export default function App() {
     localStorage.removeItem('musicPlayerState');
     try { audioRef.current.pause(); } catch {}
     try { ytPlayerRef.current?.pause(); } catch {}
+    setSongs([]);
+    setPlaylists([]);
     setUser(null);
+  };
+
+  const initEqGraph = () => {
+    if (eqFiltersRef.current) return eqFiltersRef.current;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = ctx.createMediaElementSource(audioRef.current);
+      const low = ctx.createBiquadFilter();
+      low.type = 'lowshelf';
+      low.frequency.value = 200;
+      const mid = ctx.createBiquadFilter();
+      mid.type = 'peaking';
+      mid.frequency.value = 1000;
+      mid.Q.value = 1;
+      const high = ctx.createBiquadFilter();
+      high.type = 'highshelf';
+      high.frequency.value = 4000;
+      src.connect(low);
+      low.connect(mid);
+      mid.connect(high);
+      high.connect(ctx.destination);
+      eqCtxRef.current = ctx;
+      eqFiltersRef.current = { low, mid, high };
+      return eqFiltersRef.current;
+    } catch (e) {
+      console.error('EQ init failed', e);
+      return null;
+    }
+  };
+
+  const handleEqApply = (next) => {
+    setEq(next);
+    const filters = initEqGraph();
+    if (!filters) return;
+    filters.low.gain.value = next.low;
+    filters.mid.gain.value = next.mid;
+    filters.high.gain.value = next.high;
+    eqCtxRef.current?.resume?.();
   };
 
   return (
@@ -446,6 +486,8 @@ export default function App() {
             onFiles={handleFiles}
             playlists={playlists}
             onAddToPlaylist={addToPlaylist}
+            onLogout={handleLogout}
+            onOpenEq={() => setShowEq(true)}
           />
         )}
         {currentView === 'youtube' && (
@@ -522,6 +564,13 @@ export default function App() {
         />
       )}
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+      {showEq && (
+        <EqPanel
+          eq={eq}
+          onApply={handleEqApply}
+          onClose={() => setShowEq(false)}
+        />
+      )}
         </>
       )}
       <YouTubePlayer

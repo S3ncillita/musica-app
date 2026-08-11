@@ -1,0 +1,16 @@
+[Unit]
+Description=Vybe Music Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/musica/server
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=3
+Environment=NODE_ENV=production
+StandardOutput=append:/opt/musica/server/server.log
+StandardError=append:/opt/musica/server/server.err
+
+[Install]
+WantedBy=multi-user.target

@@ -5,25 +5,35 @@
 }
 
 :root {
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #121212;
-  --bg-tertiary: #1a1a1a;
-  --bg-card: #1e1e1e;
-  --bg-hover: #282828;
-  --accent: #1db954;
-  --accent-hover: #1ed760;
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0a0;
-  --text-muted: #666666;
-  --border: #2a2a2a;
+  --bg-primary: #131313;
+  --bg-secondary: #0e0e0e;
+  --bg-tertiary: #1c1b1b;
+  --bg-card: #0e0e0e;
+  --bg-hover: #2a2a2a;
+  --bg-bright: #201f1f;
+  --accent: #00f2ff;
+  --accent-hover: #00dbe7;
+  --accent-soft: #74f5ff;
+  --text-primary: #e5e2e1;
+  --text-secondary: #b9cacb;
+  --text-muted: #849495;
+  --border: #3a494b;
+  --glow: 0 0 8px rgba(0, 242, 255, 0.4);
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow: hidden;
   height: 100vh;
+}
+
+::selection {
+  background: var(--accent);
+  color: #00363a;
 }
 
 #root {
@@ -34,16 +44,17 @@ body {
 
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #131313;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-hover);
-  border-radius: 4px;
+  background: #353534;
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  background: var(--accent);
 }
 
 button {
@@ -52,8 +63,113 @@ button {
   background: none;
   color: inherit;
   font: inherit;
+  border-radius: 4px;
 }
 
-input {
+input, textarea, select {
   font: inherit;
+  background: #0e0e0e;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-left-color: transparent;
+  border-radius: 0;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input:focus, textarea:focus, select:focus {
+  border: 1px solid var(--accent);
+}
+
+h1, h2, h3 {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* ===== Header de vista (como la imagen) ===== */
+.view-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  border-left: 4px solid var(--accent);
+  padding-left: 16px;
+  margin-bottom: 48px;
+}
+.view-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+.view-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.led {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  animation: led-pulse 1.5s ease-in-out infinite;
+}
+@keyframes led-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@media (max-width: 768px) {
+  .view-title {
+    font-size: 24px;
+  }
+  .view-header {
+    margin-bottom: 32px;
+  }
+}
+
+/* ===== Mono: etiquetas (12px) y datos (14px 700) ===== */
+.col-num,
+.col-duration,
+.song-count,
+.playlist-count,
+.trending-card-count,
+.artist-detail-count,
+.artist-card-count,
+.yt-channel,
+.yt-duration,
+.duration,
+.time,
+.player-time,
+.yt-load-more,
+.song-list-header,
+.sidebar-playlists-header,
+.playlist-label,
+.artist-detail-label,
+.fp-label,
+.section-title,
+.yt-add-btn,
+.add-lib-btn,
+.context-submenu span,
+.song-row .col-title,
+.song-row .col-artist,
+.song-row .col-album {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Cajas industriales */
+.song-row,
+.yt-result,
+.trending-card,
+.artist-card,
+.playlist-view .song-list,
+.artist-detail-header {
+  border-radius: 4px;
 }

@@ -17,8 +17,9 @@
 }
 
 .auth-modal {
-  background: var(--bg-primary);
-  border-radius: 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
   padding: 32px;
   width: 340px;
   max-width: 90vw;
@@ -54,17 +55,21 @@
 }
 
 .auth-modal input {
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 12px 4px;
+  border-radius: 0;
   border: 1px solid var(--border);
-  background: var(--bg-secondary);
-  color: var(--text);
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-left-color: transparent;
+  background: #0a0a0a;
+  color: var(--text-primary);
   font-size: 0.95rem;
   outline: none;
+  text-align: center;
 }
 
 .auth-modal input:focus {
-  border-color: var(--accent);
+  border: 1px solid var(--accent);
 }
 
 .auth-error {
@@ -75,7 +80,7 @@
 
 .auth-submit {
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 4px;
   border: none;
   background: var(--accent);
   color: #000;
@@ -83,6 +88,10 @@
   font-weight: 600;
   cursor: pointer;
   margin-top: 4px;
+}
+.auth-submit:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: var(--glow);
 }
 
 .auth-submit:disabled {

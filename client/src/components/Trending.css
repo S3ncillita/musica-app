@@ -4,12 +4,6 @@
   overflow-y: auto;
 }
 
-.trending h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
 .trending-subtitle {
   color: var(--text-muted);
   font-size: 0.9rem;
@@ -33,7 +27,8 @@
 
 .trending-card {
   background: var(--bg-card);
-  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
   overflow: hidden;
   transition: background 0.15s;
 }
@@ -88,7 +83,7 @@
 }
 
 .trending-card-count {
-  font-size: 0.78rem;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
@@ -160,7 +155,8 @@
 
 .trending-songs .col-num {
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 14px;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -182,7 +178,8 @@
 }
 
 .trending-songs .col-duration {
-  font-size: 0.78rem;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-muted);
   text-align: right;
 }
@@ -190,9 +187,10 @@
 .trending-songs .add-lib-btn {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent);
   font-size: 1.1rem;
   display: flex;
   align-items: center;
@@ -205,16 +203,14 @@
 }
 .trending-songs .add-lib-btn:hover {
   background: var(--accent);
+  border-color: var(--accent);
   color: #000;
+  box-shadow: var(--glow);
 }
 
 @media (max-width: 768px) {
   .trending {
     padding: 16px;
-  }
-
-  .trending h1 {
-    font-size: 1.4rem;
   }
 
   .trending-subtitle {
@@ -258,7 +254,7 @@
   }
 
   .trending-songs .col-num {
-    font-size: 0.78rem;
+    font-size: 12px;
   }
 
   .trending-songs .col-title {
@@ -266,7 +262,7 @@
   }
 
   .trending-songs .col-duration {
-    font-size: 0.75rem;
+    font-size: 12px;
     min-width: 0;
     width: auto;
     text-align: right;

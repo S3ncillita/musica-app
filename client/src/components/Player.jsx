@@ -130,7 +130,7 @@ export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onToggl
           </button>
         </div>
         <div className="player-progress">
-          <span className="time">{fmt(progress)}</span>
+          <span className="time player-time-current">{fmt(progress)}</span>
           <div className="progress-bar" ref={barRef} onClick={handleSeek}>
             <div className="progress-buffered" style={{ width: `${pctBuffered}%` }} />
             <div className="progress-fill" style={{ width: `${pctProgress}%` }} />

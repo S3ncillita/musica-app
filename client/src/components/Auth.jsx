@@ -7,20 +7,32 @@ const API = getApiBase();
 export default function Auth({ onLogin, onClose, required = false }) {
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (isRegister) {
+      if (!email.includes('@') || !email.includes('.')) {
+        setError('Ingresá un correo válido');
+        return;
+      }
+      if (password !== confirm) {
+        setError('Las contraseñas no coinciden');
+        return;
+      }
+    }
     setLoading(true);
     try {
       const endpoint = isRegister ? '/auth/register' : '/auth/login';
       const res = await fetch(`${API}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify(isRegister ? { username, email, password } : { username, password })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -49,12 +61,21 @@ export default function Auth({ onLogin, onClose, required = false }) {
         </div>
         <h2>{isRegister ? 'Crear cuenta' : 'Iniciar sesión'}</h2>
         <form onSubmit={handleSubmit}>
+          {isRegister && (
+            <input
+              type="email"
+              placeholder="Correo"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          )}
           <input
             type="text"
             placeholder="Usuario"
             value={username}
             onChange={e => setUsername(e.target.value)}
-            autoFocus
+            autoFocus={!isRegister}
             required
           />
           <input
@@ -64,6 +85,15 @@ export default function Auth({ onLogin, onClose, required = false }) {
             onChange={e => setPassword(e.target.value)}
             required
           />
+          {isRegister && (
+            <input
+              type="password"
+              placeholder="Confirmar contraseña"
+              value={confirm}
+              onChange={e => setConfirm(e.target.value)}
+              required
+            />
+          )}
           {error && <div className="auth-error">{error}</div>}
           <button type="submit" className="auth-submit" disabled={loading}>
             {loading ? '...' : isRegister ? 'Registrarse' : 'Entrar'}

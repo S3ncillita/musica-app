@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getApiBase } from '../config.js';
+import { api } from '../api.js';
 import Toast, { useToast } from './Toast.jsx';
 import './Trending.css';
 
@@ -34,7 +35,7 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPla
   };
 
   const addToLibrary = async (item) => {
-    const res = await fetch(`${API}/songs/youtube`, {
+    const res = await api('/songs/youtube', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -60,7 +61,15 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPla
   if (loading) {
     return (
       <div className="trending">
-        <h1>Tendencias</h1>
+        <div className="view-header">
+          <div>
+            <h1 className="view-title">Tendencias</h1>
+            <div className="view-status">
+              <span className="led" />
+              <span>TOP_CHARTS</span>
+            </div>
+          </div>
+        </div>
         <div className="trending-loading">Cargando tendencias...</div>
       </div>
     );
@@ -69,7 +78,15 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPla
   return (
     <div className="trending">
       <Toast message={toast} />
-      <h1>Tendencias</h1>
+      <div className="view-header">
+        <div>
+          <h1 className="view-title">Tendencias</h1>
+          <div className="view-status">
+            <span className="led" />
+            <span>TOP_CHARTS</span>
+          </div>
+        </div>
+      </div>
       <p className="trending-subtitle">Lo más escuchado ahora en YouTube</p>
 
       <div className="trending-playlists">

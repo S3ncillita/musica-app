@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { getApiBase } from '../config.js';
+import { api } from '../api.js';
 import Toast, { useToast } from './Toast.jsx';
 import './Artists.css';
 
@@ -66,7 +67,8 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
       setLoading(true);
       try {
         const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(selectedArtist + ' official')}`);
-        if (!cancelled) setYtSongs(await res.json());
+        const data = await res.json();
+        if (!cancelled) setYtSongs(data.items || []);
       } catch {
         if (!cancelled) setYtSongs([]);
       }
@@ -103,7 +105,8 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
       const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(artistQuery.trim() + ' official artist')}`);
       const data = await res.json();
       const grouped = {};
-      data.forEach(item => {
+      const list = data.items || [];
+      list.forEach(item => {
         const ch = item.channel;
         if (!grouped[ch]) grouped[ch] = { name: ch, thumbnail: item.thumbnail, songs: [] };
         grouped[ch].songs.push(item);
@@ -116,7 +119,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
   };
 
   const addToLibrary = async (item) => {
-    const res = await fetch(`${API}/songs/youtube`, {
+    const res = await api('/songs/youtube', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -197,7 +200,15 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
   return (
     <div className="artists">
       <Toast message={toast} />
-      <h1>Artistas</h1>
+      <div className="view-header">
+        <div>
+          <h1 className="view-title">Artistas</h1>
+          <div className="view-status">
+            <span className="led" />
+            <span>DATABASE_INDEX</span>
+          </div>
+        </div>
+      </div>
 
       <div className="artist-search-bar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">

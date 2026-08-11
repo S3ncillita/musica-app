@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getApiBase } from '../config.js';
+import { api } from '../api.js';
 import './PlaylistView.css';
 
 const API = getApiBase();
@@ -8,7 +9,7 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
   const [playlist, setPlaylist] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/playlists/${playlistId}`)
+    api(`/playlists/${playlistId}`)
       .then(r => r.json())
       .then(setPlaylist);
   }, [playlistId]);

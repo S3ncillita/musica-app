@@ -4,11 +4,11 @@ import * as db from '../db.js';
 const router = Router();
 
 router.get('/', (req, res) => {
-  res.json(db.getPlaylists());
+  res.json(db.getPlaylists(req.user.id));
 });
 
 router.get('/:id', (req, res) => {
-  const playlist = db.getPlaylist(Number(req.params.id));
+  const playlist = db.getPlaylist(req.user.id, Number(req.params.id));
   if (!playlist) return res.status(404).json({ error: 'Playlist no encontrada' });
   res.json(playlist);
 });
@@ -16,32 +16,32 @@ router.get('/:id', (req, res) => {
 router.post('/', (req, res) => {
   const { name } = req.body;
   if (!name) return res.status(400).json({ error: 'Nombre requerido' });
-  res.json(db.createPlaylist(name));
+  res.json(db.createPlaylist(req.user.id, name));
 });
 
 router.put('/:id', (req, res) => {
   const { name } = req.body;
-  const playlist = db.updatePlaylist(Number(req.params.id), name);
+  const playlist = db.updatePlaylist(req.user.id, Number(req.params.id), name);
   if (!playlist) return res.status(404).json({ error: 'Playlist no encontrada' });
   res.json(playlist);
 });
 
 router.delete('/:id', (req, res) => {
-  const deleted = db.deletePlaylist(Number(req.params.id));
+  const deleted = db.deletePlaylist(req.user.id, Number(req.params.id));
   if (!deleted) return res.status(404).json({ error: 'Playlist no encontrada' });
   res.json({ deleted: true });
 });
 
 router.post('/:id/songs', (req, res) => {
   const { songId } = req.body;
-  const result = db.addSongToPlaylist(Number(req.params.id), Number(songId));
+  const result = db.addSongToPlaylist(req.user.id, Number(req.params.id), Number(songId));
   if (result === null) return res.status(404).json({ error: 'Playlist no encontrada' });
   if (result === false) return res.json({ added: false, message: 'Ya está en la playlist' });
   res.json({ added: true });
 });
 
 router.delete('/:id/songs/:songId', (req, res) => {
-  const removed = db.removeSongFromPlaylist(Number(req.params.id), Number(req.params.songId));
+  const removed = db.removeSongFromPlaylist(req.user.id, Number(req.params.id), Number(req.params.songId));
   res.json({ removed });
 });
 

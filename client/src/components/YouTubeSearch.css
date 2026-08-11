@@ -10,10 +10,15 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
-  padding: 10px 16px;
-  background: var(--bg-tertiary);
-  border-radius: 12px;
-  border: 1px solid var(--border);
+  padding: 10px 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom-color: var(--border);
+  border-radius: 0;
+  transition: border-color 0.15s;
+}
+.yt-search-bar:focus-within {
+  border: 1px solid var(--accent);
 }
 
 .yt-search-bar input {
@@ -31,15 +36,16 @@
 
 .yt-search-btn {
   padding: 8px 20px;
-  border-radius: 20px;
-  background: #ff0000;
-  color: white;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #000;
   font-weight: 600;
   font-size: 0.85rem;
   transition: background 0.15s;
 }
 .yt-search-btn:hover {
-  background: #cc0000;
+  background: var(--accent-hover);
+  box-shadow: var(--glow);
 }
 .yt-search-btn:disabled {
   opacity: 0.6;
@@ -101,12 +107,12 @@
 }
 
 .yt-channel {
-  font-size: 0.78rem;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
 .yt-duration {
-  font-size: 0.78rem;
+  font-size: 12px;
   color: var(--text-muted);
   min-width: 40px;
   text-align: right;
@@ -115,9 +121,10 @@
 .yt-add-btn {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent);
   font-size: 1.2rem;
   display: flex;
   align-items: center;
@@ -127,18 +134,21 @@
 }
 .yt-add-btn:hover {
   background: var(--accent);
+  border-color: var(--accent);
   color: #000;
+  box-shadow: var(--glow);
 }
 .yt-add-btn.added {
   background: var(--accent);
+  border-color: var(--accent);
   color: #000;
   opacity: 0.9;
   cursor: default;
-  border-radius: 999px;
+  border-radius: 4px;
   width: auto;
   height: auto;
   padding: 4px 10px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -149,6 +159,14 @@
   justify-content: center;
   color: var(--text-muted);
   font-size: 1rem;
+}
+
+.yt-load-more {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  min-height: 48px;
 }
 
 @media (max-width: 768px) {
@@ -196,7 +214,7 @@
   }
 
   .yt-channel {
-    font-size: 0.72rem;
+    font-size: 11px;
   }
 
   .yt-duration {

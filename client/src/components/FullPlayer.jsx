@@ -122,7 +122,7 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
               <div className="fp-bar-thumb" style={{ left: `${pctProgress}%` }} />
             </div>
             <div className="fp-times">
-              <span>{fmt(progress)}</span>
+              <span className="fp-time-current">{fmt(progress)}</span>
               <span>{fmt(duration)}</span>
             </div>
           </div>

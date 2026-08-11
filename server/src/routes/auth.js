@@ -24,7 +24,7 @@ function saveUsers(users) {
 const router = Router();
 
 router.post('/register', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
   }
@@ -35,10 +35,14 @@ router.post('/register', async (req, res) => {
   if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
     return res.status(409).json({ error: 'El usuario ya existe' });
   }
+  if (email && users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase())) {
+    return res.status(409).json({ error: 'El correo ya está registrado' });
+  }
   const hash = await bcrypt.hash(password, 10);
   const user = {
     id: Date.now(),
     username,
+    email: email || null,
     password: hash,
     createdAt: new Date().toISOString()
   };

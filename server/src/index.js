@@ -12,6 +12,7 @@ import streamRouter from './routes/stream.js';
 import youtubeRouter from './routes/youtube.js';
 import authRouter from './routes/auth.js';
 import ytDlpRouter from './routes/yt-dlp.js';
+import { authRequired } from './middleware/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -20,8 +21,8 @@ const PORT = process.env.PORT || 48291;
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/songs', songsRouter);
-app.use('/api/playlists', playlistsRouter);
+app.use('/api/songs', authRequired, songsRouter);
+app.use('/api/playlists', authRequired, playlistsRouter);
 app.use('/api/stream', streamRouter);
 app.use('/api/youtube', youtubeRouter);
 app.use('/api/auth', authRouter);

@@ -1,10 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import './Library.css';
 
-export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist }) {
+export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, onLogout, onOpenEq }) {
   const [search, setSearch] = useState('');
   const [contextMenu, setContextMenu] = useState(null);
-  const fileRef = useRef();
 
   const filtered = songs.filter(s =>
     s.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -24,27 +23,32 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
 
   return (
     <div className="library" onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
-      <div className="library-header">
-        <h1>Biblioteca</h1>
+      <div className="view-header">
+        <div>
+          <h1 className="view-title">Biblioteca</h1>
+          <div className="view-status">
+            <span className="led" />
+            <span>{songs.length} TRACKS · SYNCED</span>
+          </div>
+        </div>
         <div className="library-actions">
           <input
             type="text"
-            placeholder="Buscar..."
+            placeholder="Buscar en biblioteca"
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="search-input"
           />
-          <button className="btn-primary" onClick={() => fileRef.current.click()}>
-            Subir música
+          <button className="icon-btn" onClick={onOpenEq} title="Ecualizador">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 20h4V4h-4v16zm-6 0h4v-8H4v8zm12-8v8h4v-8h-4z"/>
+            </svg>
           </button>
-          <input
-            ref={fileRef}
-            type="file"
-            multiple
-            accept=".mp3,.wav,.ogg,.flac,.m4a,.aac,.wma"
-            style={{ display: 'none' }}
-            onChange={e => onFiles(e.target.files)}
-          />
+          <button className="icon-btn icon-btn-danger" onClick={onLogout} title="Cerrar sesión">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0119 12 7 7 0 1112 5c.68 0 1.33.09 1.96.26l1.64-1.64A9 9 0 1022 12c0-2.45-.98-4.68-2.17-6.83z"/>
+            </svg>
+          </button>
         </div>
       </div>
 

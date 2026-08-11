@@ -2,6 +2,7 @@
   grid-column: 1;
   grid-row: 1 / 3;
   background: var(--bg-primary);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   padding: 16px 12px;
@@ -13,8 +14,12 @@
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  font-size: 1.2rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--accent);
   margin-bottom: 16px;
 }
 
@@ -27,11 +32,13 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 0;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
   font-weight: 500;
+  border-left: 2px solid transparent;
   transition: all 0.15s;
 }
 
@@ -43,6 +50,7 @@
 .sidebar-item.active {
   color: var(--text-primary);
   background: var(--bg-hover);
+  border-left: 2px solid var(--accent);
 }
 
 .sidebar-playlists {
@@ -57,7 +65,7 @@
   align-items: center;
   padding: 8px 12px;
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -66,17 +74,21 @@
 .add-btn {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent);
   font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s;
+  transition: all 0.15s;
 }
 .add-btn:hover {
-  background: #444;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  box-shadow: var(--glow);
 }
 
 .playlist-input {
@@ -85,15 +97,18 @@
 .playlist-input input {
   width: 100%;
   padding: 8px;
-  border-radius: 4px;
+  border-radius: 0;
   border: 1px solid var(--border);
-  background: var(--bg-tertiary);
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-left-color: transparent;
+  background: #0a0a0a;
   color: var(--text-primary);
   font-size: 0.85rem;
   outline: none;
 }
 .playlist-input input:focus {
-  border-color: var(--accent);
+  border: 1px solid var(--accent);
 }
 
 .sidebar-bottom {
@@ -156,11 +171,13 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 0;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
   font-weight: 500;
+  border-left: 2px solid transparent;
   transition: all 0.15s;
 }
 .sidebar-login-btn:hover {
