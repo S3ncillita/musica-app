@@ -1,0 +1,7 @@
+{
+  "name": "update-module",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Módulo reutilizable de chequeo de actualizaciones (server Express + app JS)",
+  "private": true
+}

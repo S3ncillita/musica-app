@@ -13,6 +13,7 @@ import FullPlayer from './components/FullPlayer.jsx';
 import EqPanel from './components/EqPanel.jsx';
 import { getApiBase } from './config.js';
 import { api } from './api.js';
+import { initUpdateCheck } from './update.js';
 import './App.css';
 
 const API = getApiBase();
@@ -72,6 +73,10 @@ export default function App() {
       document.removeEventListener('click', unlockAudio);
       document.removeEventListener('touchstart', unlockAudio);
     };
+  }, []);
+
+  useEffect(() => {
+    initUpdateCheck();
   }, []);
 
   useEffect(() => {

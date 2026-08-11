@@ -72,12 +72,34 @@ El **auto-deploy ya instala y configura MySQL solo** (lo detecta en cada ciclo):
 schtasks /Create /F /TN "musica-deploy" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\musica\deploy\deploy-windows.ps1" /SC MINUTE /MO 2 /RL HIGHEST
 ```
 
-A partir del próximo ciclo (máx. 2-4 min) MySQL queda instalado solo. **Workbench sirve solo para VER/editar**; no reemplaza al servidor. Conectarse con `vybe` / `vybe2026` y abrir el esquema `vybe` → `users`. Para cambiar una contraseña: `cd C:\musica\server` + `node reset-password.js <usuario> <nueva-contrasena>`.
+A partir del próximo ciclo (máx. 2-4 min) MySQL queda instalado solo. **Workbench sirve solo para VER/editar**; no reemplaza al servidor. Conectarse con `vybe` / `vybe2026` y abrir el esquema `vybe` → `users`.
 
 ### Instalación manual (opcional, si preferís no automatizar)
 1. Instalar **MySQL Server** → https://dev.mysql.com/downloads/mysql/ (Server Only, root con contraseña).
 2. En cmd como admin: `mysql -u root -p` y correr el CREATE DATABASE / USER / GRANT de arriba.
 3. Agregar `DB_*` a `C:\musica\server\.env`, correr `node migrate-mysql.js` y `pm2 restart musica`.
+
+---
+
+## ☑️ CAMBIAR CONTRASEÑA DE UN USUARIO (si se olvidó)
+
+> No edites el hash a mano (ni desde Workbench): la clave va con hash bcrypt y un texto plano no entra.
+
+En **cmd** (en la NUC):
+
+```bat
+cd C:\musica\server
+node reset-password.js <usuario> <nueva-contrasena>
+```
+
+Ejemplo:
+
+```bat
+node reset-password.js test MiClaveNueva123
+```
+
+- [ ] Dice `Contraseña actualizada para test` → ya puede entrar con la clave nueva.
+- [ ] Si dice `Usuario no encontrado: test` → el nombre está mal escrito o la cuenta no existe.
 
 ---
 

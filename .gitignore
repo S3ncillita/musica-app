@@ -15,9 +15,11 @@ android/app/build/
 *.apk
 *.aab
 jdk*.zip
+!server/public/apk/vybe.apk
 
 # Datos de usuarios (no subir)
-server/data/
+server/data/*
+!server/data/update.json
 server/uploads/
 server/temp_audio/
 
@@ -39,3 +41,6 @@ server/stdout.log
 *.swp
 .idea/
 .vscode/
+
+# Paquete del módulo de actualización
+/update-module.zip

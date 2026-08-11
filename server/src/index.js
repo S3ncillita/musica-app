@@ -12,6 +12,7 @@ import streamRouter from './routes/stream.js';
 import youtubeRouter from './routes/youtube.js';
 import authRouter from './routes/auth.js';
 import ytDlpRouter from './routes/yt-dlp.js';
+import updateRoute from '../../update-module/server/update-route.js';
 import { authRequired } from './middleware/auth.js';
 import { initDb } from './mysql.js';
 
@@ -28,6 +29,11 @@ app.use('/api/stream', streamRouter);
 app.use('/api/youtube', youtubeRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/ytdlp', ytDlpRouter);
+app.use('/api/update', updateRoute({
+  express,
+  updateFile: path.join(__dirname, '..', 'data', 'update.json'),
+  apkDir: path.join(__dirname, '..', 'public', 'apk'),
+}));
 
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 

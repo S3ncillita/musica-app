@@ -1,0 +1,66 @@
+.update-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 16px;
+}
+
+.update-card {
+  width: 100%;
+  max-width: 360px;
+  background: #1c1b1b;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 24px;
+  color: #e5e2e1;
+  font-family: system-ui, sans-serif;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.update-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.update-version {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #849495;
+}
+
+.update-notes {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.update-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.update-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.update-download {
+  background: var(--update-accent, #e74c3c);
+  color: #fff;
+}
+
+.update-later {
+  background: transparent;
+  color: #849495;
+  border: 1px solid #2a2a2a;
+}
