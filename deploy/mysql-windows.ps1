@@ -103,12 +103,17 @@ function Ensure-MySQL {
     try {
       $version = '8.0.41'
       $mysqld = Join-Path $ourBase 'bin\mysqld.exe'
-      $url = "https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-$version-winx64.zip"
-      $zip = Join-Path $env:TEMP 'mysql-winx64.zip'
-      $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      Write-Host "MySQL: descargando $url"
-      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-      Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -UserAgent $ua | Out-Null
+      $zip = 'C:\mysql\mysql-winx64.zip'
+      if (-not (Test-Path $zip)) {
+        $url = "https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-$version-winx64.zip"
+        $zip = Join-Path $env:TEMP 'mysql-winx64.zip'
+        $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        Write-Host "MySQL: descargando $url"
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing -UserAgent $ua | Out-Null
+      } else {
+        Write-Host 'MySQL: usando ZIP local C:\mysql\mysql-winx64.zip'
+      }
       Expand-Archive -Path $zip -DestinationPath 'C:\mysql' -Force | Out-Null
       if (-not (Test-Path (Join-Path $ourBase 'data'))) {
         Write-Host 'MySQL: inicializando datadir'
