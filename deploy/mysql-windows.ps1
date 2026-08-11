@@ -63,6 +63,7 @@ DB_NAME=vybe
 
 function Ensure-MySQL {
   $ErrorActionPreference = 'Continue'
+  $ProgressPreference = 'SilentlyContinue'
   $ourBase = 'C:\mysql\mysql-8.0.41-winx64'
   $script:MySQLBase = $ourBase
   $marker = 'C:\mysql\vybe.mysql-ready'

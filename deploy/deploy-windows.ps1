@@ -6,9 +6,10 @@ $state = Join-Path $env:TEMP 'musica_last_deploy'
 
 Set-Location $repo
 
-# MySQL: si falta el servicio y hay admin, se instala/configura solo (no bloquea el deploy).
+# MySQL: si falta o hay conflicto, se instala/configura solo (no bloquea el deploy).
 . (Join-Path $PSScriptRoot 'mysql-windows.ps1')
-Ensure-MySQL | Out-Null
+$mysqlState = Ensure-MySQL
+Write-Output ("[{0}] MySQL: {1}" -f (Get-Date), $mysqlState)
 
 git fetch origin master *> $null
 if ($LASTEXITCODE -ne 0) { exit 0 }
