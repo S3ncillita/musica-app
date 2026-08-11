@@ -6,9 +6,9 @@ $state = Join-Path $env:TEMP 'musica_last_deploy'
 
 Set-Location $repo
 
-git fetch origin master 2>$null | Out-Null
+git fetch origin master *> $null
 if ($LASTEXITCODE -ne 0) { exit 0 }
-git pull --ff-only origin master 2>$null | Out-Null
+git pull --ff-only origin master *> $null
 if ($LASTEXITCODE -ne 0) { exit 0 }
 
 $head = (git rev-parse HEAD).Trim()
@@ -17,10 +17,10 @@ if (Test-Path $state) { $last = (Get-Content $state -Raw).Trim() }
 if ($head -eq $last) { exit 0 }
 
 Set-Location (Join-Path $repo 'client')
-npm run build 2>$null | Out-Null
+npm run build *> $null
 if ($LASTEXITCODE -ne 0) { throw 'El build falló' }
 
-pm2 restart musica
+pm2 restart musica *> $null
 if ($LASTEXITCODE -ne 0) { throw 'El restart de pm2 falló' }
 
 Set-Content $state $head
