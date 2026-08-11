@@ -37,8 +37,9 @@ powershell -ExecutionPolicy Bypass -File setup-windows.ps1
 5. Crea `server\.env` (JWT secreto aleatorio + puerto 48292)
 6. Registra el server en pm2 como `musica` y lo hace arrancar con Windows
 7. Abre el firewall en el puerto 48292
-8. Programa el **auto-deploy** cada 2 min (Task Scheduler)
-9. Hace el primer deploy
+8. Programa el **auto-deploy** cada 2 min (Task Scheduler, con permisos de admin)
+9. **Instala MySQL Server si falta** y crea la DB `vybe` + usuario `vybe`
+10. Hace el primer deploy
 
 ---
 
@@ -53,47 +54,30 @@ En el navegador: `http://IP_DE_LA_NUC:48292`
 
 ---
 
-## ☑️ PASO 4 — Migrar los usuarios a MySQL (para administrarlos desde MySQL Workbench)
+## ☑️ PASO 4 — Usuarios en MySQL (automático, para administrarlos desde MySQL Workbench)
 
-> Opcional. Canciones y playlists siguen en `server\data\db.json`. Solo los usuarios viven en MySQL.
+> Canciones y playlists siguen en `server\data\db.json`. Solo los usuarios viven en MySQL.
 
-1. Instalar **MySQL Server** en la NUC → https://dev.mysql.com/downloads/mysql/ (elegir **Server Only**, con usuario `root` y contraseña).
-2. En un **cmd como Administrador**, crear la base y el usuario de la app:
+El **auto-deploy ya instala y configura MySQL solo** (lo detecta en cada ciclo):
+- Descarga MySQL Server (8.0) y lo registra como servicio `MySQL`.
+- Crea la DB `vybe` y el usuario `vybe` (clave `vybe2026`).
+- Agrega `DB_*` al `server\.env` si no están.
+- Migra los usuarios de `users.json` (mantiene contraseñas actuales) y reinicia pm2.
 
-```bat
-mysql -u root -p
-```
+> Esto requiere que la tarea `musica-deploy` corra **con permisos de admin** (`/RL HIGHEST`).
 
-```sql
-CREATE DATABASE vybe;
-CREATE USER 'vybe'@'localhost' IDENTIFIED BY 'vybe2026';
-CREATE USER 'vybe'@'127.0.0.1' IDENTIFIED BY 'vybe2026';
-GRANT ALL PRIVILEGES ON vybe.* TO 'vybe'@'localhost';
-GRANT ALL PRIVILEGES ON vybe.* TO 'vybe'@'127.0.0.1';
-FLUSH PRIVILEGES;
-```
-
-3. Agregar al final de `C:\musica\server\.env`:
-
-```ini
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=vybe
-DB_PASSWORD=vybe2026
-DB_NAME=vybe
-```
-
-4. Migrar los usuarios que ya existen en `users.json` (mantiene las contraseñas actuales) y reiniciar:
+**Si la NUC ya tenía la tarea creada antes de este cambio**, actualizala una vez (cmd como Administrador):
 
 ```bat
-cd C:\musica\server
-node migrate-mysql.js
-pm2 restart musica
+schtasks /Create /F /TN "musica-deploy" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\musica\deploy\deploy-windows.ps1" /SC MINUTE /MO 2 /RL HIGHEST
 ```
 
-> A partir de acá el registro y login de la app usan MySQL. El `users.json` queda como respaldo.
+A partir del próximo ciclo (máx. 2-4 min) MySQL queda instalado solo. **Workbench sirve solo para VER/editar**; no reemplaza al servidor. Conectarse con `vybe` / `vybe2026` y abrir el esquema `vybe` → `users`. Para cambiar una contraseña: `cd C:\musica\server` + `node reset-password.js <usuario> <nueva-contrasena>`.
 
-5. **Administrar usuarios**: instalar MySQL Workbench (https://dev.mysql.com/downloads/workbench/), conectar con `root` y editar la tabla `vybe.users`. Para cambiar una contraseña también sirve `node reset-password.js <usuario> <nueva-contrasena>`.
+### Instalación manual (opcional, si preferís no automatizar)
+1. Instalar **MySQL Server** → https://dev.mysql.com/downloads/mysql/ (Server Only, root con contraseña).
+2. En cmd como admin: `mysql -u root -p` y correr el CREATE DATABASE / USER / GRANT de arriba.
+3. Agregar `DB_*` a `C:\musica\server\.env`, correr `node migrate-mysql.js` y `pm2 restart musica`.
 
 ---
 
@@ -102,6 +86,7 @@ pm2 restart musica
 - La tarea `musica-deploy` (Task Scheduler) corre **cada 2 minutos**.
 - Ejecuta `C:\musica\deploy\deploy-windows.ps1`:
   `git pull` de master → si hay commits nuevos → `npm run build` → `pm2 restart musica`.
+- En cada ciclo verifica **MySQL** y, si falta, lo instala y configura solo (PASO 4).
 - Corre **oculto** (via `deploy-hidden.vbs` + `wscript`), no abre ventanas.
 - Si no hay cambios nuevos, no hace nada.
 - El estado del último deploy está en `%TEMP%\musica_last_deploy`.

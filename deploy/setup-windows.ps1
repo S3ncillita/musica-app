@@ -47,7 +47,8 @@ if (-not (Test-Path $envPath)) {
 
 Write-Host '== 5/8 registrar el server en pm2 + arranque con Windows =='
 Push-Location $serverDir
-pm2 start src/index.js --name musica
+pm2 describe musica *> $null
+if ($LASTEXITCODE -ne 0) { pm2 start src/index.js --name musica } else { pm2 restart musica }
 pm2 save
 Pop-Location
 pm2-startup install
@@ -55,10 +56,14 @@ pm2-startup install
 Write-Host '== 6/8 firewall (puerto 48292) =='
 netsh advfirewall firewall add rule name="Vybe 48292" dir=in action=allow protocol=TCP localport=48292 | Out-Null
 
-Write-Host '== 7/8 auto-deploy cada 2 min (Task Scheduler) =='
-schtasks /Create /F /TN "musica-deploy" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\musica\deploy\deploy-windows.ps1" /SC MINUTE /MO 2 | Out-Null
+Write-Host '== 7/8 auto-deploy cada 2 min (Task Scheduler, con permisos de admin) =='
+schtasks /Create /F /TN "musica-deploy" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\musica\deploy\deploy-windows.ps1" /SC MINUTE /MO 2 /RL HIGHEST | Out-Null
 
-Write-Host '== 8/8 deploy inicial =='
+Write-Host '== 8/8 MySQL (instala MySQL Server si falta y configura la DB vybe) =='
+. (Join-Path $PSScriptRoot 'mysql-windows.ps1')
+Ensure-MySQL | Out-Null
+
+Write-Host '== 9/9 deploy inicial =='
 & (Join-Path $PSScriptRoot 'deploy-windows.ps1')
 
 Write-Host ''
