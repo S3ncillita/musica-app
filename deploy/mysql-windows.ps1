@@ -76,7 +76,7 @@ bind-address=127.0.0.1
     $cur = Get-Content $ini -Raw
     if ($cur -match 'bind-address\s*=\s*127\.0\.0\.1' -and $cur -match '^\[mysqld\]') { $needs = $false }
   }
-  if ($needs) {
+  if ($needs -and (Test-Path $script:MySQLBase)) {
     Set-Content $ini $wanted -Encoding ascii
     Write-Host 'MySQL: aplicando config segura (escucha solo en 127.0.0.1)'
     $svc = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
@@ -99,18 +99,13 @@ function Ensure-MySQL {
   $script:MySQLBase = $ourBase
   $marker = 'C:\mysql\vybe.mysql-ready'
 
-  $null = Ensure-SecureConfig
-  if (Test-Path $marker) { return 'ok' }
-
+  # 1) Parar y desactivar servidores mysql ajenos (ej: XAMPP) que ocupen el 3306
   $all = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -match '^(mysql|MySQL|MySQL80|MariaDB)$' })
-  $ours = @($all | Where-Object { $_.PathName -like "*$ourBase*" })
   $foreign = @($all | Where-Object { $_.PathName -notlike "*$ourBase*" })
-
-  # Servicios mysql ajenos (ej: XAMPP) ocupan el 3306 -> parar y desactivar
   foreach ($s in $foreign) {
     if ($s.State -eq 'Running') {
-      Write-Output ("MySQL: deteniendo servicio conflictivo '{0}'" -f $s.Name)
+      Write-Host ("MySQL: deteniendo servicio conflictivo '{0}'" -f $s.Name)
       & sc.exe stop $s.Name | Out-Null
       Start-Sleep -Seconds 2
     }
@@ -119,10 +114,11 @@ function Ensure-MySQL {
     }
   }
 
+  # 2) Instalar MySQL si no esta
   if (-not (Test-Path (Join-Path $ourBase 'bin\mysqld.exe'))) {
     $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-      Write-Output 'MySQL: no instalado y sin admin. Recrear la tarea con /RL HIGHEST.'
+      Write-Host 'MySQL: no instalado y sin admin. Recrear la tarea con /RL HIGHEST.'
       return 'no-admin'
     }
 
@@ -153,24 +149,36 @@ function Ensure-MySQL {
       if ($LASTEXITCODE -ne 0) { throw 'mysqld --install fallo' }
     }
     catch {
-      Write-Output ("MySQL: error de instalacion - {0}" -f $_.Exception.Message)
+      Write-Host ("MySQL: error de instalacion - {0}" -f $_.Exception.Message)
       Remove-Item $lock -ErrorAction SilentlyContinue
       return 'error'
     }
     Remove-Item $lock -ErrorAction SilentlyContinue
   }
 
-  $svc = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
+  # 3) Config segura (escucha solo en 127.0.0.1)
+  $null = Ensure-SecureConfig
+
+  # 4) Asegurar que NUESTRO MySQL este corriendo
+  $oursSvc = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
     Where-Object { $_.PathName -like "*$ourBase*" }) | Select-Object -First 1
-  if (-not $svc) {
-    Write-Output 'MySQL: no quedo el servicio registrado'
+  if (-not $oursSvc) {
+    Write-Host 'MySQL: no quedo el servicio registrado'
     return 'error'
   }
-  if ($svc.State -ne 'Running') {
-    Write-Output 'MySQL: iniciando servicio'
-    & sc.exe start $svc.Name | Out-Null
+  if ($oursSvc.State -ne 'Running') {
+    Write-Host 'MySQL: iniciando servicio'
+    & sc.exe start $oursSvc.Name | Out-Null
     Start-Sleep -Seconds 3
+    $oursSvc = Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -eq $oursSvc.Name } | Select-Object -First 1
+    if (-not $oursSvc -or $oursSvc.State -ne 'Running') {
+      Write-Host 'MySQL: el servicio no quedo corriendo'
+      return 'error'
+    }
   }
+
+  if (Test-Path $marker) { return 'ok' }
 
   if (Configure-MySQL) {
     Set-Content $marker 'ok' -Encoding utf8
