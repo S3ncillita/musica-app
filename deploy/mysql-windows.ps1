@@ -63,11 +63,29 @@ DB_NAME=vybe
 
 function Ensure-MySQL {
   $ErrorActionPreference = 'Continue'
+  $ourBase = 'C:\mysql\mysql-8.0.41-winx64'
+  $script:MySQLBase = $ourBase
   $marker = 'C:\mysql\vybe.mysql-ready'
   if (Test-Path $marker) { return 'ok' }
 
-  $svc = Get-Service -Name 'MySQL*' -ErrorAction SilentlyContinue
-  if (-not $svc) {
+  $all = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match '^(mysql|MySQL|MySQL80|MariaDB)$' })
+  $ours = @($all | Where-Object { $_.PathName -like "*$ourBase*" })
+  $foreign = @($all | Where-Object { $_.PathName -notlike "*$ourBase*" })
+
+  # Servicios mysql ajenos (ej: XAMPP) ocupan el 3306 -> parar y desactivar
+  foreach ($s in $foreign) {
+    if ($s.State -eq 'Running') {
+      Write-Output ("MySQL: deteniendo servicio conflictivo '{0}'" -f $s.Name)
+      & sc.exe stop $s.Name | Out-Null
+      Start-Sleep -Seconds 2
+    }
+    if ($s.StartMode -ne 'Disabled') {
+      & sc.exe config $s.Name start= disabled | Out-Null
+    }
+  }
+
+  if (-not (Test-Path (Join-Path $ourBase 'bin\mysqld.exe'))) {
     $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
       Write-Output 'MySQL: no instalado y sin admin. Recrear la tarea con /RL HIGHEST.'
@@ -83,17 +101,14 @@ function Ensure-MySQL {
 
     try {
       $version = '8.0.41'
-      $script:MySQLBase = "C:\mysql\mysql-$version-winx64"
-      $mysqld = Join-Path $script:MySQLBase 'bin\mysqld.exe'
-      if (-not (Test-Path $mysqld)) {
-        $url = "https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-$version-winx64.zip"
-        $zip = Join-Path $env:TEMP 'mysql-winx64.zip'
-        Write-Output "MySQL: descargando $url"
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
-        Expand-Archive -Path $zip -DestinationPath 'C:\mysql' -Force
-      }
-      if (-not (Test-Path (Join-Path $script:MySQLBase 'data'))) {
+      $mysqld = Join-Path $ourBase 'bin\mysqld.exe'
+      $url = "https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-$version-winx64.zip"
+      $zip = Join-Path $env:TEMP 'mysql-winx64.zip'
+      Write-Output "MySQL: descargando $url"
+      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+      Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
+      Expand-Archive -Path $zip -DestinationPath 'C:\mysql' -Force
+      if (-not (Test-Path (Join-Path $ourBase 'data'))) {
         Write-Output 'MySQL: inicializando datadir'
         & $mysqld --initialize-insecure
         if ($LASTEXITCODE -ne 0) { throw 'mysqld --initialize-insecure fallo' }
@@ -108,16 +123,17 @@ function Ensure-MySQL {
       return 'error'
     }
     Remove-Item $lock -ErrorAction SilentlyContinue
-    $svc = Get-Service -Name 'MySQL*' -ErrorAction SilentlyContinue
   }
 
+  $svc = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
+    Where-Object { $_.PathName -like "*$ourBase*" }) | Select-Object -First 1
   if (-not $svc) {
-    Write-Output 'MySQL: el servicio no quedo registrado'
+    Write-Output 'MySQL: no quedo el servicio registrado'
     return 'error'
   }
-  if ($svc.Status -ne 'Running') {
+  if ($svc.State -ne 'Running') {
     Write-Output 'MySQL: iniciando servicio'
-    Start-Service $svc.Name -ErrorAction SilentlyContinue
+    & sc.exe start $svc.Name | Out-Null
     Start-Sleep -Seconds 3
   }
 

@@ -18,11 +18,23 @@ if ($LASTEXITCODE -ne 0) { exit 0 }
 $head = (git rev-parse HEAD).Trim()
 $last = ''
 if (Test-Path $state) { $last = (Get-Content $state -Raw).Trim() }
-if ($head -eq $last) { exit 0 }
+$depsOk = (Test-Path (Join-Path $repo 'server\node_modules')) -and (Test-Path (Join-Path $repo 'client\node_modules'))
+if ($head -eq $last -and $depsOk) { exit 0 }
 
-Set-Location (Join-Path $repo 'client')
+# Dependencias: con commits nuevos (o si falta node_modules)
+Write-Output 'Instalando dependencias (server)...'
+Push-Location (Join-Path $repo 'server')
+npm install --no-audit --no-fund *> $null
+if ($LASTEXITCODE -ne 0) { throw 'npm install del server fallo' }
+Pop-Location
+
+Write-Output 'Instalando dependencias (client)...'
+Push-Location (Join-Path $repo 'client')
+npm install --no-audit --no-fund *> $null
+if ($LASTEXITCODE -ne 0) { throw 'npm install del client fallo' }
 npm run build *> $null
 if ($LASTEXITCODE -ne 0) { throw 'El build falló' }
+Pop-Location
 
 pm2 restart musica *> $null
 if ($LASTEXITCODE -ne 0) { throw 'El restart de pm2 falló' }
