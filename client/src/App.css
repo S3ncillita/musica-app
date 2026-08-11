@@ -106,9 +106,7 @@
     font-size: 1.1rem;
     font-weight: 700;
     font-family: 'Space Grotesk', sans-serif;
-  }
-
-  .mobile-logout-btn {
+  }  .mobile-logout-btn {
     background: none;
     border: none;
     color: var(--text-secondary);

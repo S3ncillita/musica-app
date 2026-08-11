@@ -10,6 +10,7 @@ import Trending from './components/Trending.jsx';
 import Auth from './components/Auth.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
 import EqPanel from './components/EqPanel.jsx';
+import AppVersion from './components/AppVersion.jsx';
 import { getApiBase } from './config.js';
 import { api } from './api.js';
 import { initUpdateCheck } from './update.js';
@@ -433,6 +434,7 @@ export default function App() {
             <path d="M8 15V9l8-3v10" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <span>Vybe</span>
+          <AppVersion />
         </div>
         {user && (
           <button className="mobile-logout-btn" onClick={handleLogout}>

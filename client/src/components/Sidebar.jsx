@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import AppVersion from './AppVersion.jsx';
 import './Sidebar.css';
 
 export default function Sidebar({ playlists, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewPlaylist, onCreatePlaylist, user, onLogin, onLogout }) {
@@ -21,6 +22,7 @@ export default function Sidebar({ playlists, currentView, isOpen, onViewLibrary,
           <path d="M8 15V9l8-3v10" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
         <span>Vybe</span>
+        <AppVersion />
       </div>
 
       <div className="sidebar-user">

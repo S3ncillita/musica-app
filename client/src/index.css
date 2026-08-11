@@ -122,6 +122,16 @@ h1, h2, h3 {
   background: var(--accent);
   animation: led-pulse 1.5s ease-in-out infinite;
 }
+
+.logo-version {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  align-self: flex-end;
+  margin-bottom: 3px;
+}
 @keyframes led-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
