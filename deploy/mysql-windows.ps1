@@ -105,17 +105,17 @@ function Ensure-MySQL {
       $mysqld = Join-Path $ourBase 'bin\mysqld.exe'
       $url = "https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-$version-winx64.zip"
       $zip = Join-Path $env:TEMP 'mysql-winx64.zip'
-      Write-Output "MySQL: descargando $url"
+      Write-Host "MySQL: descargando $url"
       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-      Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing
-      Expand-Archive -Path $zip -DestinationPath 'C:\mysql' -Force
+      Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing | Out-Null
+      Expand-Archive -Path $zip -DestinationPath 'C:\mysql' -Force | Out-Null
       if (-not (Test-Path (Join-Path $ourBase 'data'))) {
-        Write-Output 'MySQL: inicializando datadir'
-        & $mysqld --initialize-insecure
+        Write-Host 'MySQL: inicializando datadir'
+        & $mysqld --initialize-insecure | Out-Null
         if ($LASTEXITCODE -ne 0) { throw 'mysqld --initialize-insecure fallo' }
       }
-      Write-Output 'MySQL: registrando servicio'
-      & $mysqld --install MySQL
+      Write-Host 'MySQL: registrando servicio'
+      & $mysqld --install MySQL | Out-Null
       if ($LASTEXITCODE -ne 0) { throw 'mysqld --install fallo' }
     }
     catch {
