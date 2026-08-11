@@ -224,10 +224,11 @@
 
   .library-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .search-input {
-    flex: 1;
+    flex: 1 1 100%;
     width: auto;
   }
 
