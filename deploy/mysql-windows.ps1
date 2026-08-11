@@ -61,12 +61,45 @@ DB_NAME=vybe
   return $true
 }
 
+function Ensure-SecureConfig {
+  $ErrorActionPreference = 'Continue'
+  $ini = Join-Path $script:MySQLBase 'my.ini'
+  $wanted = @"
+[mysqld]
+basedir=$($script:MySQLBase -replace '\\','/')
+datadir=$($script:MySQLBase -replace '\\','/')/data
+port=3306
+bind-address=127.0.0.1
+"@
+  $needs = $true
+  if (Test-Path $ini) {
+    $cur = Get-Content $ini -Raw
+    if ($cur -match 'bind-address\s*=\s*127\.0\.0\.1' -and $cur -match '^\[mysqld\]') { $needs = $false }
+  }
+  if ($needs) {
+    Set-Content $ini $wanted -Encoding ascii
+    Write-Host 'MySQL: aplicando config segura (escucha solo en 127.0.0.1)'
+    $svc = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
+      Where-Object { $_.PathName -like "*$($script:MySQLBase)*" }) | Select-Object -First 1
+    if ($svc) {
+      & sc.exe stop $svc.Name | Out-Null
+      Start-Sleep -Seconds 3
+      & sc.exe start $svc.Name | Out-Null
+      Start-Sleep -Seconds 2
+    }
+    return $true
+  }
+  return $false
+}
+
 function Ensure-MySQL {
   $ErrorActionPreference = 'Continue'
   $ProgressPreference = 'SilentlyContinue'
   $ourBase = 'C:\mysql\mysql-8.0.29-winx64'
   $script:MySQLBase = $ourBase
   $marker = 'C:\mysql\vybe.mysql-ready'
+
+  $null = Ensure-SecureConfig
   if (Test-Path $marker) { return 'ok' }
 
   $all = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
