@@ -70,11 +70,12 @@ basedir=$($script:MySQLBase -replace '\\','/')
 datadir=$($script:MySQLBase -replace '\\','/')/data
 port=3306
 bind-address=127.0.0.1
+mysqlx=0
 "@
   $needs = $true
   if (Test-Path $ini) {
     $cur = Get-Content $ini -Raw
-    if ($cur -match 'bind-address\s*=\s*127\.0\.0\.1' -and $cur -match '^\[mysqld\]') { $needs = $false }
+    if ($cur -match 'bind-address\s*=\s*127\.0\.0\.1' -and $cur -match 'mysqlx\s*=\s*0' -and $cur -match '^\[mysqld\]') { $needs = $false }
   }
   if ($needs -and (Test-Path $script:MySQLBase)) {
     Set-Content $ini $wanted -Encoding ascii
