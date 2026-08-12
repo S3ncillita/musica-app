@@ -1,6 +1,6 @@
 {
-  "version": "1.3.0",
+  "version": "1.3.1",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Descargas para escuchar sin conexión, reproducción en segundo plano con notificación y scroll infinito en Artistas.",
+  "notes": "Prueba del nuevo flujo de actualización con barra de progreso.",
   "force": false
 }

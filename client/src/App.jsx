@@ -11,6 +11,7 @@ import Auth from './components/Auth.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
 import EqPanel from './components/EqPanel.jsx';
 import AppVersion from './components/AppVersion.jsx';
+import Toast, { useToast } from './components/Toast.jsx';
 import vybeIcon from './assets/vybe-icon.svg';
 import { getApiBase } from './config.js';
 import { api } from './api.js';
@@ -34,6 +35,7 @@ export default function App() {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('authUser')) || null; } catch { return null; }
   });
+  const [toast, showToast] = useToast();
   const [songs, setSongs] = useState([]);
   const [playlists, setPlaylists] = useState([]);
   const [currentView, setCurrentView] = useState('library');
@@ -446,6 +448,7 @@ export default function App() {
 
   const handleLogin = (userData) => {
     setUser(userData);
+    showToast(`¡Bienvenido, ${userData.username}!`);
   };
 
   const handleLogout = () => {
@@ -507,6 +510,7 @@ export default function App() {
         <Auth onLogin={handleLogin} required />
       ) : (
         <>
+      <Toast message={toast} />
       <div className="mobile-header">
         <div className="mobile-logo">
           <img src={vybeIcon} alt="" width="24" height="24" style={{ borderRadius: 6 }} />
