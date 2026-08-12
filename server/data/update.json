@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "App renombrada a Vybe con icono nuevo.",
+  "notes": "Descargas para escuchar sin conexión, reproducción en segundo plano con notificación y scroll infinito en Artistas.",
   "force": false
 }

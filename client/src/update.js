@@ -1,7 +1,7 @@
 import { runUpdateCheck } from './updateCheck.js';
 import './updateCheck.css';
 
-const FALLBACK_VERSION = '1.1.0';
+const FALLBACK_VERSION = '1.2.0';
 
 export async function initUpdateCheck() {
   let currentVersion = FALLBACK_VERSION;
