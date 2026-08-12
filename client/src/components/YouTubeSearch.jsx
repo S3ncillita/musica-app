@@ -116,10 +116,6 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
       <div className="view-header">
         <div>
           <h1 className="view-title">Buscar</h1>
-          <div className="view-status">
-            <span className="led" />
-            <span>YOUTUBE_API</span>
-          </div>
         </div>
       </div>
       <div className="yt-search-bar">
