@@ -46,7 +46,7 @@ function parseItems(contents) {
 async function ytSearch(query, limit = 20) {
   const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=EgIQAQ%3D%3D`;
   const res = await fetch(url, {
-    headers: { 'User-Agent': UA, 'Accept-Language': 'es-419,es;q=0.9' },
+    headers: { 'User-Agent': UA, 'Accept-Language': 'es-419,es;q=0.9', 'Cookie': 'CONSENT=YES+1' },
   });
   const html = await res.text();
 
@@ -69,6 +69,7 @@ async function ytSearchContinuation(token) {
     headers: {
       'Content-Type': 'application/json',
       'User-Agent': UA,
+      'Cookie': 'CONSENT=YES+1',
     },
     body: JSON.stringify({
       context: { client: { clientName: 'WEB', clientVersion: '2.20250101.00.00', hl: 'es', gl: 'AR' } },

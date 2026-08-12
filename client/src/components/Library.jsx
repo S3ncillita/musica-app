@@ -61,26 +61,34 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
           <p>{search ? 'Sin resultados' : 'Arrastrá archivos de música acá'}</p>
         </div>
       ) : (
-        <div className="song-list">
-          <div className="song-list-header">
-            <span className="col-num">#</span>
-            <span className="col-title">Título</span>
-            <span className="col-artist">Artista</span>
-            <span className="col-album">Álbum</span>
-            <span className="col-download"></span>
-          </div>
+        <div className="song-grid">
           {filtered.map((song, i) => (
             <div
               key={song.id}
-              className="song-row"
+              className="song-card"
               onClick={() => onPlay(song, filtered)}
               onContextMenu={(e) => handleContext(e, song)}
             >
-              <span className="col-num">{i + 1}</span>
-              <span className="col-title">{song.title}</span>
-              <span className="col-artist">{song.artist}</span>
-              <span className="col-album">{song.album}</span>
-              <span className="col-download">
+              <div className="song-card-thumb">
+                {song.thumbnail ? (
+                  <img src={song.thumbnail} alt="" />
+                ) : (
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="var(--text-muted)">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                  </svg>
+                )}
+                <button className="song-card-play" onClick={(e) => { e.stopPropagation(); onPlay(song, filtered); }} title="Reproducir">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="song-card-info">
+                <span className="song-card-title">{song.title}</span>
+                <span className="song-card-artist">{song.artist}</span>
+              </div>
+              <div className="song-card-footer">
+                <span className="song-card-num">{song.album || `#${i + 1}`}</span>
                 <DownloadButton
                   song={song}
                   isDownloaded={isDownloaded}
@@ -88,7 +96,7 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
                   onDownload={onDownload}
                   onRemoveDownload={onRemoveDownload}
                 />
-              </span>
+              </div>
             </div>
           ))}
         </div>

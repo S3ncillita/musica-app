@@ -9,7 +9,7 @@
   border-radius: 4px;
   font-weight: 600;
   font-size: .9rem;
-  box-shadow: 0 0 8px rgba(0, 242, 255, 0.4);
+  box-shadow: var(--glow);
   z-index: 1000;
   animation: toast-in .2s ease-out;
   pointer-events: none;

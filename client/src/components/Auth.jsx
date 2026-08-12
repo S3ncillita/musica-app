@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getApiBase } from '../config.js';
+import vybeIcon from '../assets/vybe-icon.svg';
 import './Auth.css';
 
 const API = getApiBase();
@@ -54,10 +55,7 @@ export default function Auth({ onLogin, onClose, required = false }) {
       <div className="auth-modal" onClick={e => e.stopPropagation()}>
         {!required && <button className="auth-close" onClick={onClose}>×</button>}
         <div className="auth-logo">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--accent)">
-            <circle cx="12" cy="12" r="12"/>
-            <path d="M8 15V9l8-3v10" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <img src={vybeIcon} alt="Vybe" width="56" height="56" style={{ borderRadius: 14 }} />
         </div>
         <h2>{isRegister ? 'Crear cuenta' : 'Iniciar sesión'}</h2>
         <form onSubmit={handleSubmit}>

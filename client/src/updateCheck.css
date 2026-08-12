@@ -12,11 +12,11 @@
 .update-card {
   width: 100%;
   max-width: 360px;
-  background: #1c1b1b;
-  border: 1px solid #2a2a2a;
+  background: #241a3a;
+  border: 1px solid #3d2a5c;
   border-radius: 16px;
   padding: 24px;
-  color: #e5e2e1;
+  color: #f1eaf9;
   font-family: system-ui, sans-serif;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
@@ -30,7 +30,7 @@
 .update-version {
   margin: 0 0 8px;
   font-size: 13px;
-  color: #849495;
+  color: #8d7aa8;
 }
 
 .update-notes {
@@ -61,6 +61,6 @@
 
 .update-later {
   background: transparent;
-  color: #849495;
-  border: 1px solid #2a2a2a;
+  color: #8d7aa8;
+  border: 1px solid #3d2a5c;
 }

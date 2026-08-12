@@ -11,6 +11,7 @@ import Auth from './components/Auth.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
 import EqPanel from './components/EqPanel.jsx';
 import AppVersion from './components/AppVersion.jsx';
+import vybeIcon from './assets/vybe-icon.svg';
 import { getApiBase } from './config.js';
 import { api } from './api.js';
 import { initUpdateCheck } from './update.js';
@@ -81,6 +82,33 @@ export default function App() {
 
   useEffect(() => {
     initUpdateCheck();
+  }, []);
+
+  const backButtonStateRef = useRef({});
+  backButtonStateRef.current = { showFullPlayer, showEq, sidebarOpen };
+
+  useEffect(() => {
+    let listenerHandle;
+    let cancelled = false;
+    import('@capacitor/app').then(({ App: CapacitorApp }) => {
+      if (cancelled) return;
+      CapacitorApp.addListener('backButton', () => {
+        const { showFullPlayer, showEq, sidebarOpen } = backButtonStateRef.current;
+        if (showFullPlayer) {
+          setShowFullPlayer(false);
+        } else if (showEq) {
+          setShowEq(false);
+        } else if (sidebarOpen) {
+          setSidebarOpen(false);
+        } else {
+          CapacitorApp.exitApp();
+        }
+      }).then(handle => { listenerHandle = handle; });
+    }).catch(() => {});
+    return () => {
+      cancelled = true;
+      listenerHandle?.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -473,10 +501,7 @@ export default function App() {
     <div className={`app ${!user ? 'auth-required' : ''}`}>
       {authLoading ? (
         <div className="auth-loading">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--accent)">
-            <circle cx="12" cy="12" r="12"/>
-            <path d="M8 15V9l8-3v10" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <img src={vybeIcon} alt="Vybe" width="48" height="48" style={{ borderRadius: 12 }} />
         </div>
       ) : !user ? (
         <Auth onLogin={handleLogin} required />
@@ -484,10 +509,7 @@ export default function App() {
         <>
       <div className="mobile-header">
         <div className="mobile-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--accent)">
-            <circle cx="12" cy="12" r="12"/>
-            <path d="M8 15V9l8-3v10" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <img src={vybeIcon} alt="" width="24" height="24" style={{ borderRadius: 6 }} />
           <span>Vybe</span>
           <AppVersion />
         </div>

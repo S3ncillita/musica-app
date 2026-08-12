@@ -59,32 +59,44 @@ export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onR
     loadPopular();
   }, []);
 
+  const popularNextTokenRef = useRef(null);
+  const loadingMorePopularRef = useRef(false);
+  popularNextTokenRef.current = popularNextToken;
+  loadingMorePopularRef.current = loadingMorePopular;
+
   const loadMorePopular = async () => {
-    if (loadingMorePopular || !popularNextToken) return;
+    if (loadingMorePopularRef.current || !popularNextTokenRef.current) return;
+    loadingMorePopularRef.current = true;
     setLoadingMorePopular(true);
     try {
-      const res = await fetch(`${API}/youtube/artists/discover?token=${encodeURIComponent(popularNextToken)}`);
+      const res = await fetch(`${API}/youtube/artists/discover?token=${encodeURIComponent(popularNextTokenRef.current)}`);
       const data = await res.json();
       setPopularArtists(prev => {
         const known = new Set(prev.map(a => a.name));
         return [...prev, ...(data.items || []).filter(a => !known.has(a.name))];
       });
+      popularNextTokenRef.current = data.nextToken || null;
       setPopularNextToken(data.nextToken || null);
     } catch {
+      popularNextTokenRef.current = null;
       setPopularNextToken(null);
     }
+    loadingMorePopularRef.current = false;
     setLoadingMorePopular(false);
   };
+
+  const loadMorePopularRef = useRef(loadMorePopular);
+  loadMorePopularRef.current = loadMorePopular;
 
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const obs = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) loadMorePopular();
+      if (entries[0].isIntersecting) loadMorePopularRef.current();
     }, { rootMargin: '400px' });
     obs.observe(el);
     return () => obs.disconnect();
-  }, [popularNextToken, loadingMorePopular]);
+  }, []);
 
   useEffect(() => {
     if (!selectedArtist) return;
@@ -206,19 +218,28 @@ export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onR
         {loading ? (
           <div className="artist-loading">Cargando canciones...</div>
         ) : (
-          <div className="song-list">
-            <div className="song-list-header">
-              <span className="col-num">#</span>
-              <span className="col-title">Título</span>
-              <span className="col-duration">Duración</span>
-              <span className="col-actions"></span>
-            </div>
+          <div className="song-grid">
             {ytSongs.map((item, i) => (
-              <div key={item.videoId} className="song-row" onClick={() => playYt(item, ytSongs)}>
-                <span className="col-num">{i + 1}</span>
-                <span className="col-title">{item.title}</span>
-                <span className="col-duration">{fmt(item.duration)}</span>
-                <span className="col-actions">
+              <div key={item.videoId} className="song-card" onClick={() => playYt(item, ytSongs)}>
+                <div className="song-card-thumb">
+                  {item.thumbnail ? (
+                    <img src={item.thumbnail} alt="" />
+                  ) : (
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="var(--text-muted)">
+                      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                  )}
+                  <button className="song-card-play" onClick={(e) => { e.stopPropagation(); playYt(item, ytSongs); }} title="Reproducir">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </button>
+                </div>
+                <div className="song-card-info">
+                  <span className="song-card-title">{item.title}</span>
+                  <span className="song-card-artist">{fmt(item.duration)}</span>
+                </div>
+                <div className="song-card-footer">
                   <button className="add-lib-btn" onClick={(e) => { e.stopPropagation(); addToLibrary(item); }} title="Agregar a biblioteca">+</button>
                   <DownloadButton
                     song={toSong(item)}
@@ -227,7 +248,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onR
                     onDownload={onDownload}
                     onRemoveDownload={onRemoveDownload}
                   />
-                </span>
+                </div>
               </div>
             ))}
           </div>
@@ -331,9 +352,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onR
           ))}
         </div>
       )}
-      {!loadingPopular && popularNextToken && (
-        <div ref={sentinelRef} style={{ height: 1 }} />
-      )}
+      <div ref={sentinelRef} style={{ height: 1 }} />
       {loadingMorePopular && (
         <div className="artist-loading">Buscando más artistas...</div>
       )}

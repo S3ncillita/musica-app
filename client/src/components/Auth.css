@@ -61,7 +61,7 @@
   border-top-color: transparent;
   border-right-color: transparent;
   border-left-color: transparent;
-  background: #0a0a0a;
+  background: var(--bg-secondary);
   color: var(--text-primary);
   font-size: 0.95rem;
   outline: none;

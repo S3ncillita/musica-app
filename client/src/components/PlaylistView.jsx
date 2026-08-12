@@ -32,23 +32,31 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
       </div>
 
       {playlist.songs?.length > 0 ? (
-        <div className="song-list">
-          <div className="song-list-header">
-            <span className="col-num">#</span>
-            <span className="col-title">Título</span>
-            <span className="col-artist">Artista</span>
-            <span className="col-album">Álbum</span>
-            <span className="col-actions"></span>
-          </div>
+        <div className="song-grid">
           {playlist.songs.map((song, i) => (
-            <div key={song.id} className="song-row" onClick={() => onPlay(song, playlist.songs)}>
-              <span className="col-num">{i + 1}</span>
-              <span className="col-title">{song.title}</span>
-              <span className="col-artist">{song.artist}</span>
-              <span className="col-album">{song.album}</span>
-              <span className="col-actions">
-                <button className="remove-btn" onClick={() => onRemoveSong(playlist.id, song.id)} title="Quitar">✕</button>
-              </span>
+            <div key={song.id} className="song-card" onClick={() => onPlay(song, playlist.songs)}>
+              <div className="song-card-thumb">
+                {song.thumbnail ? (
+                  <img src={song.thumbnail} alt="" />
+                ) : (
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="var(--text-muted)">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                  </svg>
+                )}
+                <button className="song-card-play" onClick={(e) => { e.stopPropagation(); onPlay(song, playlist.songs); }} title="Reproducir">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="song-card-info">
+                <span className="song-card-title">{song.title}</span>
+                <span className="song-card-artist">{song.artist}</span>
+              </div>
+              <div className="song-card-footer">
+                <span className="song-card-num">{song.album || `#${i + 1}`}</span>
+                <button className="remove-btn" onClick={(e) => { e.stopPropagation(); onRemoveSong(playlist.id, song.id); }} title="Quitar">✕</button>
+              </div>
             </div>
           ))}
         </div>

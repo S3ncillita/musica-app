@@ -120,8 +120,14 @@
 
 .artist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 24px;
+}
+
+@media (max-width: 1200px) {
+  .artist-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .artist-card {
@@ -204,11 +210,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
   transition: all 0.15s;
-}
-.song-row:hover .add-lib-btn {
-  opacity: 1;
 }
 .add-lib-btn:hover {
   background: var(--accent);
@@ -217,12 +219,8 @@
   box-shadow: var(--glow);
 }
 
-.col-actions .download-btn {
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.song-row:hover .col-actions .download-btn {
-  opacity: 1;
+.artists .song-card-footer {
+  justify-content: flex-end;
 }
 
 @media (max-width: 768px) {

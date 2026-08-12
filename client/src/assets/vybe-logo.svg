@@ -1,0 +1,22 @@
+<svg viewBox="-4 36 653 165" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#E4317F"/>
+      <stop offset="100%" stop-color="#FFB443"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icono: barras de ecualizador cuya silueta superior dibuja una V -->
+  <g>
+    <rect x="0"   y="40"  width="28" height="150" rx="14" fill="url(#barGrad)"/>
+    <rect x="42"  y="80"  width="28" height="110" rx="14" fill="url(#barGrad)"/>
+    <rect x="84"  y="120" width="28" height="70"  rx="14" fill="url(#barGrad)"/>
+    <rect x="126" y="150" width="28" height="40"  rx="14" fill="url(#barGrad)"/>
+    <rect x="168" y="120" width="28" height="70"  rx="14" fill="url(#barGrad)"/>
+    <rect x="210" y="80"  width="28" height="110" rx="14" fill="url(#barGrad)"/>
+    <rect x="252" y="40"  width="28" height="150" rx="14" fill="url(#barGrad)"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="320" y="163" font-family="Poppins, 'Segoe UI', Arial, sans-serif" font-weight="800" font-size="128" letter-spacing="-4" fill="#f1eaf9">Vybe</text>
+</svg>

@@ -31,7 +31,7 @@
   border-top-color: transparent;
   border-right-color: transparent;
   border-left-color: transparent;
-  background: #0e0e0e;
+  background: var(--bg-secondary);
   color: var(--text-primary);
   width: 220px;
   font-family: 'JetBrains Mono', monospace;

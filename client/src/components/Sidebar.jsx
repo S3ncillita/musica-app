@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AppVersion from './AppVersion.jsx';
+import vybeLogo from '../assets/vybe-logo.svg';
 import './Sidebar.css';
 
 export default function Sidebar({ playlists, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewPlaylist, onCreatePlaylist, user, onLogin, onLogout }) {
@@ -17,11 +18,7 @@ export default function Sidebar({ playlists, currentView, isOpen, onViewLibrary,
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-logo">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--accent)">
-          <circle cx="12" cy="12" r="12"/>
-          <path d="M8 15V9l8-3v10" fill="none" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-        <span>Vybe</span>
+        <img src={vybeLogo} alt="Vybe" className="sidebar-logo-img" />
         <AppVersion />
       </div>
 

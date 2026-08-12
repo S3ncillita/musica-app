@@ -121,67 +121,7 @@
 
 .trending-songs {
   border-top: 1px solid var(--border);
-  padding: 4px 0;
-}
-
-.trending-songs .song-row {
-  display: grid;
-  grid-template-columns: 32px 48px 1fr 50px 32px 28px;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 20px;
-  border-radius: 4px;
-  transition: background 0.1s;
-  cursor: default;
-}
-.trending-songs .song-row:hover {
-  background: var(--bg-hover);
-}
-
-.song-thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: 4px;
-  object-fit: cover;
-  background: var(--bg-tertiary);
-}
-
-.song-text {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.trending-songs .col-num {
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.trending-songs .col-title {
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.trending-songs .col-artist {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.trending-songs .col-duration {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-align: right;
+  padding: 16px 20px;
 }
 
 .trending-songs .add-lib-btn {
@@ -195,25 +135,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
   transition: all 0.15s;
-}
-.trending-songs .song-row:hover .add-lib-btn {
-  opacity: 1;
 }
 .trending-songs .add-lib-btn:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: #000;
   box-shadow: var(--glow);
-}
-
-.trending-songs .download-btn {
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.trending-songs .song-row:hover .download-btn {
-  opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -249,41 +177,7 @@
     height: 20px;
   }
 
-  .trending-songs .song-row {
-    grid-template-columns: 24px 40px 1fr 44px 36px 28px;
-    padding: 8px 12px;
-    gap: 4px;
-    align-items: center;
-  }
-
-  .song-thumb {
-    width: 36px;
-    height: 36px;
-  }
-
-  .trending-songs .col-num {
-    font-size: 12px;
-  }
-
-  .trending-songs .col-title {
-    font-size: 0.82rem;
-  }
-
-  .trending-songs .col-duration {
-    font-size: 12px;
-    min-width: 0;
-    width: auto;
-    text-align: right;
-  }
-
-  .trending-songs .add-lib-btn {
-    opacity: 1;
-    width: 30px;
-    height: 30px;
-    font-size: 1.2rem;
-  }
-
-  .trending-songs .download-btn {
-    opacity: 1;
+  .trending-songs {
+    padding: 12px;
   }
 }

@@ -144,44 +144,54 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
       </div>
 
       <div className="yt-results">
+      <div className="song-grid">
         {results.map((item) => (
-          <div key={item.videoId} className="yt-result-wrap">
-            <div
-              className="yt-result"
-              onClick={() => playItem(item)}
-              onContextMenu={(e) => handleContext(e, item)}
-            >
-              <img src={item.thumbnail} alt="" className="yt-thumb" />
-              <div className="yt-info">
-                <span className="yt-title">{item.title}</span>
-                <span className="yt-channel">{item.channel}</span>
-              </div>
-              <span className="yt-duration">{fmt(item.duration)}</span>
+          <div
+            key={item.videoId}
+            className="song-card"
+            onClick={() => playItem(item)}
+            onContextMenu={(e) => handleContext(e, item)}
+          >
+            <div className="song-card-thumb">
+              <img src={item.thumbnail} alt="" />
+              <button className="song-card-play" onClick={(e) => { e.stopPropagation(); playItem(item); }} title="Reproducir">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
             </div>
-            <button
-              className={`yt-add-btn ${addedIds.has(item.videoId) ? 'added' : ''}`}
-              onClick={() => addToLibrary(item)}
-              disabled={addedIds.has(item.videoId)}
-            >
-              {addedIds.has(item.videoId) ? 'Añadida' : '+'}
-            </button>
-            <DownloadButton
-              song={toSong(item)}
-              isDownloaded={isDownloaded}
-              downloadingKey={downloadingKey}
-              onDownload={onDownload}
-              onRemoveDownload={onRemoveDownload}
-            />
+            <div className="song-card-info">
+              <span className="song-card-title">{item.title}</span>
+              <span className="song-card-artist">{item.channel}</span>
+            </div>
+            <div className="song-card-footer">
+              <span className="song-card-num">{fmt(item.duration)}</span>
+              <button
+                className={`yt-add-btn ${addedIds.has(item.videoId) ? 'added' : ''}`}
+                onClick={(e) => { e.stopPropagation(); addToLibrary(item); }}
+                disabled={addedIds.has(item.videoId)}
+              >
+                {addedIds.has(item.videoId) ? 'Añadida' : '+'}
+              </button>
+              <DownloadButton
+                song={toSong(item)}
+                isDownloaded={isDownloaded}
+                downloadingKey={downloadingKey}
+                onDownload={onDownload}
+                onRemoveDownload={onRemoveDownload}
+              />
+            </div>
           </div>
         ))}
-        {results.length === 0 && !loading && (
-          <div className="yt-empty">Buscá tu música favorita</div>
-        )}
-        {results.length > 0 && nextToken && (
-          <div ref={sentinelRef} className="yt-load-more">
-            {loadingMore ? 'Cargando más...' : ''}
-          </div>
-        )}
+      </div>
+      {results.length === 0 && !loading && (
+        <div className="yt-empty">Buscá tu música favorita</div>
+      )}
+      {results.length > 0 && nextToken && (
+        <div ref={sentinelRef} className="yt-load-more">
+          {loadingMore ? 'Cargando más...' : ''}
+        </div>
+      )}
       </div>
 
       {contextMenu && (
