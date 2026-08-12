@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import DownloadButton from './DownloadButton.jsx';
 import './Player.css';
 
-export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onOpenFullPlayer }) {
+export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onOpenFullPlayer, onDownload, onRemoveDownload, isDownloaded, downloadingKey }) {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
@@ -141,6 +142,15 @@ export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onToggl
       </div>
 
       <div className="player-volume">
+        <DownloadButton
+          song={song}
+          isDownloaded={isDownloaded}
+          downloadingKey={downloadingKey}
+          onDownload={onDownload}
+          onRemoveDownload={onRemoveDownload}
+          className="ctrl-btn"
+          size={18}
+        />
         <button className="ctrl-btn" onClick={() => {}}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             {vol === 0 ? (

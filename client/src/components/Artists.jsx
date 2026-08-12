@@ -1,25 +1,31 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { getApiBase } from '../config.js';
 import { api } from '../api.js';
 import Toast, { useToast } from './Toast.jsx';
+import DownloadButton from './DownloadButton.jsx';
 import './Artists.css';
 
 const API = getApiBase();
 
-const POPULAR_ARTISTS = [
-  'Bad Bunny', 'Taylor Swift', 'Daddy Yankee', 'Karol G', 'J Balvin',
-  'Ozuna', 'Rauw Alejandro', 'Feid', 'Anuel AA', 'Nicky Jam',
-  'The Weeknd', 'Drake', 'Ed Sheeran', 'Dua Lipa', 'Billie Eilish',
-  'BTS', 'SZA', 'Post Malone', 'Maluma', 'Sebastian Yatra',
-];
+const toSong = (item) => ({
+  type: 'youtube',
+  videoId: item.videoId,
+  title: item.title,
+  artist: item.channel,
+  thumbnail: item.thumbnail,
+  duration: item.duration,
+});
 
-export default function Artists({ songs, onPlay, onAddToLibrary }) {
+export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onRemoveDownload, isDownloaded, downloadingKey }) {
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [ytSongs, setYtSongs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toast, showToast] = useToast();
   const [popularArtists, setPopularArtists] = useState([]);
   const [loadingPopular, setLoadingPopular] = useState(false);
+  const [loadingMorePopular, setLoadingMorePopular] = useState(false);
+  const [popularNextToken, setPopularNextToken] = useState(null);
+  const sentinelRef = useRef(null);
   const [artistQuery, setArtistQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -38,23 +44,47 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
   useEffect(() => {
     const loadPopular = async () => {
       setLoadingPopular(true);
-      const shuffled = [...POPULAR_ARTISTS].sort(() => Math.random() - 0.5);
       try {
-        const res = await fetch(`${API}/youtube/artists`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ names: shuffled }),
-        });
+        const seed = Math.floor(Math.random() * 8);
+        const res = await fetch(`${API}/youtube/artists/discover?seed=${seed}`);
         const data = await res.json();
-        // Mostramos los primeros 20 artistas, y hay un botón "Cargar más" para los restantes
-        setPopularArtists(data.slice(0, 20));
+        setPopularArtists(data.items || []);
+        setPopularNextToken(data.nextToken || null);
       } catch {
         setPopularArtists([]);
+        setPopularNextToken(null);
       }
       setLoadingPopular(false);
     };
     loadPopular();
   }, []);
+
+  const loadMorePopular = async () => {
+    if (loadingMorePopular || !popularNextToken) return;
+    setLoadingMorePopular(true);
+    try {
+      const res = await fetch(`${API}/youtube/artists/discover?token=${encodeURIComponent(popularNextToken)}`);
+      const data = await res.json();
+      setPopularArtists(prev => {
+        const known = new Set(prev.map(a => a.name));
+        return [...prev, ...(data.items || []).filter(a => !known.has(a.name))];
+      });
+      setPopularNextToken(data.nextToken || null);
+    } catch {
+      setPopularNextToken(null);
+    }
+    setLoadingMorePopular(false);
+  };
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) loadMorePopular();
+    }, { rootMargin: '400px' });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [popularNextToken, loadingMorePopular]);
 
   useEffect(() => {
     if (!selectedArtist) return;
@@ -190,6 +220,13 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
                 <span className="col-duration">{fmt(item.duration)}</span>
                 <span className="col-actions">
                   <button className="add-lib-btn" onClick={(e) => { e.stopPropagation(); addToLibrary(item); }} title="Agregar a biblioteca">+</button>
+                  <DownloadButton
+                    song={toSong(item)}
+                    isDownloaded={isDownloaded}
+                    downloadingKey={downloadingKey}
+                    onDownload={onDownload}
+                    onRemoveDownload={onRemoveDownload}
+                  />
                 </span>
               </div>
             ))}
@@ -205,10 +242,6 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
       <div className="view-header">
         <div>
           <h1 className="view-title">Artistas</h1>
-          <div className="view-status">
-            <span className="led" />
-            <span>DATABASE_INDEX</span>
-          </div>
         </div>
       </div>
 
@@ -296,25 +329,13 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
               <span className="artist-card-count">{artist.songCount} temas</span>
             </button>
           ))}
-          {popularArtists.length >= 20 && (
-            <button
-              className="artist-card"
-              style={{ width: '100%', marginTop: 16, textAlign: 'center' }}
-              onClick={() => {
-                // Slice los primeros 20 y deja los demás para un segundo clic
-                const currentCount = popularArtists.length;
-                if (currentCount > 20) {
-                  setPopularArtists(popularArtists.slice(0, 20));
-                } else {
-                  // Si ya estamos en los 20, no hacemos nada (o podríamos cargar más si tuviéramos más datos)
-                  setPopularArtists(popularArtists);
-                }
-              }}
-            >
-              {popularArtists.length >= 20 ? 'Cargar más artistas' : ''}
-            </button>
-          )}
         </div>
+      )}
+      {!loadingPopular && popularNextToken && (
+        <div ref={sentinelRef} style={{ height: 1 }} />
+      )}
+      {loadingMorePopular && (
+        <div className="artist-loading">Buscando más artistas...</div>
       )}
     </div>
   );

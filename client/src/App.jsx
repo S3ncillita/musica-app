@@ -14,6 +14,8 @@ import AppVersion from './components/AppVersion.jsx';
 import { getApiBase } from './config.js';
 import { api } from './api.js';
 import { initUpdateCheck } from './update.js';
+import * as offline from './offline.js';
+import { registerMediaSessionHandlers, updateMediaMetadata, updateMediaPlaybackState } from './mediaSession.js';
 import './App.css';
 
 const API = getApiBase();
@@ -42,7 +44,10 @@ export default function App() {
   const [shuffle, setShuffle] = useState(saved.current?.shuffle || false);
   const [repeat, setRepeat] = useState(saved.current?.repeat || 0);
   const [ytVideoId, setYtVideoId] = useState(null);
+  const [ytOfflineSrc, setYtOfflineSrc] = useState(null);
   const [ytMuted, setYtMuted] = useState(true);
+  const [downloadingKey, setDownloadingKey] = useState(null);
+  const [offlineVersion, setOfflineVersion] = useState(0);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
   const [showEq, setShowEq] = useState(false);
   const [eq, setEq] = useState({ preset: 'flat', low: 0, mid: 0, high: 0 });
@@ -198,14 +203,19 @@ export default function App() {
 
       if (song.videoId || song.type === 'youtube') {
         audioRef.current.pause();
-        setYtVideoId(song.videoId);
         setIsPlaying(true);
-        ytPlayerRef.current?.loadAndPlay?.(song.videoId);
+        offline.getOfflineSrc(song).then(offlineSrc => {
+          setYtOfflineSrc(offlineSrc);
+          setYtVideoId(song.videoId);
+          ytPlayerRef.current?.loadAndPlay?.(song.videoId, offlineSrc);
+        });
       } else if (song.filename) {
         setYtVideoId(null);
-        audioRef.current.src = `${API}/stream/${song.id}`;
-        audioRef.current.load();
-        audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error('AUTO PLAY ERROR:', e));
+        offline.getOfflineSrc(song).then(offlineSrc => {
+          audioRef.current.src = offlineSrc || `${API}/stream/${song.id}`;
+          audioRef.current.load();
+          audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error('AUTO PLAY ERROR:', e));
+        });
       }
     }
   }, [queueIndex, queue]);
@@ -238,15 +248,20 @@ export default function App() {
 
     if (selected?.videoId || selected?.type === 'youtube') {
       audioRef.current.pause();
-      setYtVideoId(selected.videoId);
       setYtMuted(false);
       setIsPlaying(true);
-      ytPlayerRef.current?.loadAndPlay?.(selected.videoId);
+      offline.getOfflineSrc(selected).then(offlineSrc => {
+        setYtOfflineSrc(offlineSrc);
+        setYtVideoId(selected.videoId);
+        ytPlayerRef.current?.loadAndPlay?.(selected.videoId, offlineSrc);
+      });
     } else if (selected?.filename) {
       setYtVideoId(null);
-      audioRef.current.src = `${API}/stream/${selected.id}`;
-      audioRef.current.load();
-      audioRef.current.play().catch(e => console.error('PLAY ERROR:', e));
+      offline.getOfflineSrc(selected).then(offlineSrc => {
+        audioRef.current.src = offlineSrc || `${API}/stream/${selected.id}`;
+        audioRef.current.load();
+        audioRef.current.play().catch(e => console.error('PLAY ERROR:', e));
+      });
     }
   };
 
@@ -267,9 +282,11 @@ export default function App() {
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current.src = `${API}/stream/${currentSong.id}`;
-        audioRef.current.load();
-        audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error('PLAY ERROR:', e));
+        offline.getOfflineSrc(currentSong).then(offlineSrc => {
+          audioRef.current.src = offlineSrc || `${API}/stream/${currentSong.id}`;
+          audioRef.current.load();
+          audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error('PLAY ERROR:', e));
+        });
       }
     }
   };
@@ -310,6 +327,27 @@ export default function App() {
 
   const next = () => nextSong();
 
+  const mediaActionsRef = useRef({});
+  mediaActionsRef.current = { togglePlay, prev, next };
+
+  useEffect(() => {
+    registerMediaSessionHandlers({
+      onPlay: () => mediaActionsRef.current.togglePlay(),
+      onPause: () => mediaActionsRef.current.togglePlay(),
+      onPrev: () => mediaActionsRef.current.prev(),
+      onNext: () => mediaActionsRef.current.next(),
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!currentSong) return;
+    updateMediaMetadata(currentSong);
+  }, [currentSong]);
+
+  useEffect(() => {
+    updateMediaPlaybackState(isPlaying);
+  }, [isPlaying]);
+
   const handleFiles = async (files) => {
     const fd = new FormData();
     for (const f of files) fd.append('files', f);
@@ -320,6 +358,23 @@ export default function App() {
   const deleteSong = async (id) => {
     await api(`/songs/${id}`, { method: 'DELETE' });
     loadSongs();
+  };
+
+  const downloadSong = async (song) => {
+    const key = offline.songKey(song);
+    setDownloadingKey(key);
+    try {
+      await offline.downloadSong(song, API);
+    } catch (e) {
+      console.error('DOWNLOAD ERROR:', e);
+    }
+    setDownloadingKey(null);
+    setOfflineVersion(v => v + 1);
+  };
+
+  const removeDownload = async (song) => {
+    await offline.removeDownload(song);
+    setOfflineVersion(v => v + 1);
   };
 
   const createPlaylist = async (name) => {
@@ -499,6 +554,11 @@ export default function App() {
             onAddToPlaylist={addToPlaylist}
             onLogout={handleLogout}
             onOpenEq={() => setShowEq(true)}
+            onDownload={downloadSong}
+            onRemoveDownload={removeDownload}
+            isDownloaded={offline.isDownloaded}
+            downloadingKey={downloadingKey}
+            offlineVersion={offlineVersion}
           />
         )}
         {currentView === 'youtube' && (
@@ -507,6 +567,10 @@ export default function App() {
             onAddToLibrary={loadSongs}
             playlists={playlists}
             onAddToPlaylist={addToPlaylist}
+            onDownload={downloadSong}
+            onRemoveDownload={removeDownload}
+            isDownloaded={offline.isDownloaded}
+            downloadingKey={downloadingKey}
           />
         )}
         {currentView === 'artists' && (
@@ -516,6 +580,10 @@ export default function App() {
             onAddToLibrary={loadSongs}
             playlists={playlists}
             onAddToPlaylist={addToPlaylist}
+            onDownload={downloadSong}
+            onRemoveDownload={removeDownload}
+            isDownloaded={offline.isDownloaded}
+            downloadingKey={downloadingKey}
           />
         )}
         {currentView === 'trending' && (
@@ -524,6 +592,10 @@ export default function App() {
             onAddToLibrary={loadSongs}
             playlists={playlists}
             onAddToPlaylist={addToPlaylist}
+            onDownload={downloadSong}
+            onRemoveDownload={removeDownload}
+            isDownloaded={offline.isDownloaded}
+            downloadingKey={downloadingKey}
           />
         )}
         {currentView === 'playlist' && currentPlaylistId && (
@@ -553,6 +625,11 @@ export default function App() {
         onToggleRepeat={() => setRepeat((repeat + 1) % 3)}
         currentSong={currentSong}
         onOpenFullPlayer={() => setShowFullPlayer(true)}
+        onDownload={downloadSong}
+        onRemoveDownload={removeDownload}
+        isDownloaded={offline.isDownloaded}
+        downloadingKey={downloadingKey}
+        offlineVersion={offlineVersion}
       />
       {showFullPlayer && currentSong && (
         <FullPlayer
@@ -586,6 +663,7 @@ export default function App() {
       <YouTubePlayer
         ref={ytPlayerRef}
         videoId={ytVideoId}
+        offlineSrc={ytOfflineSrc}
         onReady={() => {
           ytPlayerRef.current?.setVolume(0.8);
           if (isPlaying) ytPlayerRef.current?.play();

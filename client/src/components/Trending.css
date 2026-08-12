@@ -126,7 +126,7 @@
 
 .trending-songs .song-row {
   display: grid;
-  grid-template-columns: 32px 48px 1fr 50px 32px;
+  grid-template-columns: 32px 48px 1fr 50px 32px 28px;
   align-items: center;
   gap: 10px;
   padding: 8px 20px;
@@ -208,6 +208,14 @@
   box-shadow: var(--glow);
 }
 
+.trending-songs .download-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.trending-songs .song-row:hover .download-btn {
+  opacity: 1;
+}
+
 @media (max-width: 768px) {
   .trending {
     padding: 16px;
@@ -242,7 +250,7 @@
   }
 
   .trending-songs .song-row {
-    grid-template-columns: 24px 40px 1fr 44px 36px;
+    grid-template-columns: 24px 40px 1fr 44px 36px 28px;
     padding: 8px 12px;
     gap: 4px;
     align-items: center;
@@ -273,5 +281,9 @@
     width: 30px;
     height: 30px;
     font-size: 1.2rem;
+  }
+
+  .trending-songs .download-btn {
+    opacity: 1;
   }
 }

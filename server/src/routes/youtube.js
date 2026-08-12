@@ -108,6 +108,32 @@ router.post('/artists', async (req, res) => {
   res.json(results.filter(Boolean));
 });
 
+const DISCOVER_QUERIES = [
+  'música 2026', 'top hits 2026', 'éxitos latinos', 'reggaetón',
+  'pop internacional', 'rap hits', 'bachata', 'música en vivo',
+];
+
+router.get('/artists/discover', async (req, res) => {
+  const { token, seed } = req.query;
+  try {
+    const result = token
+      ? await ytSearchContinuation(token)
+      : await ytSearch(DISCOVER_QUERIES[Number(seed) % DISCOVER_QUERIES.length] || DISCOVER_QUERIES[0], 30);
+    const byChannel = new Map();
+    for (const item of result.items) {
+      if (!item.channel || item.channel === 'Desconocido') continue;
+      if (!byChannel.has(item.channel)) {
+        byChannel.set(item.channel, { name: item.channel, thumbnail: item.thumbnail, songCount: 1 });
+      } else {
+        byChannel.get(item.channel).songCount++;
+      }
+    }
+    res.json({ items: Array.from(byChannel.values()), nextToken: result.nextToken });
+  } catch (err) {
+    res.status(500).json({ error: 'Error buscando artistas' });
+  }
+});
+
 const TRENDING_QUERIES = [
   'top hits 2026',
   'éxitos latinos 2026',

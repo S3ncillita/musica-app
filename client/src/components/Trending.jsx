@@ -2,11 +2,21 @@ import { useState, useEffect } from 'react';
 import { getApiBase } from '../config.js';
 import { api } from '../api.js';
 import Toast, { useToast } from './Toast.jsx';
+import DownloadButton from './DownloadButton.jsx';
 import './Trending.css';
 
 const API = getApiBase();
 
-export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPlaylist }) {
+const toSong = (song) => ({
+  type: 'youtube',
+  videoId: song.videoId,
+  title: song.title,
+  artist: song.channel,
+  thumbnail: song.thumbnail,
+  duration: song.duration,
+});
+
+export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey }) {
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPlaylist, setExpandedPlaylist] = useState(null);
@@ -132,6 +142,13 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPla
                     </div>
                     <span className="col-duration">{fmt(song.duration)}</span>
                     <button className="add-lib-btn" onClick={(e) => { e.stopPropagation(); addToLibrary(song); }} title="Agregar a biblioteca">+</button>
+                    <DownloadButton
+                      song={toSong(song)}
+                      isDownloaded={isDownloaded}
+                      downloadingKey={downloadingKey}
+                      onDownload={onDownload}
+                      onRemoveDownload={onRemoveDownload}
+                    />
                   </div>
                 ))}
               </div>

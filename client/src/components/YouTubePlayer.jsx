@@ -3,7 +3,7 @@ import { getApiBase } from '../config.js';
 
 const API = getApiBase();
 
-const YouTubePlayer = forwardRef(({ videoId, onReady, onStateChange, onError }, ref) => {
+const YouTubePlayer = forwardRef(({ videoId, offlineSrc, onReady, onStateChange, onError }, ref) => {
   const audioRef = useRef(null);
   const callbacksRef = useRef({ onReady, onStateChange, onError });
   callbacksRef.current = { onReady, onStateChange, onError };
@@ -40,7 +40,7 @@ const YouTubePlayer = forwardRef(({ videoId, onReady, onStateChange, onError }, 
     };
   }, []);
 
-  const loadAudio = (vid, autoPlay = false) => {
+  const loadAudio = (vid, autoPlay = false, srcOverride = null) => {
     if (!vid) return;
     switchingRef.current = true;
     hasErrorRef.current = false;
@@ -52,7 +52,7 @@ const YouTubePlayer = forwardRef(({ videoId, onReady, onStateChange, onError }, 
       audioRef.current.load();
     }
 
-    const proxyUrl = `${API}/ytdlp/stream/${vid}`;
+    const proxyUrl = srcOverride || `${API}/ytdlp/stream/${vid}`;
 
     const onCanPlay = () => {
       if (currentIdRef.current !== vid) return;
@@ -74,7 +74,7 @@ const YouTubePlayer = forwardRef(({ videoId, onReady, onStateChange, onError }, 
   useEffect(() => {
     if (videoId) {
       currentIdRef.current = videoId;
-      loadAudio(videoId, false);
+      loadAudio(videoId, false, offlineSrc);
     }
   }, [videoId]);
 
@@ -93,9 +93,9 @@ const YouTubePlayer = forwardRef(({ videoId, onReady, onStateChange, onError }, 
     setVolume: (v) => { if (audioRef.current) audioRef.current.volume = v; },
     getVolume: () => audioRef.current?.volume || 0.8,
     unmute: () => { if (audioRef.current) audioRef.current.muted = false; },
-    loadAndPlay: (id) => {
+    loadAndPlay: (id, srcOverride = null) => {
       currentIdRef.current = id;
-      loadAudio(id, true);
+      loadAudio(id, true, srcOverride);
     },
   }));
 

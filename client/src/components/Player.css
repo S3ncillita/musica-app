@@ -88,6 +88,19 @@
 .ctrl-btn.active {
   color: var(--accent);
 }
+.ctrl-btn.download-btn.downloaded {
+  color: var(--accent);
+}
+.ctrl-btn.download-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.ctrl-btn.download-btn .spin {
+  animation: download-spin 0.8s linear infinite;
+}
+@keyframes download-spin {
+  to { transform: rotate(360deg); }
+}
 .repeat-badge {
   position: absolute;
   bottom: 2px;

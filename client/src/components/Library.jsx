@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import DownloadButton from './DownloadButton.jsx';
 import './Library.css';
 
-export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, onLogout, onOpenEq }) {
+export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey }) {
   const [search, setSearch] = useState('');
   const [contextMenu, setContextMenu] = useState(null);
 
@@ -66,6 +67,7 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
             <span className="col-title">Título</span>
             <span className="col-artist">Artista</span>
             <span className="col-album">Álbum</span>
+            <span className="col-download"></span>
           </div>
           {filtered.map((song, i) => (
             <div
@@ -78,6 +80,15 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
               <span className="col-title">{song.title}</span>
               <span className="col-artist">{song.artist}</span>
               <span className="col-album">{song.album}</span>
+              <span className="col-download">
+                <DownloadButton
+                  song={song}
+                  isDownloaded={isDownloaded}
+                  downloadingKey={downloadingKey}
+                  onDownload={onDownload}
+                  onRemoveDownload={onRemoveDownload}
+                />
+              </span>
             </div>
           ))}
         </div>
@@ -88,6 +99,13 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
           onClick={() => setContextMenu(null)}>
           <button onClick={() => { navigator.clipboard.writeText(contextMenu.song.title); setContextMenu(null); }}>
             Copiar nombre
+          </button>
+          <div className="context-divider" />
+          <button onClick={() => {
+            isDownloaded?.(contextMenu.song) ? onRemoveDownload?.(contextMenu.song) : onDownload?.(contextMenu.song);
+            setContextMenu(null);
+          }}>
+            {isDownloaded?.(contextMenu.song) ? 'Quitar descarga' : 'Descargar'}
           </button>
           <div className="context-divider" />
           <div className="context-submenu">

@@ -1,0 +1,72 @@
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
+
+const INDEX_KEY = 'offlineSongs';
+const DIR = Directory.Data;
+const FOLDER = 'offline';
+
+function readIndex() {
+  try { return JSON.parse(localStorage.getItem(INDEX_KEY) || '{}'); } catch { return {}; }
+}
+
+function writeIndex(index) {
+  localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+}
+
+export function songKey(song) {
+  return (song.videoId || song.type === 'youtube') ? `yt_${song.videoId}` : `local_${song.id}`;
+}
+
+export function isDownloaded(song) {
+  return !!readIndex()[songKey(song)];
+}
+
+export function listDownloaded() {
+  return Object.values(readIndex());
+}
+
+export async function getOfflineSrc(song) {
+  const entry = readIndex()[songKey(song)];
+  if (!entry) return null;
+  try {
+    const { uri } = await Filesystem.getUri({ directory: DIR, path: entry.path });
+    return Capacitor.convertFileSrc(uri);
+  } catch {
+    return null;
+  }
+}
+
+export async function downloadSong(song, apiBase) {
+  const key = songKey(song);
+  const isYt = song.videoId || song.type === 'youtube';
+  const url = isYt ? `${apiBase}/ytdlp/stream/${song.videoId}` : `${apiBase}/stream/${song.id}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('No se pudo descargar la canción');
+  const blob = await res.blob();
+  const ext = isYt ? 'm4a' : (song.filename?.split('.').pop() || 'mp3');
+  const path = `${FOLDER}/${key}.${ext}`;
+
+  await Filesystem.mkdir({ path: FOLDER, directory: DIR, recursive: true }).catch(() => {});
+  await Filesystem.writeFile({ path, directory: DIR, data: blob });
+
+  const index = readIndex();
+  index[key] = {
+    key,
+    path,
+    title: song.title,
+    artist: song.artist,
+    thumbnail: song.thumbnail || null,
+    downloadedAt: Date.now(),
+  };
+  writeIndex(index);
+}
+
+export async function removeDownload(song) {
+  const key = songKey(song);
+  const index = readIndex();
+  const entry = index[key];
+  if (!entry) return;
+  try { await Filesystem.deleteFile({ path: entry.path, directory: DIR }); } catch {}
+  delete index[key];
+  writeIndex(index);
+}

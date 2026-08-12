@@ -2,11 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { getApiBase } from '../config.js';
 import { api } from '../api.js';
 import Toast, { useToast } from './Toast.jsx';
+import DownloadButton from './DownloadButton.jsx';
 import './YouTubeSearch.css';
 
 const API = getApiBase();
 
-export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAddToPlaylist }) {
+const toSong = (item) => ({
+  type: 'youtube',
+  videoId: item.videoId,
+  title: item.title,
+  artist: item.channel,
+  thumbnail: item.thumbnail,
+  duration: item.duration,
+});
+
+export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAddToPlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -155,6 +165,13 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
             >
               {addedIds.has(item.videoId) ? 'Añadida' : '+'}
             </button>
+            <DownloadButton
+              song={toSong(item)}
+              isDownloaded={isDownloaded}
+              downloadingKey={downloadingKey}
+              onDownload={onDownload}
+              onRemoveDownload={onRemoveDownload}
+            />
           </div>
         ))}
         {results.length === 0 && !loading && (

@@ -187,6 +187,12 @@
   font-weight: 700;
 }
 
+.col-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .add-lib-btn {
   width: 28px;
   height: 28px;
@@ -209,6 +215,14 @@
   border-color: var(--accent);
   color: #000;
   box-shadow: var(--glow);
+}
+
+.col-actions .download-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.song-row:hover .col-actions .download-btn {
+  opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -251,11 +265,11 @@
   }
 
   .song-list-header {
-    grid-template-columns: 28px 1fr 44px 36px;
+    grid-template-columns: 28px 1fr 44px 68px;
   }
 
   .song-row {
-    grid-template-columns: 28px 1fr 44px 36px;
+    grid-template-columns: 28px 1fr 44px 68px;
     padding: 8px 10px;
     align-items: center;
     gap: 4px;
@@ -270,7 +284,6 @@
 
   .col-actions {
     width: auto;
-    display: flex;
     justify-content: center;
   }
 
@@ -279,5 +292,9 @@
     width: 30px;
     height: 30px;
     font-size: 1.2rem;
+  }
+
+  .col-actions .download-btn {
+    opacity: 1;
   }
 }
