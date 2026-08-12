@@ -38,14 +38,16 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
   useEffect(() => {
     const loadPopular = async () => {
       setLoadingPopular(true);
-      const shuffled = [...POPULAR_ARTISTS].sort(() => Math.random() - 0.5).slice(0, 12);
+      const shuffled = [...POPULAR_ARTISTS].sort(() => Math.random() - 0.5);
       try {
         const res = await fetch(`${API}/youtube/artists`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ names: shuffled }),
         });
-        setPopularArtists(await res.json());
+        const data = await res.json();
+        // Mostramos los primeros 20 artistas, y hay un botón "Cargar más" para los restantes
+        setPopularArtists(data.slice(0, 20));
       } catch {
         setPopularArtists([]);
       }
@@ -294,6 +296,24 @@ export default function Artists({ songs, onPlay, onAddToLibrary }) {
               <span className="artist-card-count">{artist.songCount} temas</span>
             </button>
           ))}
+          {popularArtists.length >= 20 && (
+            <button
+              className="artist-card"
+              style={{ width: '100%', marginTop: 16, textAlign: 'center' }}
+              onClick={() => {
+                // Slice los primeros 20 y deja los demás para un segundo clic
+                const currentCount = popularArtists.length;
+                if (currentCount > 20) {
+                  setPopularArtists(popularArtists.slice(0, 20));
+                } else {
+                  // Si ya estamos en los 20, no hacemos nada (o podríamos cargar más si tuviéramos más datos)
+                  setPopularArtists(popularArtists);
+                }
+              }}
+            >
+              {popularArtists.length >= 20 ? 'Cargar más artistas' : ''}
+            </button>
+          )}
         </div>
       )}
     </div>
