@@ -121,6 +121,12 @@
     background: var(--bg-hover);
   }
 
+  .mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   .mobile-nav {
     display: flex;
     gap: 6px;

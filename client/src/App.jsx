@@ -437,11 +437,18 @@ export default function App() {
           <AppVersion />
         </div>
         {user && (
-          <button className="mobile-logout-btn" onClick={handleLogout}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-            </svg>
-          </button>
+          <div className="mobile-header-actions">
+            <button className="mobile-logout-btn" onClick={() => setShowEq(true)} title="Ecualizador">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20h4V4h-4v16zm-6 0h4v-8H4v8zm12-8v8h4v-8h-4z"/>
+              </svg>
+            </button>
+            <button className="mobile-logout-btn" onClick={handleLogout} title="Cerrar sesión">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+              </svg>
+            </button>
+          </div>
         )}
       </div>
 

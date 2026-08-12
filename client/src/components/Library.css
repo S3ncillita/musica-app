@@ -232,6 +232,10 @@
     width: auto;
   }
 
+  .library-actions .icon-btn {
+    display: none;
+  }
+
   .btn-primary {
     padding: 8px 14px;
     font-size: 0.8rem;
