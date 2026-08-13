@@ -44,3 +44,6 @@ server/stdout.log
 
 # Paquete del módulo de actualización
 /update-module.zip
+
+# Notas personales (no compartir)
+/NOTAS.md

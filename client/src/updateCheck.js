@@ -46,6 +46,15 @@ function downloadBlob(url, onProgress) {
   });
 }
 
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = () => reject(new Error('No se pudo convertir el archivo'));
+    reader.readAsDataURL(blob);
+  });
+}
+
 function tagError(step, err) {
   const msg = err?.message || err?.errorMessage || (typeof err === 'string' ? err : JSON.stringify(err)) || 'desconocido';
   const tagged = new Error(`[${step}] ${msg}`);
@@ -66,7 +75,8 @@ async function downloadAndInstallApk(url, onProgress) {
 
   const path = 'vybe-update.apk';
   try {
-    await Filesystem.writeFile({ path, directory: Directory.Cache, data: blob });
+    const base64 = await blobToBase64(blob);
+    await Filesystem.writeFile({ path, directory: Directory.Cache, data: base64 });
   } catch (err) {
     throw tagError('guardar archivo', err);
   }

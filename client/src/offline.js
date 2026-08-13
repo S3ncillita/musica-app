@@ -13,6 +13,15 @@ function writeIndex(index) {
   localStorage.setItem(INDEX_KEY, JSON.stringify(index));
 }
 
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = () => reject(new Error('No se pudo convertir el archivo'));
+    reader.readAsDataURL(blob);
+  });
+}
+
 export function songKey(song) {
   return (song.videoId || song.type === 'youtube') ? `yt_${song.videoId}` : `local_${song.id}`;
 }
@@ -46,8 +55,9 @@ export async function downloadSong(song, apiBase) {
   const ext = isYt ? 'm4a' : (song.filename?.split('.').pop() || 'mp3');
   const path = `${FOLDER}/${key}.${ext}`;
 
+  const base64 = await blobToBase64(blob);
   await Filesystem.mkdir({ path: FOLDER, directory: DIR, recursive: true }).catch(() => {});
-  await Filesystem.writeFile({ path, directory: DIR, data: blob });
+  await Filesystem.writeFile({ path, directory: DIR, data: base64 });
 
   const index = readIndex();
   index[key] = {
