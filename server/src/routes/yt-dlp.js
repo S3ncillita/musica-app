@@ -85,21 +85,32 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const urlCache = new Map();
 
+const AUDIO_FORMATS = ['bestaudio[ext=m4a]/bestaudio', 'bestaudio/best', 'best'];
+
 async function getDirectUrl(videoId) {
   const cached = urlCache.get(videoId);
   if (cached && Date.now() - cached.at < 4 * 60 * 60 * 1000) {
     return cached.url;
   }
-  const { stdout } = await runYtDlpAsync([
-    '-f', 'bestaudio[ext=m4a]/bestaudio',
-    '--no-playlist',
-    '--get-url',
-    `https://www.youtube.com/watch?v=${videoId}`
-  ], { timeout: 30000 });
-  const url = stdout.trim().split('\n')[0];
-  if (!url) throw new Error('No se obtuvo URL de audio');
-  urlCache.set(videoId, { url, at: Date.now() });
-  return url;
+  let lastErr;
+  for (const format of AUDIO_FORMATS) {
+    try {
+      const { stdout } = await runYtDlpAsync([
+        '-f', format,
+        '--no-playlist',
+        '--get-url',
+        `https://www.youtube.com/watch?v=${videoId}`
+      ], { timeout: 30000 });
+      const url = stdout.trim().split('\n')[0];
+      if (url) {
+        urlCache.set(videoId, { url, at: Date.now() });
+        return url;
+      }
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr || new Error('No se obtuvo URL de audio');
 }
 
 router.get('/stream/:videoId', async (req, res) => {

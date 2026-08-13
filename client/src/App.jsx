@@ -697,7 +697,10 @@ export default function App() {
         onStateChange={(state) => {
           if (state === 0) nextSong();
         }}
-        onError={() => {}}
+        onError={() => {
+          showToast('⚠ No se pudo reproducir esta canción');
+          nextSong();
+        }}
       />
     </div>
   );
