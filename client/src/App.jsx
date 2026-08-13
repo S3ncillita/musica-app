@@ -50,6 +50,7 @@ export default function App() {
   const [ytOfflineSrc, setYtOfflineSrc] = useState(null);
   const [ytMuted, setYtMuted] = useState(true);
   const [downloadingKey, setDownloadingKey] = useState(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [offlineVersion, setOfflineVersion] = useState(0);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
   const [showEq, setShowEq] = useState(false);
@@ -393,12 +394,15 @@ export default function App() {
   const downloadSong = async (song) => {
     const key = offline.songKey(song);
     setDownloadingKey(key);
+    setDownloadProgress(0);
     try {
-      await offline.downloadSong(song, API);
+      await offline.downloadSong(song, API, (pct) => setDownloadProgress(Math.round(pct * 100)));
     } catch (e) {
       console.error('DOWNLOAD ERROR:', e);
+      showToast('⚠ No se pudo descargar la canción');
     }
     setDownloadingKey(null);
+    setDownloadProgress(0);
     setOfflineVersion(v => v + 1);
   };
 
@@ -584,6 +588,7 @@ export default function App() {
             onRemoveDownload={removeDownload}
             isDownloaded={offline.isDownloaded}
             downloadingKey={downloadingKey}
+            downloadProgress={downloadProgress}
             offlineVersion={offlineVersion}
           />
         )}
@@ -597,6 +602,7 @@ export default function App() {
             onRemoveDownload={removeDownload}
             isDownloaded={offline.isDownloaded}
             downloadingKey={downloadingKey}
+            downloadProgress={downloadProgress}
           />
         )}
         {currentView === 'artists' && (
@@ -610,6 +616,7 @@ export default function App() {
             onRemoveDownload={removeDownload}
             isDownloaded={offline.isDownloaded}
             downloadingKey={downloadingKey}
+            downloadProgress={downloadProgress}
           />
         )}
         {currentView === 'trending' && (
@@ -622,6 +629,7 @@ export default function App() {
             onRemoveDownload={removeDownload}
             isDownloaded={offline.isDownloaded}
             downloadingKey={downloadingKey}
+            downloadProgress={downloadProgress}
           />
         )}
         {currentView === 'playlist' && currentPlaylistId && (
@@ -655,6 +663,7 @@ export default function App() {
         onRemoveDownload={removeDownload}
         isDownloaded={offline.isDownloaded}
         downloadingKey={downloadingKey}
+            downloadProgress={downloadProgress}
         offlineVersion={offlineVersion}
       />
       {showFullPlayer && currentSong && (

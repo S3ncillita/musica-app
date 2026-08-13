@@ -191,6 +191,16 @@
   opacity: 0.6;
   cursor: default;
 }
+.download-btn.downloading {
+  color: var(--accent);
+  opacity: 1;
+}
+.download-btn-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
 .download-btn .spin {
   animation: download-spin 0.8s linear infinite;
 }

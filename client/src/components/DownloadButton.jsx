@@ -1,4 +1,4 @@
-export default function DownloadButton({ song, isDownloaded, downloadingKey, onDownload, onRemoveDownload, className = '', size = 16 }) {
+export default function DownloadButton({ song, isDownloaded, downloadingKey, downloadProgress = 0, onDownload, onRemoveDownload, className = '', size = 16 }) {
   if (!song) return null;
   const key = song.videoId ? `yt_${song.videoId}` : `local_${song.id}`;
   const downloaded = isDownloaded?.(song);
@@ -6,18 +6,16 @@ export default function DownloadButton({ song, isDownloaded, downloadingKey, onD
 
   return (
     <button
-      className={`download-btn ${downloaded ? 'downloaded' : ''} ${className}`}
+      className={`download-btn ${downloaded ? 'downloaded' : ''} ${downloading ? 'downloading' : ''} ${className}`}
       disabled={downloading}
-      title={downloaded ? 'Quitar descarga' : 'Descargar para escuchar offline'}
+      title={downloaded ? 'Quitar descarga' : downloading ? `Descargando... ${downloadProgress}%` : 'Descargar para escuchar offline'}
       onClick={(e) => {
         e.stopPropagation();
         downloaded ? onRemoveDownload?.(song) : onDownload?.(song);
       }}
     >
       {downloading ? (
-        <svg className="spin" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
-        </svg>
+        <span className="download-btn-pct" style={{ fontSize: size * 0.55 }}>{downloadProgress}%</span>
       ) : downloaded ? (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
           <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>

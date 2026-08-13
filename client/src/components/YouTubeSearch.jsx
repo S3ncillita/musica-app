@@ -16,7 +16,7 @@ const toSong = (item) => ({
   duration: item.duration,
 });
 
-export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAddToPlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey }) {
+export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAddToPlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -177,6 +177,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
                 song={toSong(item)}
                 isDownloaded={isDownloaded}
                 downloadingKey={downloadingKey}
+                    downloadProgress={downloadProgress}
                 onDownload={onDownload}
                 onRemoveDownload={onRemoveDownload}
               />

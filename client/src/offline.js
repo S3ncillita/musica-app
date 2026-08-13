@@ -22,6 +22,26 @@ function blobToBase64(blob) {
   });
 }
 
+function downloadBlob(url, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'blob';
+    xhr.onprogress = (e) => {
+      if (e.lengthComputable) onProgress?.(e.loaded / e.total);
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        resolve(xhr.response);
+      } else {
+        reject(new Error(`Descarga falló (HTTP ${xhr.status})`));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Error de red al descargar'));
+    xhr.send();
+  });
+}
+
 export function songKey(song) {
   return (song.videoId || song.type === 'youtube') ? `yt_${song.videoId}` : `local_${song.id}`;
 }
@@ -45,13 +65,11 @@ export async function getOfflineSrc(song) {
   }
 }
 
-export async function downloadSong(song, apiBase) {
+export async function downloadSong(song, apiBase, onProgress) {
   const key = songKey(song);
   const isYt = song.videoId || song.type === 'youtube';
   const url = isYt ? `${apiBase}/ytdlp/stream/${song.videoId}` : `${apiBase}/stream/${song.id}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error('No se pudo descargar la canción');
-  const blob = await res.blob();
+  const blob = await downloadBlob(url, onProgress);
   const ext = isYt ? 'm4a' : (song.filename?.split('.').pop() || 'mp3');
   const path = `${FOLDER}/${key}.${ext}`;
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import DownloadButton from './DownloadButton.jsx';
 import './Library.css';
 
-export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey }) {
+export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress }) {
   const [search, setSearch] = useState('');
   const [contextMenu, setContextMenu] = useState(null);
 
@@ -93,6 +93,7 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
                   song={song}
                   isDownloaded={isDownloaded}
                   downloadingKey={downloadingKey}
+                    downloadProgress={downloadProgress}
                   onDownload={onDownload}
                   onRemoveDownload={onRemoveDownload}
                 />
