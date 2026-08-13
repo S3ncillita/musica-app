@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import DownloadButton from './DownloadButton.jsx';
 import './Player.css';
 
-export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onOpenFullPlayer, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress }) {
+export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onOpenFullPlayer, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
@@ -147,6 +147,7 @@ export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onToggl
           isDownloaded={isDownloaded}
           downloadingKey={downloadingKey}
                     downloadProgress={downloadProgress}
+                    onCancelDownload={onCancelDownload}
           onDownload={onDownload}
           onRemoveDownload={onRemoveDownload}
           className="ctrl-btn"

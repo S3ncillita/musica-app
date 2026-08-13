@@ -16,7 +16,7 @@ const toSong = (song) => ({
   duration: song.duration,
 });
 
-export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress }) {
+export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPlaylist, setExpandedPlaylist] = useState(null);
@@ -160,6 +160,7 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, onAddToPla
                         isDownloaded={isDownloaded}
                         downloadingKey={downloadingKey}
                     downloadProgress={downloadProgress}
+                    onCancelDownload={onCancelDownload}
                         onDownload={onDownload}
                         onRemoveDownload={onRemoveDownload}
                       />

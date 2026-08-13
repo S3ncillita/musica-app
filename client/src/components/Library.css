@@ -192,8 +192,22 @@
   cursor: default;
 }
 .download-btn.downloading {
-  color: var(--accent);
+  color: #fff;
   opacity: 1;
+}
+.download-btn-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.download-btn-x {
+  display: none;
+}
+.download-btn.downloading:hover .download-btn-pct-text {
+  display: none;
+}
+.download-btn.downloading:hover .download-btn-x {
+  display: block;
 }
 .download-btn-pct {
   font-family: 'JetBrains Mono', monospace;

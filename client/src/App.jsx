@@ -50,7 +50,7 @@ export default function App() {
   const [ytOfflineSrc, setYtOfflineSrc] = useState(null);
   const [ytMuted, setYtMuted] = useState(true);
   const [downloadingKey, setDownloadingKey] = useState(null);
-  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadProgress, setDownloadProgress] = useState({ pct: 0, loaded: 0, total: 0 });
   const [offlineVersion, setOfflineVersion] = useState(0);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
   const [showEq, setShowEq] = useState(false);
@@ -394,16 +394,24 @@ export default function App() {
   const downloadSong = async (song) => {
     const key = offline.songKey(song);
     setDownloadingKey(key);
-    setDownloadProgress(0);
+    setDownloadProgress({ pct: 0, loaded: 0, total: 0 });
     try {
-      await offline.downloadSong(song, API, (pct) => setDownloadProgress(Math.round(pct * 100)));
+      await offline.downloadSong(song, API, ({ loaded, total, pct }) => {
+        setDownloadProgress({ pct: Math.round(pct * 100), loaded, total });
+      });
     } catch (e) {
-      console.error('DOWNLOAD ERROR:', e);
-      showToast('⚠ No se pudo descargar la canción');
+      if (e.name !== 'AbortError') {
+        console.error('DOWNLOAD ERROR:', e);
+        showToast('⚠ No se pudo descargar la canción');
+      }
     }
     setDownloadingKey(null);
-    setDownloadProgress(0);
+    setDownloadProgress({ pct: 0, loaded: 0, total: 0 });
     setOfflineVersion(v => v + 1);
+  };
+
+  const cancelDownload = () => {
+    offline.cancelDownload();
   };
 
   const removeDownload = async (song) => {
@@ -589,6 +597,7 @@ export default function App() {
             isDownloaded={offline.isDownloaded}
             downloadingKey={downloadingKey}
             downloadProgress={downloadProgress}
+            onCancelDownload={cancelDownload}
             offlineVersion={offlineVersion}
           />
         )}
@@ -603,6 +612,7 @@ export default function App() {
             isDownloaded={offline.isDownloaded}
             downloadingKey={downloadingKey}
             downloadProgress={downloadProgress}
+            onCancelDownload={cancelDownload}
           />
         )}
         {currentView === 'artists' && (
@@ -617,6 +627,7 @@ export default function App() {
             isDownloaded={offline.isDownloaded}
             downloadingKey={downloadingKey}
             downloadProgress={downloadProgress}
+            onCancelDownload={cancelDownload}
           />
         )}
         {currentView === 'trending' && (
@@ -630,6 +641,7 @@ export default function App() {
             isDownloaded={offline.isDownloaded}
             downloadingKey={downloadingKey}
             downloadProgress={downloadProgress}
+            onCancelDownload={cancelDownload}
           />
         )}
         {currentView === 'playlist' && currentPlaylistId && (
@@ -664,6 +676,7 @@ export default function App() {
         isDownloaded={offline.isDownloaded}
         downloadingKey={downloadingKey}
             downloadProgress={downloadProgress}
+            onCancelDownload={cancelDownload}
         offlineVersion={offlineVersion}
       />
       {showFullPlayer && currentSong && (

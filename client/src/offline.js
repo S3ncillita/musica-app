@@ -22,22 +22,31 @@ function blobToBase64(blob) {
   });
 }
 
+let activeXhr = null;
+
+export function cancelDownload() {
+  activeXhr?.abort();
+}
+
 function downloadBlob(url, onProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
+    activeXhr = xhr;
     xhr.open('GET', url, true);
     xhr.responseType = 'blob';
     xhr.onprogress = (e) => {
-      if (e.lengthComputable) onProgress?.(e.loaded / e.total);
+      if (e.lengthComputable) onProgress?.({ loaded: e.loaded, total: e.total, pct: e.loaded / e.total });
     };
     xhr.onload = () => {
+      activeXhr = null;
       if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
         resolve(xhr.response);
       } else {
         reject(new Error(`Descarga falló (HTTP ${xhr.status})`));
       }
     };
-    xhr.onerror = () => reject(new Error('Error de red al descargar'));
+    xhr.onerror = () => { activeXhr = null; reject(new Error('Error de red al descargar')); };
+    xhr.onabort = () => { activeXhr = null; reject(new DOMException('Descarga cancelada', 'AbortError')); };
     xhr.send();
   });
 }

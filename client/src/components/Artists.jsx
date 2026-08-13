@@ -16,7 +16,7 @@ const toSong = (item) => ({
   duration: item.duration,
 });
 
-export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress }) {
+export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [ytSongs, setYtSongs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -246,6 +246,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onR
                     isDownloaded={isDownloaded}
                     downloadingKey={downloadingKey}
                     downloadProgress={downloadProgress}
+                    onCancelDownload={onCancelDownload}
                     onDownload={onDownload}
                     onRemoveDownload={onRemoveDownload}
                   />
