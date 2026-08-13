@@ -95,3 +95,13 @@
   color: #8d7aa8;
   text-align: right;
 }
+
+.update-progress-label.update-progress-error {
+  text-align: left;
+  color: #ff6b6b;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  word-break: break-word;
+  white-space: normal;
+}

@@ -26,34 +26,66 @@ export async function checkUpdate({ endpoint = '/api/update', currentVersion, fo
   }
 }
 
+function downloadBlob(url, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'blob';
+    xhr.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(e.loaded / e.total);
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        resolve(xhr.response);
+      } else {
+        reject(new Error(`Descarga falló (HTTP ${xhr.status})`));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Error de red al descargar'));
+    xhr.send();
+  });
+}
+
+function tagError(step, err) {
+  const msg = err?.message || err?.errorMessage || (typeof err === 'string' ? err : JSON.stringify(err)) || 'desconocido';
+  const tagged = new Error(`[${step}] ${msg}`);
+  tagged.cause = err;
+  return tagged;
+}
+
 async function downloadAndInstallApk(url, onProgress) {
   const { Filesystem, Directory } = await import('@capacitor/filesystem');
   const { FileOpener } = await import('@capacitor-community/file-opener');
 
-  const res = await fetch(url);
-  if (!res.ok || !res.body) throw new Error('No se pudo descargar la actualización');
-  const total = Number(res.headers.get('content-length')) || 0;
-
-  const reader = res.body.getReader();
-  const chunks = [];
-  let received = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    received += value.length;
-    if (total) onProgress(received / total);
+  let blob;
+  try {
+    blob = await downloadBlob(url, onProgress);
+  } catch (err) {
+    throw tagError('descarga', err);
   }
 
-  const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' });
   const path = 'vybe-update.apk';
-  await Filesystem.writeFile({ path, directory: Directory.Cache, data: blob });
-  const { uri } = await Filesystem.getUri({ path, directory: Directory.Cache });
+  try {
+    await Filesystem.writeFile({ path, directory: Directory.Cache, data: blob });
+  } catch (err) {
+    throw tagError('guardar archivo', err);
+  }
 
-  await FileOpener.open({
-    filePath: uri,
-    contentType: 'application/vnd.android.package-archive',
-  });
+  let uri;
+  try {
+    ({ uri } = await Filesystem.getUri({ path, directory: Directory.Cache }));
+  } catch (err) {
+    throw tagError('obtener ruta', err);
+  }
+
+  try {
+    await FileOpener.open({
+      filePath: uri,
+      contentType: 'application/vnd.android.package-archive',
+    });
+  } catch (err) {
+    throw tagError('abrir instalador', err);
+  }
 }
 
 let activePrompt = null;
@@ -108,7 +140,9 @@ export function showUpdatePrompt(info) {
       console.error('[update] descarga falló:', err);
       downloadBtn.disabled = false;
       downloadBtn.textContent = 'Reintentar';
-      progressLabel.textContent = 'Error al descargar';
+      const detail = err?.message || err?.errorMessage || (typeof err === 'string' ? err : JSON.stringify(err));
+      progressLabel.textContent = `Error: ${detail || 'desconocido'}`;
+      progressLabel.classList.add('update-progress-error');
     }
   });
   overlay.querySelector('.update-later')?.addEventListener('click', close);
