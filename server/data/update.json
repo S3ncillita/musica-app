@@ -1,6 +1,6 @@
 {
-  "version": "1.3.1",
+  "version": "1.3.2",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Prueba del nuevo flujo de actualización con barra de progreso.",
+  "notes": "Prueba del flujo de actualización abriendo el navegador del sistema.",
   "force": false
 }
