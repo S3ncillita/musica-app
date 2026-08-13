@@ -31,6 +31,8 @@ let activePrompt = null;
 export function showUpdatePrompt(info) {
   if (activePrompt) return activePrompt;
 
+  const isNative = !!(window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android');
+
   const overlay = document.createElement('div');
   overlay.className = 'update-overlay';
   overlay.innerHTML = `
@@ -38,7 +40,10 @@ export function showUpdatePrompt(info) {
       <h2 class="update-title">Nueva versión disponible</h2>
       <p class="update-version">Versión ${info.version}</p>
       ${info.notes ? `<p class="update-notes">${info.notes}</p>` : ''}
-      <p class="update-progress-label" style="display:none">Se abrió la descarga. Revisá la barra de notificaciones de tu celular para instalarla cuando termine.</p>
+      <div class="update-progress-wrap" style="display:none">
+        <div class="update-progress-bar"><div class="update-progress-fill"></div></div>
+        <div class="update-progress-label">0%</div>
+      </div>
       <div class="update-actions">
         <button type="button" class="update-btn update-download">Actualizar</button>
         ${info.force ? '' : '<button type="button" class="update-btn update-later">Ahora no</button>'}
@@ -46,26 +51,41 @@ export function showUpdatePrompt(info) {
     </div>`;
   document.body.appendChild(overlay);
 
-  const isNative = !!(window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android');
   const downloadBtn = overlay.querySelector('.update-download');
-  const hint = overlay.querySelector('.update-progress-label');
+  const progressWrap = overlay.querySelector('.update-progress-wrap');
+  const progressFill = overlay.querySelector('.update-progress-fill');
+  const progressLabel = overlay.querySelector('.update-progress-label');
 
   downloadBtn.addEventListener('click', async () => {
-    if (isNative) {
-      try {
-        const { Browser } = await import('@capacitor/browser');
-        await Browser.open({ url: info.url });
-      } catch (err) {
-        console.error('[update] no se pudo abrir el navegador:', err);
-        window.open(info.url, '_blank');
-      }
-    } else {
+    if (!isNative) {
       window.open(info.url, '_blank');
+      close();
+      return;
     }
     downloadBtn.disabled = true;
     downloadBtn.textContent = 'Descargando...';
-    hint.style.display = 'block';
+    progressWrap.style.display = 'block';
     overlay.querySelector('.update-later')?.remove();
+    try {
+      const ApkUpdater = (await import('cordova-plugin-apkupdater')).default;
+      await ApkUpdater.download(info.url, {
+        onDownloadProgress: (e) => {
+          const p = Math.round(e.progress);
+          progressFill.style.width = `${p}%`;
+          progressLabel.textContent = `${p}%`;
+        },
+      });
+      downloadBtn.textContent = 'Instalando...';
+      await ApkUpdater.install();
+      close();
+    } catch (err) {
+      console.error('[update] actualización falló:', err);
+      downloadBtn.disabled = false;
+      downloadBtn.textContent = 'Reintentar';
+      const detail = err?.message || (typeof err === 'string' ? err : JSON.stringify(err));
+      progressLabel.textContent = `Error: ${detail || 'desconocido'}`;
+      progressLabel.classList.add('update-progress-error');
+    }
   });
   overlay.querySelector('.update-later')?.addEventListener('click', close);
   overlay.addEventListener('click', (e) => {
