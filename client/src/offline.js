@@ -22,33 +22,48 @@ function blobToBase64(blob) {
   });
 }
 
-let activeXhr = null;
+let activeController = null;
 
 export function cancelDownload() {
-  activeXhr?.abort();
+  activeController?.abort();
 }
 
-function downloadBlob(url, onProgress) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    activeXhr = xhr;
-    xhr.open('GET', url, true);
-    xhr.responseType = 'blob';
-    xhr.onprogress = (e) => {
-      if (e.lengthComputable) onProgress?.({ loaded: e.loaded, total: e.total, pct: e.loaded / e.total });
-    };
-    xhr.onload = () => {
-      activeXhr = null;
-      if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
-        resolve(xhr.response);
-      } else {
-        reject(new Error(`Descarga falló (HTTP ${xhr.status})`));
-      }
-    };
-    xhr.onerror = () => { activeXhr = null; reject(new Error('Error de red al descargar')); };
-    xhr.onabort = () => { activeXhr = null; reject(new DOMException('Descarga cancelada', 'AbortError')); };
-    xhr.send();
-  });
+async function downloadBlob(url, onProgress) {
+  const controller = new AbortController();
+  activeController = controller;
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) throw new Error(`Descarga falló (HTTP ${res.status})`);
+
+    const total = Number(res.headers.get('content-length')) || 0;
+    const contentType = res.headers.get('content-type') || 'application/octet-stream';
+
+    if (!res.body || !res.body.getReader) {
+      // Fallback para entornos sin soporte de streams (poco común)
+      const blob = await res.blob();
+      onProgress?.({ loaded: blob.size, total: blob.size || total, pct: 1 });
+      return blob;
+    }
+
+    const reader = res.body.getReader();
+    const chunks = [];
+    let loaded = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      loaded += value.length;
+      onProgress?.({ loaded, total, pct: total ? loaded / total : 0 });
+    }
+    return new Blob(chunks, { type: contentType });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new DOMException('Descarga cancelada', 'AbortError');
+    }
+    throw err;
+  } finally {
+    activeController = null;
+  }
 }
 
 export function songKey(song) {

@@ -398,22 +398,26 @@ export default function App() {
     const mb = (n) => (n / (1024 * 1024)).toFixed(1);
     const start = performance.now();
     showToast('⬇ Descargando...');
-    let lastShownPct = -1;
+    let latest = { loaded: 0, total: 0, pct: 0 };
+    const heartbeat = setInterval(() => {
+      if (latest.total > 0) {
+        showToast(`⬇ Descargando... ${mb(latest.loaded)}/${mb(latest.total)} MB (${latest.pct}%)`);
+      }
+    }, 500);
     try {
       await offline.downloadSong(song, API, ({ loaded, total, pct }) => {
         const roundedPct = Math.round(pct * 100);
+        latest = { loaded, total, pct: roundedPct };
         setDownloadProgress({ pct: roundedPct, loaded, total });
-        if (roundedPct >= lastShownPct + 10 || roundedPct === 100) {
-          lastShownPct = roundedPct;
-          showToast(`⬇ Descargando... ${mb(loaded)}/${mb(total)} MB (${roundedPct}%)`);
-        }
       });
+      clearInterval(heartbeat);
       // Si fue muy rápido (ej. red local), damos un instante para poder leer el progreso
       // antes de reemplazarlo con el mensaje de "descargada".
       const elapsed = performance.now() - start;
       if (elapsed < 1200) await new Promise(r => setTimeout(r, 1200 - elapsed));
       showToast('✓ Canción descargada');
     } catch (e) {
+      clearInterval(heartbeat);
       if (e.name !== 'AbortError') {
         console.error('DOWNLOAD ERROR:', e);
         showToast('⚠ No se pudo descargar la canción');
