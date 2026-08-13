@@ -34,8 +34,8 @@ router.post('/register', async (req, res) => {
       'INSERT INTO users (id, username, email, password, createdAt) VALUES (?, ?, ?, ?, ?)',
       [user.id, user.username, user.email, user.password, user.createdAt]
     );
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, username: user.username } });
+    const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
   } catch (err) {
     console.error('register error:', err.message);
     res.status(500).json({ error: 'Error al registrar' });
@@ -57,8 +57,8 @@ router.post('/login', async (req, res) => {
     if (!valid) {
       return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
     }
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, username: user.username } });
+    const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
   } catch (err) {
     console.error('login error:', err.message);
     res.status(500).json({ error: 'Error al iniciar sesión' });
@@ -72,7 +72,7 @@ router.get('/me', (req, res) => {
   }
   try {
     const decoded = jwt.verify(auth.split(' ')[1], JWT_SECRET);
-    res.json({ user: { id: decoded.id, username: decoded.username } });
+    res.json({ user: { id: decoded.id, username: decoded.username, email: decoded.email } });
   } catch {
     res.status(401).json({ error: 'Token inválido' });
   }

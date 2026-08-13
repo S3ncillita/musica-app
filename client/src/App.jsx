@@ -538,7 +538,7 @@ export default function App() {
         <>
       <Toast message={toast} />
       <div className="mobile-header">
-        <div className="mobile-logo">
+        <div className="mobile-logo" onClick={() => navigateTo('library')} style={{ cursor: 'pointer' }}>
           <img src={vybeIcon} alt="" width="24" height="24" style={{ borderRadius: 6 }} />
           <span>Vybe</span>
           <AppVersion />

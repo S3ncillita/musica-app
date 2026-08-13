@@ -6,6 +6,7 @@ import './Sidebar.css';
 export default function Sidebar({ playlists, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewPlaylist, onCreatePlaylist, user, onLogin, onLogout }) {
   const [newName, setNewName] = useState('');
   const [showInput, setShowInput] = useState(false);
+  const [showUserCard, setShowUserCard] = useState(false);
 
   const handleCreate = () => {
     if (newName.trim()) {
@@ -17,20 +18,36 @@ export default function Sidebar({ playlists, currentView, isOpen, onViewLibrary,
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="sidebar-logo">
+      <div className="sidebar-logo" onClick={onViewLibrary} style={{ cursor: 'pointer' }}>
         <img src={vybeLogo} alt="Vybe" className="sidebar-logo-img" />
         <AppVersion />
       </div>
 
       <div className="sidebar-user">
         {user ? (
-          <div className="sidebar-user-info">
-            <div className="sidebar-user-avatar">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
+          <div className="sidebar-user-wrap">
+            <div className="sidebar-user-info" onClick={() => setShowUserCard(!showUserCard)} style={{ cursor: 'pointer' }}>
+              <div className="sidebar-user-avatar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </div>
+              <span className="sidebar-user-name">{user.username}</span>
             </div>
-            <span className="sidebar-user-name">{user.username}</span>
+            {showUserCard && (
+              <>
+              <div className="context-menu-backdrop" onClick={() => setShowUserCard(false)} />
+              <div className="sidebar-user-card">
+                <div className="sidebar-user-avatar sidebar-user-avatar-lg">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+                <span className="sidebar-user-card-name">{user.username}</span>
+                <span className="sidebar-user-card-email">{user.email || 'Sin correo registrado'}</span>
+              </div>
+              </>
+            )}
           </div>
         ) : (
           <button className="sidebar-login-btn" onClick={onLogin}>
