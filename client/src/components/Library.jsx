@@ -103,6 +103,8 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
       )}
 
       {contextMenu && (
+        <>
+        <div className="context-menu-backdrop" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }} />
         <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={() => setContextMenu(null)}>
           <button onClick={() => { navigator.clipboard.writeText(contextMenu.song.title); setContextMenu(null); }}>
@@ -129,6 +131,7 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
             Eliminar
           </button>
         </div>
+        </>
       )}
     </div>
   );

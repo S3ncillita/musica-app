@@ -195,6 +195,8 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
       </div>
 
       {contextMenu && (
+        <>
+        <div className="context-menu-backdrop" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }} />
         <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={() => setContextMenu(null)}>
           <button onClick={() => { playItem(contextMenu.item); setContextMenu(null); }}>
@@ -221,6 +223,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
             ))}
           </div>
         </div>
+        </>
       )}
     </div>
   );
