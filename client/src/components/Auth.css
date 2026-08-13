@@ -78,6 +78,46 @@
   text-align: left;
 }
 
+.auth-info {
+  color: var(--accent);
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.auth-question {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  text-align: left;
+}
+
+.auth-modal select {
+  padding: 12px 4px;
+  border-radius: 0;
+  border: 1px solid var(--border);
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-left-color: transparent;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.auth-link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  margin-top: 2px;
+}
+.auth-link:hover {
+  color: var(--accent);
+}
+
 .auth-submit {
   padding: 12px;
   border-radius: 4px;
