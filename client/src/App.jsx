@@ -395,9 +395,16 @@ export default function App() {
     const key = offline.songKey(song);
     setDownloadingKey(key);
     setDownloadProgress({ pct: 0, loaded: 0, total: 0 });
+    let lastShownPct = -1;
     try {
       await offline.downloadSong(song, API, ({ loaded, total, pct }) => {
-        setDownloadProgress({ pct: Math.round(pct * 100), loaded, total });
+        const roundedPct = Math.round(pct * 100);
+        setDownloadProgress({ pct: roundedPct, loaded, total });
+        if (roundedPct >= lastShownPct + 10 || roundedPct === 100) {
+          lastShownPct = roundedPct;
+          const mb = (n) => (n / (1024 * 1024)).toFixed(1);
+          showToast(`⬇ Descargando... ${mb(loaded)}/${mb(total)} MB (${roundedPct}%)`);
+        }
       });
     } catch (e) {
       if (e.name !== 'AbortError') {
