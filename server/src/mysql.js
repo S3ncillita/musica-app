@@ -21,11 +21,23 @@ export async function initDb() {
       username VARCHAR(50) NOT NULL,
       email VARCHAR(255),
       password VARCHAR(100) NOT NULL,
+      securityQuestion VARCHAR(255),
+      securityAnswer VARCHAR(100),
       createdAt VARCHAR(40),
       UNIQUE KEY uq_username (username)
     )
   `);
+  await ensureColumn(conn, 'users', 'securityQuestion', 'VARCHAR(255)');
+  await ensureColumn(conn, 'users', 'securityAnswer', 'VARCHAR(100)');
   await conn.end();
+}
+
+async function ensureColumn(conn, table, column, definition) {
+  try {
+    await conn.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  } catch (err) {
+    if (err.code !== 'ER_DUP_FIELDNAME') throw err;
+  }
 }
 
 export const pool = mysql.createPool({

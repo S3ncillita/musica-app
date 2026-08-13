@@ -114,6 +114,21 @@ const DISCOVER_QUERIES = [
   'pop internacional', 'rap hits', 'bachata', 'música en vivo',
 ];
 
+const NON_ARTIST_CHANNEL_PATTERN = new RegExp(
+  [
+    'mix', 'playlist', 'compilation', 'compilaci[oó]n', 'top\\s?\\d', 'ranking',
+    'radio', 'party', 'zona', 'lyrics?', 'letras?', 'karaoke', 'instrumental',
+    'reaction', 'tiktok', 'shorts', 'meme', '\\bdj\\b', 'oficial\\s?music',
+    'record(s|ing)?', 'network', 'channel', 'canal', 'colecci[oó]n', 'grandes\\s?exitos',
+  ].join('|'),
+  'i'
+);
+
+function looksLikeArtist(channelName) {
+  if (!channelName || channelName === 'Desconocido') return false;
+  return !NON_ARTIST_CHANNEL_PATTERN.test(channelName);
+}
+
 router.get('/artists/discover', async (req, res) => {
   const { token, seed } = req.query;
   try {
@@ -122,7 +137,7 @@ router.get('/artists/discover', async (req, res) => {
       : await ytSearch(DISCOVER_QUERIES[Number(seed) % DISCOVER_QUERIES.length] || DISCOVER_QUERIES[0], 30);
     const byChannel = new Map();
     for (const item of result.items) {
-      if (!item.channel || item.channel === 'Desconocido') continue;
+      if (!looksLikeArtist(item.channel)) continue;
       if (!byChannel.has(item.channel)) {
         byChannel.set(item.channel, { name: item.channel, thumbnail: item.thumbnail, songCount: 1 });
       } else {
@@ -136,20 +151,30 @@ router.get('/artists/discover', async (req, res) => {
 });
 
 const TRENDING_QUERIES = [
-  'top hits 2026',
-  'éxitos latinos 2026',
-  'reggaetón top',
-  'pop hits 2026',
-  'música electrónica popular',
-  'rap top hits',
-  'bachata romántica',
-  'cumbia popular',
+  'top hits 2026', 'éxitos latinos 2026', 'reggaetón top', 'pop hits 2026',
+  'música electrónica popular', 'rap top hits', 'bachata romántica', 'cumbia popular',
+  'rock en español', 'trap latino', 'salsa top', 'música urbana 2026',
+  'indie pop', 'k-pop hits', 'baladas románticas', 'música regional mexicana',
+  'hip hop 2026', 'dance hits', 'merengue popular', 'r&b hits',
 ];
+
+const TRENDING_COUNT = 8;
+
+function pickRandom(arr, n) {
+  const copy = [...arr];
+  const picked = [];
+  while (picked.length < n && copy.length) {
+    const i = Math.floor(Math.random() * copy.length);
+    picked.push(copy.splice(i, 1)[0]);
+  }
+  return picked;
+}
 
 router.get('/trending', async (req, res) => {
   try {
+    const queries = pickRandom(TRENDING_QUERIES, TRENDING_COUNT);
     const playlists = await Promise.all(
-      TRENDING_QUERIES.map(async (query) => {
+      queries.map(async (query) => {
         try {
           const { items: songs } = await ytSearch(query, 10);
           return { name: query, songs };
