@@ -46,12 +46,22 @@ export function showUpdatePrompt(info) {
     </div>`;
   document.body.appendChild(overlay);
 
-  const target = window.Capacitor && window.Capacitor.getPlatform ? '_system' : '_blank';
+  const isNative = !!(window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android');
   const downloadBtn = overlay.querySelector('.update-download');
   const hint = overlay.querySelector('.update-progress-label');
 
-  downloadBtn.addEventListener('click', () => {
-    window.open(info.url, target);
+  downloadBtn.addEventListener('click', async () => {
+    if (isNative) {
+      try {
+        const { Browser } = await import('@capacitor/browser');
+        await Browser.open({ url: info.url });
+      } catch (err) {
+        console.error('[update] no se pudo abrir el navegador:', err);
+        window.open(info.url, '_blank');
+      }
+    } else {
+      window.open(info.url, '_blank');
+    }
     downloadBtn.disabled = true;
     downloadBtn.textContent = 'Descargando...';
     hint.style.display = 'block';
