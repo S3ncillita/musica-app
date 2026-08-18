@@ -81,6 +81,12 @@ function runYtDlpAsync(args, opts) {
 }
 console.log('yt-dlp:', _foundYtDlp || 'no encontrado, usando py -m yt_dlp');
 
+// yt-dlp necesita un runtime de JS (Deno) para resolver el cliente "web" de
+// YouTube correctamente; sin esto cae a clientes alternativos (Android VR,
+// VisionOS, etc.) cuyas URLs firmadas a veces son rechazadas por el CDN.
+const DENO_PATH = process.env.DENO_PATH || null;
+const JS_RUNTIME_ARGS = ['--js-runtimes', DENO_PATH ? `deno:${DENO_PATH}` : 'deno'];
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const urlCache = new Map();
@@ -99,6 +105,7 @@ async function getDirectUrl(videoId) {
         '-f', format,
         '--no-playlist',
         '--get-url',
+        ...JS_RUNTIME_ARGS,
         `https://www.youtube.com/watch?v=${videoId}`
       ], { timeout: 30000 });
       const url = stdout.trim().split('\n')[0];
@@ -169,6 +176,7 @@ router.get('/info/:videoId', async (req, res) => {
     const { stdout } = await runYtDlpAsync([
       '--dump-json',
       '--no-playlist',
+      ...JS_RUNTIME_ARGS,
       `https://www.youtube.com/watch?v=${videoId}`
     ], { timeout: 15000 });
 
