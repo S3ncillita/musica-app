@@ -5,21 +5,6 @@
   flex-direction: column;
 }
 
-.folder-delete-btn {
-  margin-left: auto;
-  align-self: center;
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  color: #e74c3c;
-  font-size: 0.8rem;
-  white-space: nowrap;
-}
-.folder-delete-btn:hover {
-  background: rgba(231, 76, 60, 0.1);
-  border-color: #e74c3c;
-}
-
 .playlist-header {
   display: flex;
   align-items: flex-end;

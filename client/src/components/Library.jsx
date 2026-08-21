@@ -93,7 +93,7 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
               </svg>
             </div>
             <span className="artist-card-name">{f.name}</span>
-            <span className="artist-card-count">{f.playlistCount} playlists</span>
+            <span className="artist-card-count">{f.songCount} canciones</span>
           </button>
         ))}
       </div>

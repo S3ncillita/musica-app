@@ -3,12 +3,11 @@ import AppVersion from './AppVersion.jsx';
 import vybeLogo from '../assets/vybe-logo.svg';
 import './Sidebar.css';
 
-export default function Sidebar({ playlists, folders, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewPlaylist, onCreatePlaylist, onCreateFolder, onDeleteFolder, onDeletePlaylist, onMovePlaylistToFolder, user, onLogin, onLogout }) {
+export default function Sidebar({ playlists, folders, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewPlaylist, onCreatePlaylist, onCreateFolder, onDeleteFolder, onDeletePlaylist, user, onLogin, onLogout }) {
   const [newName, setNewName] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [showFolderInput, setShowFolderInput] = useState(false);
-  const [openFolders, setOpenFolders] = useState({});
   const [showUserCard, setShowUserCard] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
 
@@ -26,10 +25,6 @@ export default function Sidebar({ playlists, folders, currentView, isOpen, onVie
       setNewFolderName('');
       setShowFolderInput(false);
     }
-  };
-
-  const toggleFolder = (id) => {
-    setOpenFolders(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handlePlaylistContext = (e, playlist) => {
@@ -157,26 +152,18 @@ export default function Sidebar({ playlists, folders, currentView, isOpen, onVie
           </div>
         )}
         {folders.map(f => (
-          <div key={f.id}>
-            <button className="sidebar-item sidebar-folder-item" onClick={() => toggleFolder(f.id)} onContextMenu={(e) => handleFolderContext(e, f)}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-              </svg>
-              <span className="sidebar-folder-name">{f.name}</span>
-              <span className="sidebar-folder-count">{f.playlistCount}</span>
-              <svg className={`sidebar-folder-chevron ${openFolders[f.id] ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
-              </svg>
-            </button>
-            {openFolders[f.id] && (
-              <div className="sidebar-folder-contents">
-                {playlists.filter(p => p.folderId === f.id).map(p => renderPlaylistButton(p, true))}
-                {playlists.filter(p => p.folderId === f.id).length === 0 && (
-                  <span className="sidebar-folder-empty">Vacía — arrastrá una playlist acá</span>
-                )}
-              </div>
-            )}
-          </div>
+          <button
+            key={f.id}
+            className="sidebar-item sidebar-folder-item"
+            onClick={() => onViewPlaylist(f.playlistId)}
+            onContextMenu={(e) => handleFolderContext(e, f)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+            </svg>
+            <span className="sidebar-folder-name">{f.name}</span>
+            <span className="sidebar-folder-count">{f.songCount}</span>
+          </button>
         ))}
 
         <div className="sidebar-playlists-header">
@@ -201,24 +188,6 @@ export default function Sidebar({ playlists, folders, currentView, isOpen, onVie
         <>
         <div className="context-menu-backdrop" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }} />
         <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }} onClick={() => setContextMenu(null)}>
-          <div className="context-submenu">
-            <span>Mover a carpeta</span>
-            {folders.map(f => (
-              <button key={f.id} onClick={() => onMovePlaylistToFolder(contextMenu.playlist.id, f.id)}>
-                {f.name}
-              </button>
-            ))}
-            {folders.length === 0 && <span style={{ padding: '4px 12px', display: 'block', fontSize: '0.75rem' }}>No hay carpetas</span>}
-          </div>
-          {contextMenu.playlist.folderId && (
-            <>
-              <div className="context-divider" />
-              <button onClick={() => onMovePlaylistToFolder(contextMenu.playlist.id, null)}>
-                Quitar de la carpeta
-              </button>
-            </>
-          )}
-          <div className="context-divider" />
           <button className="danger" onClick={() => onDeletePlaylist(contextMenu.playlist.id)}>
             Eliminar playlist
           </button>

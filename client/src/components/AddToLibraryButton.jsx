@@ -80,25 +80,9 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
           <div className="context-menu" style={{ top: menuPos.y, left: menuPos.x, maxHeight: MENU_MAX_HEIGHT, overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
             <button onClick={() => handleAdd(null)}>Solo Biblioteca</button>
             <div className="context-divider" />
-            {folders.map(f => {
-              const folderPlaylists = playlists.filter(p => p.folderId === f.id);
-              return (
-                <div key={f.id} className="context-submenu">
-                  <button
-                    className="context-folder-name"
-                    onClick={() => folderPlaylists.length
-                      ? handleAdd(folderPlaylists[0].id)
-                      : handleCreateAndAdd(f.name, f.id)}
-                  >
-                    {f.name}
-                  </button>
-                  {folderPlaylists.map(p => (
-                    <button key={p.id} onClick={() => handleAdd(p.id)}>{p.name}</button>
-                  ))}
-                  {onCreatePlaylist && <NewPlaylistRow onCreate={(name) => handleCreateAndAdd(name, f.id)} />}
-                </div>
-              );
-            })}
+            {folders.map(f => (
+              <button key={f.id} onClick={() => handleAdd(f.playlistId)}>{f.name}</button>
+            ))}
             <div className="context-submenu">
               <span>Playlists</span>
               {ungrouped.map(p => (

@@ -45,11 +45,4 @@ router.delete('/:id/songs/:songId', (req, res) => {
   res.json({ removed });
 });
 
-router.put('/:id/folder', (req, res) => {
-  const { folderId } = req.body;
-  const playlist = db.setPlaylistFolder(req.user.id, Number(req.params.id), folderId === null || folderId === undefined ? null : Number(folderId));
-  if (!playlist) return res.status(404).json({ error: 'Playlist o carpeta no encontrada' });
-  res.json(playlist);
-});
-
 export default router;

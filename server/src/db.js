@@ -18,6 +18,25 @@ function load() {
   const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
   if (!data.folders) data.folders = [];
   if (!data.nextFolderId) data.nextFolderId = 1;
+  let migrated = false;
+  for (const folder of data.folders) {
+    if (folder.playlistId) continue;
+    let pl = data.playlists.find(p => p.ownerId === folder.ownerId && p.folderId === folder.id);
+    if (!pl) {
+      pl = {
+        id: data.nextPlaylistId++,
+        ownerId: folder.ownerId,
+        name: folder.name,
+        folderId: folder.id,
+        songs: [],
+        createdAt: folder.createdAt || new Date().toISOString(),
+      };
+      data.playlists.unshift(pl);
+    }
+    folder.playlistId = pl.id;
+    migrated = true;
+  }
+  if (migrated) save(data);
   return data;
 }
 
@@ -191,10 +210,10 @@ export function getFolders(ownerId) {
   const db = load();
   return db.folders
     .filter(f => f.ownerId === ownerId)
-    .map(f => ({
-      ...f,
-      playlistCount: db.playlists.filter(p => p.ownerId === ownerId && p.folderId === f.id).length,
-    }));
+    .map(f => {
+      const pl = db.playlists.find(p => p.id === f.playlistId && p.ownerId === ownerId);
+      return { ...f, songCount: pl ? pl.songs.length : 0 };
+    });
 }
 
 export function createFolder(ownerId, name) {
@@ -205,7 +224,17 @@ export function createFolder(ownerId, name) {
     name,
     createdAt: new Date().toISOString(),
   };
+  const pl = {
+    id: db.nextPlaylistId++,
+    ownerId,
+    name,
+    folderId: folder.id,
+    songs: [],
+    createdAt: folder.createdAt,
+  };
+  folder.playlistId = pl.id;
   db.folders.unshift(folder);
+  db.playlists.unshift(pl);
   save(db);
   return folder;
 }
@@ -215,6 +244,8 @@ export function updateFolder(ownerId, id, name) {
   const folder = db.folders.find(f => f.id === id && f.ownerId === ownerId);
   if (!folder) return null;
   folder.name = name;
+  const pl = db.playlists.find(p => p.id === folder.playlistId && p.ownerId === ownerId);
+  if (pl) pl.name = name;
   save(db);
   return folder;
 }
@@ -225,22 +256,7 @@ export function deleteFolder(ownerId, id) {
   if (idx === -1) return null;
   const folder = db.folders[idx];
   db.folders.splice(idx, 1);
-  for (const pl of db.playlists) {
-    if (pl.ownerId === ownerId && pl.folderId === id) pl.folderId = null;
-  }
+  db.playlists = db.playlists.filter(p => !(p.ownerId === ownerId && p.folderId === id));
   save(db);
   return folder;
-}
-
-export function setPlaylistFolder(ownerId, playlistId, folderId) {
-  const db = load();
-  const pl = db.playlists.find(p => p.id === playlistId && p.ownerId === ownerId);
-  if (!pl) return null;
-  if (folderId !== null) {
-    const folder = db.folders.find(f => f.id === folderId && f.ownerId === ownerId);
-    if (!folder) return null;
-  }
-  pl.folderId = folderId;
-  save(db);
-  return pl;
 }
