@@ -61,7 +61,6 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, folders, o
     const song = await res.json();
     setAddedIds(prev => new Set(prev).add(item.videoId));
     onAddToLibrary?.(song);
-    showToast('✓ Añadida a la biblioteca');
     return song;
   };
 
@@ -165,6 +164,7 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, folders, o
                         onAddToLibrary={addToLibrary}
                         onAddToPlaylist={onAddToPlaylist}
                         onCreatePlaylist={onCreatePlaylist}
+                        onToast={showToast}
                         added={addedIds.has(song.videoId)}
                         className="add-lib-btn"
                       />

@@ -179,7 +179,6 @@ export default function Artists({ songs, onPlay, onAddToLibrary, playlists, fold
     const song = await res.json();
     setAddedIds(prev => new Set(prev).add(item.videoId));
     onAddToLibrary?.(song);
-    showToast('✓ Añadida a la biblioteca');
     return song;
   };
 
@@ -251,6 +250,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, playlists, fold
                     onAddToLibrary={addToLibrary}
                     onAddToPlaylist={onAddToPlaylist}
                     onCreatePlaylist={onCreatePlaylist}
+                    onToast={showToast}
                     added={addedIds.has(item.videoId)}
                     className="add-lib-btn"
                   />

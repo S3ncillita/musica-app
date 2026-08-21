@@ -86,7 +86,6 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
     const song = await res.json();
     setAddedIds(prev => new Set(prev).add(item.videoId));
     onAddToLibrary(song);
-    showToast('✓ Añadida a la biblioteca');
     return song;
   };
 
@@ -175,6 +174,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
                 onAddToLibrary={addToLibrary}
                 onAddToPlaylist={onAddToPlaylist}
                 onCreatePlaylist={onCreatePlaylist}
+                onToast={showToast}
                 added={addedIds.has(item.videoId)}
                 className="yt-add-btn"
               />
@@ -209,7 +209,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
           <button onClick={() => { playItem(contextMenu.item); setContextMenu(null); }}>
             Reproducir
           </button>
-          <button onClick={() => { addToLibrary(contextMenu.item); setContextMenu(null); }}>
+          <button onClick={() => { addToLibrary(contextMenu.item); showToast('✓ Añadida a la biblioteca'); setContextMenu(null); }}>
             Agregar a biblioteca
           </button>
           <div className="context-divider" />
@@ -223,6 +223,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
                     if (yt) onAddToPlaylist(p.id, yt.id);
                   });
                 });
+                showToast(`✓ Añadida a "${p.name}"`);
                 setContextMenu(null);
               }}>
                 {p.name}

@@ -34,7 +34,7 @@ function NewPlaylistRow({ onCreate }) {
   );
 }
 
-export default function AddToLibraryButton({ song, folders = [], playlists = [], onAddToLibrary, onAddToPlaylist, onCreatePlaylist, added, className = '' }) {
+export default function AddToLibraryButton({ song, folders = [], playlists = [], onAddToLibrary, onAddToPlaylist, onCreatePlaylist, onToast, added, className = '' }) {
   const [menuPos, setMenuPos] = useState(null);
 
   const openMenu = (e) => {
@@ -46,12 +46,13 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
     setMenuPos({ x: Math.max(8, x), y: Math.max(8, y) });
   };
 
-  const handleAdd = async (playlistId) => {
+  const handleAdd = async (playlistId, destName) => {
     setMenuPos(null);
     const savedSong = await onAddToLibrary(song);
     if (playlistId && savedSong?.id) {
       await onAddToPlaylist(playlistId, savedSong.id);
     }
+    onToast?.(destName ? `✓ Añadida a "${destName}"` : '✓ Añadida a la biblioteca');
   };
 
   const handleCreateAndAdd = async (name, folderId) => {
@@ -61,6 +62,7 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
     if (playlist?.id && savedSong?.id) {
       await onAddToPlaylist(playlist.id, savedSong.id);
     }
+    onToast?.(`✓ Añadida a "${name}"`);
   };
 
   const ungrouped = playlists.filter(p => !p.folderId);
@@ -78,15 +80,15 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
         <>
           <div className="context-menu-backdrop" onClick={(e) => { e.stopPropagation(); setMenuPos(null); }} onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setMenuPos(null); }} />
           <div className="context-menu" style={{ top: menuPos.y, left: menuPos.x, maxHeight: MENU_MAX_HEIGHT, overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => handleAdd(null)}>Solo Biblioteca</button>
+            <button onClick={() => handleAdd(null, null)}>Solo Biblioteca</button>
             <div className="context-divider" />
             {folders.map(f => (
-              <button key={f.id} onClick={() => handleAdd(f.playlistId)}>{f.name}</button>
+              <button key={f.id} onClick={() => handleAdd(f.playlistId, f.name)}>{f.name}</button>
             ))}
             <div className="context-submenu">
               <span>Playlists</span>
               {ungrouped.map(p => (
-                <button key={p.id} onClick={() => handleAdd(p.id)}>{p.name}</button>
+                <button key={p.id} onClick={() => handleAdd(p.id, p.name)}>{p.name}</button>
               ))}
               {onCreatePlaylist && <NewPlaylistRow onCreate={(name) => handleCreateAndAdd(name, null)} />}
             </div>
