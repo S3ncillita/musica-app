@@ -3,7 +3,7 @@ import DownloadButton from './DownloadButton.jsx';
 import './Library.css';
 import './Artists.css';
 
-export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, folders, onCreateFolder, onViewFolder, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
+export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, folders, onCreateFolder, onViewFolder, onDeleteFolder, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [search, setSearch] = useState('');
   const [contextMenu, setContextMenu] = useState(null);
   const [showFolderInput, setShowFolderInput] = useState(false);
@@ -88,7 +88,14 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
           )}
         </div>
         {folders.map(f => (
-          <button key={f.id} className="artist-card" onClick={() => onViewFolder(f.id)}>
+          <div key={f.id} className="artist-card folder-card" onClick={() => onViewFolder(f.id)}>
+            <button
+              className="folder-card-delete"
+              title="Eliminar carpeta"
+              onClick={(e) => { e.stopPropagation(); onDeleteFolder(f.id); }}
+            >
+              ✕
+            </button>
             <div className="artist-card-img artist-placeholder">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--text-muted)">
                 <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
@@ -96,7 +103,7 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
             </div>
             <span className="artist-card-name">{f.name}</span>
             <span className="artist-card-count">{f.songCount} canciones</span>
-          </button>
+          </div>
         ))}
       </div>
 

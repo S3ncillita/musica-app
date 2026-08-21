@@ -648,6 +648,7 @@ export default function App() {
             onAddToPlaylist={addToPlaylist}
             onCreateFolder={createFolder}
             onViewFolder={viewFolder}
+            onDeleteFolder={deleteFolder}
             onLogout={handleLogout}
             onOpenEq={() => setShowEq(true)}
             onDownload={downloadSong}
