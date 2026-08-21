@@ -5,7 +5,7 @@ import './PlaylistView.css';
 
 const API = getApiBase();
 
-export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSong }) {
+export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSong, folders, onDeleteFolder }) {
   const [playlist, setPlaylist] = useState(null);
 
   useEffect(() => {
@@ -16,6 +16,13 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
 
   if (!playlist) return <div className="playlist-view"><p>Cargando...</p></div>;
 
+  const folder = folders?.find(f => f.playlistId === playlist.id);
+
+  const handleDelete = () => {
+    if (folder) onDeleteFolder(folder.id);
+    else onDelete(playlist.id);
+  };
+
   return (
     <div className="playlist-view">
       <div className="playlist-header">
@@ -25,10 +32,13 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
           </svg>
         </div>
         <div className="playlist-meta">
-          <span className="playlist-label">PLAYLIST</span>
+          <span className="playlist-label">{folder ? 'CARPETA' : 'PLAYLIST'}</span>
           <h1>{playlist.name}</h1>
           <span className="playlist-count">{playlist.songs?.length || 0} canciones</span>
         </div>
+        <button className="playlist-delete-btn" onClick={handleDelete}>
+          {folder ? 'Eliminar carpeta' : 'Eliminar playlist'}
+        </button>
       </div>
 
       {playlist.songs?.length > 0 ? (

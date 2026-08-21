@@ -716,6 +716,8 @@ export default function App() {
             onRemoveSong={removeFromPlaylist}
             playlists={playlists}
             onAddToPlaylist={addToPlaylist}
+            folders={folders}
+            onDeleteFolder={deleteFolder}
           />
         )}
       </main>
