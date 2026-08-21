@@ -96,6 +96,51 @@
   box-shadow: var(--glow);
 }
 
+.sidebar-item-nested {
+  padding-left: 28px;
+}
+
+.sidebar-folder-item {
+  cursor: pointer;
+}
+
+.sidebar-folder-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.sidebar-folder-count {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.sidebar-folder-chevron {
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.sidebar-folder-chevron.open {
+  transform: rotate(180deg);
+}
+
+.sidebar-folder-contents {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-folder-empty {
+  padding: 6px 12px 6px 28px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: italic;
+}
+
+.sidebar-playlists-header:not(:first-child) {
+  margin-top: 12px;
+}
+
 .playlist-input {
   padding: 4px 12px;
 }

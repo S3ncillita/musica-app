@@ -3,6 +3,7 @@ import { getApiBase } from '../config.js';
 import { api } from '../api.js';
 import Toast, { useToast } from './Toast.jsx';
 import DownloadButton from './DownloadButton.jsx';
+import AddToLibraryButton from './AddToLibraryButton.jsx';
 import './YouTubeSearch.css';
 
 const API = getApiBase();
@@ -16,7 +17,7 @@ const toSong = (item) => ({
   duration: item.duration,
 });
 
-export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAddToPlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
+export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folders, onAddToPlaylist, onCreatePlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -86,6 +87,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
     setAddedIds(prev => new Set(prev).add(item.videoId));
     onAddToLibrary(song);
     showToast('✓ Añadida a la biblioteca');
+    return song;
   };
 
   const fmt = (s) => {
@@ -166,13 +168,16 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, onAdd
             </div>
             <div className="song-card-footer">
               <span className="song-card-num">{fmt(item.duration)}</span>
-              <button
-                className={`yt-add-btn ${addedIds.has(item.videoId) ? 'added' : ''}`}
-                onClick={(e) => { e.stopPropagation(); addToLibrary(item); }}
-                disabled={addedIds.has(item.videoId)}
-              >
-                {addedIds.has(item.videoId) ? 'Añadida' : '+'}
-              </button>
+              <AddToLibraryButton
+                song={item}
+                folders={folders}
+                playlists={playlists}
+                onAddToLibrary={addToLibrary}
+                onAddToPlaylist={onAddToPlaylist}
+                onCreatePlaylist={onCreatePlaylist}
+                added={addedIds.has(item.videoId)}
+                className="yt-add-btn"
+              />
               <DownloadButton
                 song={toSong(item)}
                 isDownloaded={isDownloaded}

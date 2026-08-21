@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar.jsx';
 import Library from './components/Library.jsx';
 import Player from './components/Player.jsx';
 import PlaylistView from './components/PlaylistView.jsx';
+import FolderView from './components/FolderView.jsx';
 import YouTubeSearch from './components/YouTubeSearch.jsx';
 import YouTubePlayer from './components/YouTubePlayer.jsx';
 import Artists from './components/Artists.jsx';
@@ -38,8 +39,10 @@ export default function App() {
   const [toast, showToast] = useToast();
   const [songs, setSongs] = useState([]);
   const [playlists, setPlaylists] = useState([]);
+  const [folders, setFolders] = useState([]);
   const [currentView, setCurrentView] = useState('library');
   const [currentPlaylistId, setCurrentPlaylistId] = useState(null);
+  const [currentFolderId, setCurrentFolderId] = useState(null);
   const [currentSong, setCurrentSong] = useState(null);
   const [queue, setQueue] = useState([]);
   const [queueIndex, setQueueIndex] = useState(-1);
@@ -149,18 +152,25 @@ export default function App() {
     setPlaylists(await res.json());
   }, []);
 
+  const loadFolders = useCallback(async () => {
+    const res = await api('/folders');
+    setFolders(await res.json());
+  }, []);
+
   useEffect(() => {
     if (!user) return;
     loadSongs();
     loadPlaylists();
-  }, [user, loadSongs, loadPlaylists]);
+    loadFolders();
+  }, [user, loadSongs, loadPlaylists, loadFolders]);
 
   useEffect(() => {
     if (currentView === 'library' && user) {
       loadSongs();
       loadPlaylists();
+      loadFolders();
     }
-  }, [currentView, user, loadSongs, loadPlaylists]);
+  }, [currentView, user, loadSongs, loadPlaylists, loadFolders]);
 
   useEffect(() => {
     if (!currentSong) return;
@@ -437,19 +447,46 @@ export default function App() {
     setOfflineVersion(v => v + 1);
   };
 
-  const createPlaylist = async (name) => {
-    await api('/playlists', {
+  const createPlaylist = async (name, folderId = null) => {
+    const res = await api('/playlists', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
+      body: JSON.stringify({ name, folderId })
     });
+    const playlist = await res.json();
     loadPlaylists();
+    return playlist;
   };
 
   const deletePlaylist = async (id) => {
     await api(`/playlists/${id}`, { method: 'DELETE' });
     loadPlaylists();
     if (currentPlaylistId === id) setCurrentView('library');
+  };
+
+  const createFolder = async (name) => {
+    await api('/folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    loadFolders();
+  };
+
+  const deleteFolder = async (id) => {
+    await api(`/folders/${id}`, { method: 'DELETE' });
+    loadFolders();
+    loadPlaylists();
+    if (currentFolderId === id) setCurrentView('library');
+  };
+
+  const movePlaylistToFolder = async (playlistId, folderId) => {
+    await api(`/playlists/${playlistId}/folder`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folderId })
+    });
+    loadPlaylists();
   };
 
   const addToPlaylist = async (playlistId, songId) => {
@@ -468,6 +505,12 @@ export default function App() {
   const viewPlaylist = (id) => {
     setCurrentPlaylistId(id);
     setCurrentView('playlist');
+    setSidebarOpen(false);
+  };
+
+  const viewFolder = (id) => {
+    setCurrentFolderId(id);
+    setCurrentView('folder');
     setSidebarOpen(false);
   };
 
@@ -565,6 +608,7 @@ export default function App() {
 
       <Sidebar
         playlists={playlists}
+        folders={folders}
         currentView={currentView}
         isOpen={sidebarOpen}
         onViewLibrary={() => navigateTo('library')}
@@ -573,6 +617,10 @@ export default function App() {
         onViewTrending={() => navigateTo('trending')}
         onViewPlaylist={viewPlaylist}
         onCreatePlaylist={createPlaylist}
+        onCreateFolder={createFolder}
+        onDeleteFolder={deleteFolder}
+        onDeletePlaylist={deletePlaylist}
+        onMovePlaylistToFolder={movePlaylistToFolder}
         user={user}
         onLogin={handleLogin}
         onLogout={handleLogout}
@@ -607,7 +655,10 @@ export default function App() {
             onDelete={deleteSong}
             onFiles={handleFiles}
             playlists={playlists}
+            folders={folders}
             onAddToPlaylist={addToPlaylist}
+            onCreateFolder={createFolder}
+            onViewFolder={viewFolder}
             onLogout={handleLogout}
             onOpenEq={() => setShowEq(true)}
             onDownload={downloadSong}
@@ -624,7 +675,9 @@ export default function App() {
             onPlay={playSong}
             onAddToLibrary={loadSongs}
             playlists={playlists}
+            folders={folders}
             onAddToPlaylist={addToPlaylist}
+            onCreatePlaylist={createPlaylist}
             onDownload={downloadSong}
             onRemoveDownload={removeDownload}
             isDownloaded={offline.isDownloaded}
@@ -639,7 +692,9 @@ export default function App() {
             onPlay={playSong}
             onAddToLibrary={loadSongs}
             playlists={playlists}
+            folders={folders}
             onAddToPlaylist={addToPlaylist}
+            onCreatePlaylist={createPlaylist}
             onDownload={downloadSong}
             onRemoveDownload={removeDownload}
             isDownloaded={offline.isDownloaded}
@@ -653,7 +708,9 @@ export default function App() {
             onPlay={playSong}
             onAddToLibrary={loadSongs}
             playlists={playlists}
+            folders={folders}
             onAddToPlaylist={addToPlaylist}
+            onCreatePlaylist={createPlaylist}
             onDownload={downloadSong}
             onRemoveDownload={removeDownload}
             isDownloaded={offline.isDownloaded}
@@ -670,6 +727,15 @@ export default function App() {
             onRemoveSong={removeFromPlaylist}
             playlists={playlists}
             onAddToPlaylist={addToPlaylist}
+          />
+        )}
+        {currentView === 'folder' && currentFolderId && (
+          <FolderView
+            folderId={currentFolderId}
+            folders={folders}
+            playlists={playlists}
+            onViewPlaylist={viewPlaylist}
+            onDelete={deleteFolder}
           />
         )}
       </main>

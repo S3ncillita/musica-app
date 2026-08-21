@@ -1,10 +1,21 @@
 import { useState } from 'react';
 import DownloadButton from './DownloadButton.jsx';
 import './Library.css';
+import './Artists.css';
 
-export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
+export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, folders, onCreateFolder, onViewFolder, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [search, setSearch] = useState('');
   const [contextMenu, setContextMenu] = useState(null);
+  const [showFolderInput, setShowFolderInput] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+
+  const handleCreateFolder = () => {
+    if (newFolderName.trim()) {
+      onCreateFolder(newFolderName.trim());
+      setNewFolderName('');
+    }
+    setShowFolderInput(false);
+  };
 
   const filtered = songs.filter(s =>
     s.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -53,6 +64,41 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
         </div>
       </div>
 
+      <h2 className="section-title">Carpetas</h2>
+      <div className="artist-grid folder-grid">
+        <div className="artist-card add-folder-card" onClick={() => !showFolderInput && setShowFolderInput(true)}>
+          {showFolderInput ? (
+            <input
+              className="add-folder-input"
+              autoFocus
+              value={newFolderName}
+              onChange={e => setNewFolderName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCreateFolder()}
+              onBlur={handleCreateFolder}
+              onClick={e => e.stopPropagation()}
+              placeholder="Nombre..."
+            />
+          ) : (
+            <>
+              <div className="artist-card-img artist-placeholder add-folder-icon">+</div>
+              <span className="artist-card-name">Nueva carpeta</span>
+            </>
+          )}
+        </div>
+        {folders.map(f => (
+          <button key={f.id} className="artist-card" onClick={() => onViewFolder(f.id)}>
+            <div className="artist-card-img artist-placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--text-muted)">
+                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+              </svg>
+            </div>
+            <span className="artist-card-name">{f.name}</span>
+            <span className="artist-card-count">{f.playlistCount} playlists</span>
+          </button>
+        ))}
+      </div>
+
+      <h2 className="section-title">Canciones</h2>
       {filtered.length === 0 ? (
         <div className="library-empty">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--text-muted)">

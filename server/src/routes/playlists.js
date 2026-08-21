@@ -14,9 +14,9 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { name } = req.body;
+  const { name, folderId } = req.body;
   if (!name) return res.status(400).json({ error: 'Nombre requerido' });
-  res.json(db.createPlaylist(req.user.id, name));
+  res.json(db.createPlaylist(req.user.id, name, folderId === null || folderId === undefined ? null : Number(folderId)));
 });
 
 router.put('/:id', (req, res) => {
@@ -43,6 +43,13 @@ router.post('/:id/songs', (req, res) => {
 router.delete('/:id/songs/:songId', (req, res) => {
   const removed = db.removeSongFromPlaylist(req.user.id, Number(req.params.id), Number(req.params.songId));
   res.json({ removed });
+});
+
+router.put('/:id/folder', (req, res) => {
+  const { folderId } = req.body;
+  const playlist = db.setPlaylistFolder(req.user.id, Number(req.params.id), folderId === null || folderId === undefined ? null : Number(folderId));
+  if (!playlist) return res.status(404).json({ error: 'Playlist o carpeta no encontrada' });
+  res.json(playlist);
 });
 
 export default router;

@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import songsRouter from './routes/songs.js';
 import playlistsRouter from './routes/playlists.js';
+import foldersRouter from './routes/folders.js';
 import streamRouter from './routes/stream.js';
 import youtubeRouter from './routes/youtube.js';
 import authRouter from './routes/auth.js';
@@ -25,6 +26,7 @@ app.use(express.json());
 
 app.use('/api/songs', authRequired, songsRouter);
 app.use('/api/playlists', authRequired, playlistsRouter);
+app.use('/api/folders', authRequired, foldersRouter);
 app.use('/api/stream', streamRouter);
 app.use('/api/youtube', youtubeRouter);
 app.use('/api/auth', authRouter);

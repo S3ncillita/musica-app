@@ -225,7 +225,7 @@
 .context-menu-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 99;
+  z-index: 349;
 }
 
 .context-menu {
@@ -235,7 +235,7 @@
   border-radius: 8px;
   padding: 6px;
   min-width: 180px;
-  z-index: 100;
+  z-index: 350;
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
 .context-menu button {
@@ -269,6 +269,22 @@
 .context-submenu button {
   font-size: 0.8rem;
   color: var(--text-secondary);
+}
+.context-new-playlist {
+  color: var(--accent) !important;
+  font-size: 0.8rem;
+}
+.context-new-playlist-input {
+  display: block;
+  width: calc(100% - 24px);
+  margin: 2px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 6px 8px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  outline: none;
 }
 
 @media (max-width: 768px) {
@@ -320,4 +336,34 @@
   .song-row .col-album {
     display: none;
   }
+}
+
+.folder-grid {
+  margin-bottom: 32px;
+}
+
+.add-folder-card {
+  cursor: pointer;
+  border: 1px dashed var(--border);
+}
+.add-folder-card:hover {
+  border-color: var(--accent);
+}
+
+.add-folder-icon {
+  font-size: 2rem;
+  color: var(--accent);
+  font-weight: 300;
+}
+
+.add-folder-input {
+  width: 100%;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 8px 4px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  outline: none;
 }

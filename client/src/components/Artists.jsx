@@ -3,6 +3,7 @@ import { getApiBase } from '../config.js';
 import { api } from '../api.js';
 import Toast, { useToast } from './Toast.jsx';
 import DownloadButton from './DownloadButton.jsx';
+import AddToLibraryButton from './AddToLibraryButton.jsx';
 import './Artists.css';
 
 const API = getApiBase();
@@ -16,10 +17,11 @@ const toSong = (item) => ({
   duration: item.duration,
 });
 
-export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
+export default function Artists({ songs, onPlay, onAddToLibrary, playlists, folders, onAddToPlaylist, onCreatePlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [selectedArtist, setSelectedArtist] = useState(null);
   const [ytSongs, setYtSongs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [addedIds, setAddedIds] = useState(new Set());
   const [toast, showToast] = useToast();
   const [popularArtists, setPopularArtists] = useState([]);
   const [loadingPopular, setLoadingPopular] = useState(false);
@@ -175,8 +177,10 @@ export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onR
       })
     });
     const song = await res.json();
+    setAddedIds(prev => new Set(prev).add(item.videoId));
     onAddToLibrary?.(song);
     showToast('✓ Añadida a la biblioteca');
+    return song;
   };
 
   const fmt = (s) => {
@@ -240,7 +244,16 @@ export default function Artists({ songs, onPlay, onAddToLibrary, onDownload, onR
                   <span className="song-card-artist">{fmt(item.duration)}</span>
                 </div>
                 <div className="song-card-footer">
-                  <button className="add-lib-btn" onClick={(e) => { e.stopPropagation(); addToLibrary(item); }} title="Agregar a biblioteca">+</button>
+                  <AddToLibraryButton
+                    song={item}
+                    folders={folders}
+                    playlists={playlists}
+                    onAddToLibrary={addToLibrary}
+                    onAddToPlaylist={onAddToPlaylist}
+                    onCreatePlaylist={onCreatePlaylist}
+                    added={addedIds.has(item.videoId)}
+                    className="add-lib-btn"
+                  />
                   <DownloadButton
                     song={toSong(item)}
                     isDownloaded={isDownloaded}
