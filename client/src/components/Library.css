@@ -266,6 +266,21 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+.context-folder-name {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+}
+.context-folder-name:hover {
+  color: var(--accent);
+  background: var(--bg-hover);
+}
 .context-submenu button {
   font-size: 0.8rem;
   color: var(--text-secondary);
