@@ -46,7 +46,7 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, folders, o
     onPlay(song, songs);
   };
 
-  const addToLibrary = async (item) => {
+  const addToLibrary = async (item, { inLibrary = true } = {}) => {
     const res = await api('/songs/youtube', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -56,6 +56,7 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, folders, o
         channel: item.channel,
         thumbnail: item.thumbnail,
         duration: item.duration,
+        inLibrary,
       })
     });
     const song = await res.json();

@@ -17,7 +17,9 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
     setShowFolderInput(false);
   };
 
-  const filtered = songs.filter(s =>
+  const librarySongs = songs.filter(s => s.inLibrary !== false);
+
+  const filtered = librarySongs.filter(s =>
     s.title.toLowerCase().includes(search.toLowerCase()) ||
     s.artist.toLowerCase().includes(search.toLowerCase()) ||
     s.album.toLowerCase().includes(search.toLowerCase())
@@ -40,7 +42,7 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
           <h1 className="view-title">Biblioteca</h1>
           <div className="view-status">
             <span className="led" />
-            <span>{songs.length} TRACKS · SYNCED</span>
+            <span>{librarySongs.length} TRACKS · SYNCED</span>
           </div>
         </div>
         <div className="library-actions">

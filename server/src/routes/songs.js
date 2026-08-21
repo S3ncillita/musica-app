@@ -59,9 +59,9 @@ router.put('/:id', (req, res) => {
 });
 
 router.post('/youtube', (req, res) => {
-  const { videoId, title, channel, thumbnail, duration, album } = req.body;
+  const { videoId, title, channel, thumbnail, duration, album, inLibrary } = req.body;
   if (!videoId) return res.status(400).json({ error: 'videoId requerido' });
-  const song = db.addYoutubeTrack(req.user.id, videoId, title || 'Sin título', channel, thumbnail, duration, album);
+  const song = db.addYoutubeTrack(req.user.id, videoId, title || 'Sin título', channel, thumbnail, duration, album, inLibrary !== false);
   res.json(song);
 });
 

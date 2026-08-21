@@ -164,7 +164,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, playlists, fold
     setSearching(false);
   };
 
-  const addToLibrary = async (item) => {
+  const addToLibrary = async (item, { inLibrary = true } = {}) => {
     const res = await api('/songs/youtube', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -174,6 +174,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, playlists, fold
         channel: item.channel,
         thumbnail: item.thumbnail,
         duration: item.duration,
+        inLibrary,
       })
     });
     const song = await res.json();

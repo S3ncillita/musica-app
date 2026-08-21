@@ -48,13 +48,13 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
 
   const handleAdd = async (playlistId, destName) => {
     setMenuPos(null);
-    const savedSong = await onAddToLibrary(song);
+    const savedSong = await onAddToLibrary(song, { inLibrary: !playlistId });
     if (playlistId && savedSong?.id) {
       try {
         await onAddToPlaylist(playlistId, savedSong.id);
         onToast?.(`✓ Añadida a "${destName}"`);
       } catch {
-        onToast?.(`⚠ Se agregó a la biblioteca, pero no se pudo agregar a "${destName}"`);
+        onToast?.(`⚠ No se pudo agregar a "${destName}"`);
       }
     } else {
       onToast?.('✓ Añadida a la biblioteca');
@@ -63,7 +63,7 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
 
   const handleCreateAndAdd = async (name, folderId) => {
     setMenuPos(null);
-    const savedSong = await onAddToLibrary(song);
+    const savedSong = await onAddToLibrary(song, { inLibrary: false });
     try {
       const playlist = await onCreatePlaylist(name, folderId);
       if (playlist?.id && savedSong?.id) {
@@ -71,7 +71,7 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
       }
       onToast?.(`✓ Añadida a "${name}"`);
     } catch {
-      onToast?.(`⚠ Se agregó a la biblioteca, pero no se pudo crear "${name}"`);
+      onToast?.(`⚠ No se pudo crear "${name}"`);
     }
   };
 

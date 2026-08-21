@@ -70,7 +70,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
     return () => obs.disconnect();
   }, [nextToken, loadingMore, query]);
 
-  const addToLibrary = async (item) => {
+  const addToLibrary = async (item, { inLibrary = true } = {}) => {
     const res = await api('/songs/youtube', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -81,6 +81,7 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
         thumbnail: item.thumbnail,
         duration: item.duration,
         album: '',
+        inLibrary,
       })
     });
     const song = await res.json();
@@ -217,11 +218,8 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
             <span>Agregar a playlist</span>
             {playlists.map(p => (
               <button key={p.id} onClick={() => {
-                addToLibrary(contextMenu.item).then(() => {
-                  api('/songs').then(r => r.json()).then(songs => {
-                    const yt = songs.find(s => s.videoId === contextMenu.item.videoId);
-                    if (yt) onAddToPlaylist(p.id, yt.id);
-                  });
+                addToLibrary(contextMenu.item, { inLibrary: false }).then((yt) => {
+                  if (yt) onAddToPlaylist(p.id, yt.id);
                 });
                 showToast(`✓ Añadida a "${p.name}"`);
                 setContextMenu(null);

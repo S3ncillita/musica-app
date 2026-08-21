@@ -81,10 +81,16 @@ export function addSong(ownerId, title, filename) {
   return song;
 }
 
-export function addYoutubeTrack(ownerId, videoId, title, channel, thumbnail, duration, album) {
+export function addYoutubeTrack(ownerId, videoId, title, channel, thumbnail, duration, album, inLibrary = true) {
   const db = load();
   const existing = db.songs.find(s => s.videoId === videoId && s.ownerId === ownerId);
-  if (existing) return existing;
+  if (existing) {
+    if (inLibrary && existing.inLibrary === false) {
+      existing.inLibrary = true;
+      save(db);
+    }
+    return existing;
+  }
   const song = {
     id: db.nextSongId++,
     ownerId,
@@ -96,6 +102,7 @@ export function addYoutubeTrack(ownerId, videoId, title, channel, thumbnail, dur
     videoId,
     thumbnail,
     filename: null,
+    inLibrary,
     createdAt: new Date().toISOString()
   };
   db.songs.unshift(song);
