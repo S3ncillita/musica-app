@@ -480,11 +480,12 @@ export default function App() {
   };
 
   const addToPlaylist = async (playlistId, songId) => {
-    await api(`/playlists/${playlistId}/songs`, {
+    const res = await api(`/playlists/${playlistId}/songs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ songId })
     });
+    if (!res.ok) throw new Error('No se pudo agregar a la playlist');
   };
 
   const removeFromPlaylist = async (playlistId, songId) => {
