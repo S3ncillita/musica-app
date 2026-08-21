@@ -87,6 +87,7 @@ const YouTubePlayer = forwardRef(({ videoId, offlineSrc, onReady, onStateChange,
       }
     },
     pause: () => { audioRef.current?.pause(); },
+    isPaused: () => audioRef.current?.paused ?? true,
     seek: (s) => { if (audioRef.current) audioRef.current.currentTime = s; },
     getCurrentTime: () => audioRef.current?.currentTime || 0,
     getDuration: () => audioRef.current?.duration || 0,

@@ -64,6 +64,8 @@ export default function App() {
   const progressInterval = useRef(null);
   const playingFromClick = useRef(false);
   const restoringRef = useRef(false);
+  const currentSongRef = useRef(null);
+  currentSongRef.current = currentSong;
 
   useEffect(() => {
     const unlockAudio = () => {
@@ -110,6 +112,39 @@ export default function App() {
       }).then(handle => { listenerHandle = handle; });
     }).catch(() => {});
     return () => {
+      cancelled = true;
+      listenerHandle?.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    const resyncPlaybackState = () => {
+      const song = currentSongRef.current;
+      if (!song) return;
+      if (song.videoId || song.type === 'youtube') {
+        const paused = ytPlayerRef.current?.isPaused?.();
+        if (paused !== undefined) setIsPlaying(!paused);
+      } else if (song.filename) {
+        setIsPlaying(!audioRef.current.paused);
+      }
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') resyncPlaybackState();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    let listenerHandle;
+    let cancelled = false;
+    import('@capacitor/app').then(({ App: CapacitorApp }) => {
+      if (cancelled) return;
+      CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) resyncPlaybackState();
+      }).then(handle => { listenerHandle = handle; });
+    }).catch(() => {});
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
       cancelled = true;
       listenerHandle?.remove();
     };
