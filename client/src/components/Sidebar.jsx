@@ -188,7 +188,9 @@ export default function Sidebar({ playlists, folders, currentView, isOpen, onVie
         <>
         <div className="context-menu-backdrop" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }} />
         <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }} onClick={() => setContextMenu(null)}>
-          <button className="danger" onClick={() => onDeletePlaylist(contextMenu.playlist.id)}>
+          <button className="danger" onClick={() => {
+            if (window.confirm(`¿Eliminar la playlist "${contextMenu.playlist.name}"?`)) onDeletePlaylist(contextMenu.playlist.id);
+          }}>
             Eliminar playlist
           </button>
         </div>
@@ -199,7 +201,9 @@ export default function Sidebar({ playlists, folders, currentView, isOpen, onVie
         <>
         <div className="context-menu-backdrop" onClick={() => setContextMenu(null)} onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }} />
         <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }} onClick={() => setContextMenu(null)}>
-          <button className="danger" onClick={() => onDeleteFolder(contextMenu.folder.id)}>
+          <button className="danger" onClick={() => {
+            if (window.confirm(`¿Eliminar la carpeta "${contextMenu.folder.name}"?`)) onDeleteFolder(contextMenu.folder.id);
+          }}>
             Eliminar carpeta
           </button>
         </div>

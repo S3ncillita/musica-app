@@ -92,7 +92,10 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
             <button
               className="folder-card-delete"
               title="Eliminar carpeta"
-              onClick={(e) => { e.stopPropagation(); onDeleteFolder(f.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`¿Eliminar la carpeta "${f.name}"?`)) onDeleteFolder(f.id);
+              }}
             >
               ✕
             </button>

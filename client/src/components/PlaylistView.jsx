@@ -19,6 +19,8 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
   const folder = folders?.find(f => f.playlistId === playlist.id);
 
   const handleDelete = () => {
+    const label = folder ? 'la carpeta' : 'la playlist';
+    if (!window.confirm(`¿Eliminar ${label} "${playlist.name}"?`)) return;
     if (folder) onDeleteFolder(folder.id);
     else onDelete(playlist.id);
   };
