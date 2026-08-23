@@ -4,7 +4,7 @@ Aplicación de música estilo streaming con **búsqueda en YouTube**, reproducto
 
 ## Características
 
-- 🔍 **Búsqueda en YouTube** con resultados reales y reproducción en streaming (sin descargar a disco).
+- 🔍 **Búsqueda de musica ** con resultados reales y reproducción en streaming (sin descargar a disco).
 - ▶️ **Reproductor** con cola, shuffle, repeat, seek y volumen.
 - 📚 **Biblioteca personal** y **playlists** por usuario.
 - 🔥 **Tendencias** y vista de **artistas**.
