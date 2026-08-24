@@ -8,6 +8,7 @@ const API = getApiBase();
 
 export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSong, folders, onDeleteFolder, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [playlist, setPlaylist] = useState(null);
+  const [downloadingAll, setDownloadingAll] = useState(false);
 
   useEffect(() => {
     api(`/playlists/${playlistId}`)
@@ -18,12 +19,22 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
   if (!playlist) return <div className="playlist-view"><p>Cargando...</p></div>;
 
   const folder = folders?.find(f => f.playlistId === playlist.id);
+  const pendingDownloads = (playlist.songs || []).filter(s => !isDownloaded?.(s));
 
   const handleDelete = () => {
     const label = folder ? 'la carpeta' : 'la playlist';
     if (!window.confirm(`¿Eliminar ${label} "${playlist.name}"?`)) return;
     if (folder) onDeleteFolder(folder.id);
     else onDelete(playlist.id);
+  };
+
+  const handleDownloadAll = async () => {
+    if (downloadingAll || pendingDownloads.length === 0) return;
+    setDownloadingAll(true);
+    for (const song of pendingDownloads) {
+      await onDownload(song);
+    }
+    setDownloadingAll(false);
   };
 
   return (
@@ -39,9 +50,16 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
           <h1>{playlist.name}</h1>
           <span className="playlist-count">{playlist.songs?.length || 0} canciones</span>
         </div>
-        <button className="playlist-delete-btn" onClick={handleDelete}>
-          {folder ? 'Eliminar carpeta' : 'Eliminar playlist'}
-        </button>
+        <div className="playlist-header-actions">
+          {playlist.songs?.length > 0 && (
+            <button className="playlist-download-all-btn" onClick={handleDownloadAll} disabled={downloadingAll || pendingDownloads.length === 0}>
+              {downloadingAll ? 'Descargando...' : pendingDownloads.length === 0 ? 'Todo descargado' : `Descargar todo (${pendingDownloads.length})`}
+            </button>
+          )}
+          <button className="playlist-delete-btn" onClick={handleDelete}>
+            {folder ? 'Eliminar carpeta' : 'Eliminar playlist'}
+          </button>
+        </div>
       </div>
 
       {playlist.songs?.length > 0 ? (
