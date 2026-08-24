@@ -107,7 +107,7 @@ export default function App() {
         } else if (sidebarOpen) {
           setSidebarOpen(false);
         } else {
-          CapacitorApp.exitApp();
+          CapacitorApp.minimizeApp();
         }
       }).then(handle => { listenerHandle = handle; });
     }).catch(() => {});
