@@ -92,7 +92,7 @@ export default function App() {
   }, []);
 
   const backButtonStateRef = useRef({});
-  backButtonStateRef.current = { showFullPlayer, showEq, sidebarOpen };
+  backButtonStateRef.current = { showFullPlayer, showEq, sidebarOpen, currentView };
 
   useEffect(() => {
     let listenerHandle;
@@ -100,13 +100,15 @@ export default function App() {
     import('@capacitor/app').then(({ App: CapacitorApp }) => {
       if (cancelled) return;
       CapacitorApp.addListener('backButton', () => {
-        const { showFullPlayer, showEq, sidebarOpen } = backButtonStateRef.current;
+        const { showFullPlayer, showEq, sidebarOpen, currentView } = backButtonStateRef.current;
         if (showFullPlayer) {
           setShowFullPlayer(false);
         } else if (showEq) {
           setShowEq(false);
         } else if (sidebarOpen) {
           setSidebarOpen(false);
+        } else if (currentView !== 'library') {
+          navigateTo('library');
         } else {
           CapacitorApp.minimizeApp();
         }
