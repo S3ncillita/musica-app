@@ -92,6 +92,19 @@ router.get('/search', async (req, res) => {
   }
 });
 
+router.get('/suggest', async (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.json([]);
+  try {
+    const url = `https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=${encodeURIComponent(q)}`;
+    const r = await fetch(url, { headers: { 'User-Agent': UA } });
+    const data = await r.json();
+    res.json(Array.isArray(data?.[1]) ? data[1].slice(0, 8) : []);
+  } catch {
+    res.json([]);
+  }
+});
+
 router.post('/artists', async (req, res) => {
   const { names } = req.body;
   if (!Array.isArray(names)) return res.json([]);

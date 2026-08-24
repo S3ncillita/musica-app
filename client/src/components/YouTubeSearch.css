@@ -5,11 +5,15 @@
   flex-direction: column;
 }
 
+.yt-search-bar-wrap {
+  position: relative;
+  margin-bottom: 20px;
+}
+
 .yt-search-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
   padding: 10px 4px;
   background: transparent;
   border: 1px solid transparent;
@@ -50,6 +54,53 @@
 .yt-search-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.yt-search-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.yt-search-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.yt-search-dropdown-header button {
+  color: var(--accent);
+  font-size: 0.7rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.yt-search-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+.yt-search-dropdown-item:hover {
+  background: var(--bg-hover);
 }
 
 .yt-results {

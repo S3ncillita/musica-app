@@ -80,7 +80,6 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
             <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
           </svg>
         </button>
-        <span className="fp-label">{isYT ? 'Reproduciendo de YouTube' : 'Reproduciendo de tu biblioteca'}</span>
         <button className="fp-close" onClick={() => setShowQueue(!showQueue)}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>

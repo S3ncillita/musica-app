@@ -7,6 +7,24 @@ import AddToLibraryButton from './AddToLibraryButton.jsx';
 import './YouTubeSearch.css';
 
 const API = getApiBase();
+const HISTORY_KEY = 'yt_search_history';
+const MAX_HISTORY = 10;
+
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveToHistory(term) {
+  const trimmed = term.trim();
+  if (!trimmed) return loadHistory();
+  const next = [trimmed, ...loadHistory().filter(h => h.toLowerCase() !== trimmed.toLowerCase())].slice(0, MAX_HISTORY);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+  return next;
+}
 
 const toSong = (item) => ({
   type: 'youtube',
@@ -26,14 +44,22 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
   const [contextMenu, setContextMenu] = useState(null);
   const [addedIds, setAddedIds] = useState(new Set());
   const [toast, showToast] = useToast();
+  const [history, setHistory] = useState(loadHistory);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const sentinelRef = useRef(null);
+  const suggestTimer = useRef(null);
+  const blurTimer = useRef(null);
 
-  const search = async () => {
-    if (!query.trim()) return;
+  const search = async (term = query) => {
+    if (!term.trim()) return;
+    setShowDropdown(false);
+    setQuery(term);
+    setHistory(saveToHistory(term));
     setLoading(true);
     setNextToken(null);
     try {
-      const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(query.trim())}`);
+      const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(term.trim())}`);
       const data = await res.json();
       setResults(data.items || []);
       setNextToken(data.nextToken || null);
@@ -41,6 +67,29 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
       setResults([]);
     }
     setLoading(false);
+  };
+
+  const handleQueryChange = (value) => {
+    setQuery(value);
+    setShowDropdown(true);
+    clearTimeout(suggestTimer.current);
+    if (!value.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    suggestTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API}/youtube/suggest?q=${encodeURIComponent(value.trim())}`);
+        setSuggestions(await res.json());
+      } catch {
+        setSuggestions([]);
+      }
+    }, 250);
+  };
+
+  const clearHistory = () => {
+    localStorage.removeItem(HISTORY_KEY);
+    setHistory([]);
   };
 
   const loadMore = async () => {
@@ -130,19 +179,52 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
           <h1 className="view-title">Buscar</h1>
         </div>
       </div>
-      <div className="yt-search-bar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
-          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-        </svg>
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && search()}
-          placeholder="Buscar música..."
-        />
-        <button className="yt-search-btn" onClick={search} disabled={loading}>
-          {loading ? 'Buscando...' : 'Buscar'}
-        </button>
+      <div className="yt-search-bar-wrap">
+        <div className="yt-search-bar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--text-muted)">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+          <input
+            value={query}
+            onChange={e => handleQueryChange(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && search()}
+            onFocus={() => { clearTimeout(blurTimer.current); setShowDropdown(true); }}
+            onBlur={() => { blurTimer.current = setTimeout(() => setShowDropdown(false), 150); }}
+            placeholder="Buscar música..."
+          />
+          <button className="yt-search-btn" onClick={() => search()} disabled={loading}>
+            {loading ? 'Buscando...' : 'Buscar'}
+          </button>
+        </div>
+        {showDropdown && (query.trim() ? suggestions.length > 0 : history.length > 0) && (
+          <div className="yt-search-dropdown">
+            {query.trim() ? (
+              suggestions.map((s, i) => (
+                <button key={i} className="yt-search-dropdown-item" onMouseDown={() => search(s)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--text-muted)">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                  </svg>
+                  {s}
+                </button>
+              ))
+            ) : (
+              <>
+                <div className="yt-search-dropdown-header">
+                  <span>Búsquedas recientes</span>
+                  <button onMouseDown={clearHistory}>Borrar</button>
+                </div>
+                {history.map((h, i) => (
+                  <button key={i} className="yt-search-dropdown-item" onMouseDown={() => search(h)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--text-muted)">
+                      <path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 117 7 6.9 6.9 0 01-4.95-2.05l-1.42 1.42A9 9 0 1013 3zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                    </svg>
+                    {h}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="yt-results">
