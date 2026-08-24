@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { getApiBase } from '../config.js';
 import { api } from '../api.js';
+import DownloadButton from './DownloadButton.jsx';
 import './PlaylistView.css';
 
 const API = getApiBase();
 
-export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSong, folders, onDeleteFolder }) {
+export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSong, folders, onDeleteFolder, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [playlist, setPlaylist] = useState(null);
 
   useEffect(() => {
@@ -67,6 +68,15 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
               </div>
               <div className="song-card-footer">
                 <span className="song-card-num">{song.album || `#${i + 1}`}</span>
+                <DownloadButton
+                  song={song}
+                  isDownloaded={isDownloaded}
+                  downloadingKey={downloadingKey}
+                  downloadProgress={downloadProgress}
+                  onCancelDownload={onCancelDownload}
+                  onDownload={onDownload}
+                  onRemoveDownload={onRemoveDownload}
+                />
                 <button className="remove-btn" onClick={(e) => { e.stopPropagation(); onRemoveSong(playlist.id, song.id); }} title="Quitar">✕</button>
               </div>
             </div>

@@ -754,6 +754,12 @@ export default function App() {
             onAddToPlaylist={addToPlaylist}
             folders={folders}
             onDeleteFolder={deleteFolder}
+            onDownload={downloadSong}
+            onRemoveDownload={removeDownload}
+            isDownloaded={offline.isDownloaded}
+            downloadingKey={downloadingKey}
+            downloadProgress={downloadProgress}
+            onCancelDownload={cancelDownload}
           />
         )}
       </main>
