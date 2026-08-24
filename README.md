@@ -1,16 +1,16 @@
 # Música 🎵
 
-Aplicación de música estilo streaming con **búsqueda en YouTube**, reproductor en línea, biblioteca, playlists, tendencias y artistas. Incluye app para **Android (Capacitor)** y servidor propio en **Node.js/Express**.
+Aplicación de música estilo streaming con **búsqueda de música online**, reproductor en línea, biblioteca, playlists, tendencias y artistas. Incluye app para **Android (Capacitor)** y servidor propio en **Node.js/Express**.
 
 ## Características
 
-- 🔍 **Búsqueda de musica ** con resultados reales y reproducción en streaming (sin descargar a disco).
+- 🔍 **Búsqueda de música** con resultados reales y reproducción en streaming (sin descargar a disco).
 - ▶️ **Reproductor** con cola, shuffle, repeat, seek y volumen.
 - 📚 **Biblioteca personal** y **playlists** por usuario.
 - 🔥 **Tendencias** y vista de **artistas**.
 - 👤 **Registro/login** con JWT y contraseñas hasheadas (bcrypt).
 - 📱 **APK Android** con Capacitor 8.
-- 🎬 **Streaming por proxy** con soporte de `Range` requests (seek) usando yt-dlp.
+- 🎬 **Streaming por proxy** con soporte de `Range` requests (seek).
 
 ## Arquitectura
 
@@ -19,10 +19,10 @@ client/     App web React (Vite) + Android (Capacitor)
 server/     API REST Express (Node.js)
 ```
 
-Flujo de reproducción de YouTube:
+Flujo de reproducción:
 
 ```
-Cliente (React) → /api/ytdlp/stream/:videoId → yt-dlp (obtiene URL directa)
+Cliente (React) → /api/ytdlp/stream/:videoId → resolución de la URL directa del audio
     → Express hace de proxy → audio fluye en chunks (Range) → Audio API del navegador
 ```
 
@@ -32,13 +32,13 @@ Cliente (React) → /api/ytdlp/stream/:videoId → yt-dlp (obtiene URL directa)
 |-----------|----------------------------------------------|
 | Frontend  | React 18, Vite 5, Capacitor 8                |
 | Backend   | Node.js, Express, JWT, bcryptjs, dotenv      |
-| Descarga  | yt-dlp (URL directa)                         |
+| Resolución de audio | herramienta externa (URL directa)  |
 | Almacen.  | JSON local (sin DB externa)                  |
 
 ## Requisitos
 
 - Node.js 18+ (probado en 24)
-- yt-dlp (en `PATH` o con `pip install -U yt-dlp`)
+- Herramienta de resolución de audio configurada (ver `server/.env.example`)
 - ffmpeg (opcional, recomendado)
 - Android SDK (solo para compilar el APK)
 
@@ -94,17 +94,17 @@ cd android && ./gradlew assembleDebug
 
 | Método | Ruta                          | Descripción                          |
 |--------|-------------------------------|--------------------------------------|
-| GET    | `/api/youtube/search?q=`      | Buscar en YouTube                    |
+| GET    | `/api/youtube/search?q=`      | Buscar música                        |
 | GET    | `/api/youtube/trending`       | Playlists de tendencias              |
 | GET    | `/api/ytdlp/stream/:videoId`  | Streaming de audio (proxy + Range)   |
 | POST   | `/api/songs/upload`           | Subir archivos de audio              |
 | GET    | `/api/songs`                  | Listar biblioteca                    |
-| POST   | `/api/songs/youtube`          | Agregar canción de YouTube           |
+| POST   | `/api/songs/youtube`          | Agregar canción encontrada por búsqueda |
 | POST   | `/api/auth/register` `login`  | Crear usuario / iniciar sesión       |
 | GET/POST| `/api/playlists`             | Listar / crear playlists             |
 
 ## Notas
 
 - Los datos de usuarios y biblioteca se guardan en `server/data/` (no se sube a Git).
-- El streaming no llena el disco: transmite el audio directo de YouTube sin archivos temporales.
-- Si un video falla en streaming, el server responde 500 con el motivo (suele ser yt-dlp desactualizado: `pip install -U yt-dlp`).
+- El streaming no llena el disco: transmite el audio directo sin archivos temporales.
+- Si un video falla en streaming, el server responde 500 con el motivo (suele ser un problema con la herramienta de resolución de audio, hay que mantenerla actualizada).
