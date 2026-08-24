@@ -1,6 +1,6 @@
 {
   "version": "1.3.4",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Al descargar una canción sin el permiso de acceso a archivos activado, ahora la app te lleva directo a la pantalla de Ajustes para activarlo.",
+  "notes": "Carpetas para organizar tu música, con historial y sugerencias al buscar. Descargas offline que ahora sobreviven a una desinstalación (te lleva directo a Ajustes si falta el permiso), con botón para descargar toda una carpeta de una vez. Se arregló que la música se cortara al minimizar la app con el botón atrás y que no reanudara al volver de segundo plano.",
   "force": false
 }
