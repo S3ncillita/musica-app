@@ -463,7 +463,7 @@ export default function App() {
       clearInterval(heartbeat);
       if (e.name !== 'AbortError') {
         console.error('DOWNLOAD ERROR:', e);
-        showToast('⚠ No se pudo descargar la canción');
+        showToast(`⚠ ${e.message || 'No se pudo descargar la canción'}`);
       }
     }
     setDownloadingKey(null);

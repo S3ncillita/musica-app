@@ -2,8 +2,8 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 
 const INDEX_KEY = 'offlineSongs';
-const DIR = Directory.Data;
-const FOLDER = 'offline';
+const DIR = Directory.ExternalStorage;
+const FOLDER = 'Music/Vybe';
 
 function readIndex() {
   try { return JSON.parse(localStorage.getItem(INDEX_KEY) || '{}'); } catch { return {}; }
@@ -99,7 +99,11 @@ export async function downloadSong(song, apiBase, onProgress) {
 
   const base64 = await blobToBase64(blob);
   await Filesystem.mkdir({ path: FOLDER, directory: DIR, recursive: true }).catch(() => {});
-  await Filesystem.writeFile({ path, directory: DIR, data: base64 });
+  try {
+    await Filesystem.writeFile({ path, directory: DIR, data: base64 });
+  } catch (err) {
+    throw new Error('Activá el permiso "Acceso a todos los archivos" para Vybe en Ajustes > Apps, y probá de nuevo');
+  }
 
   const index = readIndex();
   index[key] = {

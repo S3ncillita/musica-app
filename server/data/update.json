@@ -1,6 +1,6 @@
 {
-  "version": "1.3.3",
+  "version": "1.3.4",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Descargas offline, reproducción en segundo plano, tarjetas y actualización automática dentro de la app.",
+  "notes": "Las descargas offline ahora sobreviven a una desinstalación (requiere activar el permiso de acceso a archivos), y se arregló que la música se cortara al minimizar la app con el botón atrás.",
   "force": false
 }
