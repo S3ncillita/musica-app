@@ -1,6 +1,6 @@
 {
-  "version": "1.3.4",
+  "version": "1.3.5",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Las descargas offline ahora sobreviven a una desinstalación (requiere activar el permiso de acceso a archivos), y se arregló que la música se cortara al minimizar la app con el botón atrás.",
+  "notes": "Al descargar una canción sin el permiso de acceso a archivos activado, ahora la app te lleva directo a la pantalla de Ajustes para activarlo.",
   "force": false
 }

@@ -1,9 +1,24 @@
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+const StoragePermission = registerPlugin('StoragePermission');
 
 const INDEX_KEY = 'offlineSongs';
 const DIR = Directory.ExternalStorage;
 const FOLDER = 'Music/Vybe';
+
+async function ensureStoragePermission() {
+  if (Capacitor.getPlatform() !== 'android') return true;
+  try {
+    const { granted } = await StoragePermission.isAllFilesAccessGranted();
+    if (!granted) {
+      await StoragePermission.openAllFilesAccessSettings().catch(() => {});
+    }
+    return granted;
+  } catch {
+    return true;
+  }
+}
 
 function readIndex() {
   try { return JSON.parse(localStorage.getItem(INDEX_KEY) || '{}'); } catch { return {}; }
@@ -90,6 +105,10 @@ export async function getOfflineSrc(song) {
 }
 
 export async function downloadSong(song, apiBase, onProgress) {
+  const hasPermission = await ensureStoragePermission();
+  if (!hasPermission) {
+    throw new Error('Activá "Acceso a todos los archivos" para Vybe y volvé a intentar la descarga');
+  }
   const key = songKey(song);
   const isYt = song.videoId || song.type === 'youtube';
   const url = isYt ? `${apiBase}/ytdlp/stream/${song.videoId}` : `${apiBase}/stream/${song.id}`;
