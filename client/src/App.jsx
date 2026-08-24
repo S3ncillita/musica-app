@@ -15,6 +15,7 @@ import Toast, { useToast } from './components/Toast.jsx';
 import vybeIcon from './assets/vybe-icon.svg';
 import { getApiBase } from './config.js';
 import { api } from './api.js';
+import { getAppVersion } from './appVersion.js';
 import { initUpdateCheck } from './update.js';
 import * as offline from './offline.js';
 import { registerMediaSessionHandlers, updateMediaMetadata, updateMediaPlaybackState } from './mediaSession.js';
@@ -156,9 +157,9 @@ export default function App() {
       setAuthLoading(false);
       return;
     }
-    fetch(`${API}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    getAppVersion().then(appVersion => fetch(`${API}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}`, 'X-App-Version': appVersion }
+    }))
       .then(res => {
         if (res.ok) return res.json();
         throw new Error();

@@ -24,7 +24,7 @@ router.get('/security-questions', (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-  const { username, email, password, securityQuestion, securityAnswer } = req.body;
+  const { username, email, password, securityQuestion, securityAnswer, appVersion } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
   }
@@ -53,8 +53,8 @@ router.post('/register', async (req, res) => {
       createdAt: new Date().toISOString()
     };
     await pool.query(
-      'INSERT INTO users (id, username, email, password, securityQuestion, securityAnswer, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [user.id, user.username, user.email, user.password, user.securityQuestion, user.securityAnswer, user.createdAt]
+      'INSERT INTO users (id, username, email, password, securityQuestion, securityAnswer, createdAt, appVersion, lastSeen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+      [user.id, user.username, user.email, user.password, user.securityQuestion, user.securityAnswer, user.createdAt, appVersion || null]
     );
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
@@ -65,7 +65,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, appVersion } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
   }
@@ -78,6 +78,9 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
       return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+    if (appVersion) {
+      pool.query('UPDATE users SET appVersion = ?, lastSeen = NOW() WHERE id = ?', [appVersion, user.id]).catch(() => {});
     }
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
@@ -137,8 +140,35 @@ router.get('/me', (req, res) => {
   }
   try {
     const decoded = jwt.verify(auth.split(' ')[1], JWT_SECRET);
+    const appVersion = req.headers['x-app-version'];
+    if (appVersion) {
+      pool.query('UPDATE users SET appVersion = ?, lastSeen = NOW() WHERE id = ?', [appVersion, decoded.id]).catch(() => {});
+    } else {
+      pool.query('UPDATE users SET lastSeen = NOW() WHERE id = ?', [decoded.id]).catch(() => {});
+    }
     res.json({ user: { id: decoded.id, username: decoded.username, email: decoded.email } });
   } catch {
+    res.status(401).json({ error: 'Token inválido' });
+  }
+});
+
+router.get('/users', async (req, res) => {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No autenticado' });
+  }
+  try {
+    const decoded = jwt.verify(auth.split(' ')[1], JWT_SECRET);
+    const adminUsername = process.env.ADMIN_USERNAME;
+    if (!adminUsername || decoded.username !== adminUsername) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+    const [rows] = await pool.query(
+      'SELECT id, username, email, appVersion, lastSeen, createdAt FROM users ORDER BY lastSeen DESC'
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('users list error:', err.message);
     res.status(401).json({ error: 'Token inválido' });
   }
 });

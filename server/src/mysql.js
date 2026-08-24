@@ -29,6 +29,8 @@ export async function initDb() {
   `);
   await ensureColumn(conn, 'users', 'securityQuestion', 'VARCHAR(255)');
   await ensureColumn(conn, 'users', 'securityAnswer', 'VARCHAR(100)');
+  await ensureColumn(conn, 'users', 'appVersion', 'VARCHAR(20)');
+  await ensureColumn(conn, 'users', 'lastSeen', 'DATETIME');
   await conn.end();
 }
 

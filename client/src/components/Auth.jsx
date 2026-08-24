@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getApiBase } from '../config.js';
+import { getAppVersion } from '../appVersion.js';
 import vybeIcon from '../assets/vybe-icon.svg';
 import './Auth.css';
 
@@ -58,9 +59,10 @@ export default function Auth({ onLogin, onClose, required = false }) {
     setLoading(true);
     try {
       const endpoint = mode === 'register' ? '/auth/register' : '/auth/login';
+      const appVersion = await getAppVersion();
       const body = mode === 'register'
-        ? { username, email, password, securityQuestion, securityAnswer }
-        : { username, password };
+        ? { username, email, password, securityQuestion, securityAnswer, appVersion }
+        : { username, password, appVersion };
       const res = await fetch(`${API}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
