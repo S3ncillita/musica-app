@@ -101,8 +101,61 @@ export function showUpdatePrompt(info) {
   return overlay;
 }
 
+const CHANGELOG_KEY = 'lastSeenChangelogVersion';
+
+export function showWhatsNew(info) {
+  if (activePrompt) return activePrompt;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'update-overlay';
+  overlay.innerHTML = `
+    <div class="update-card" role="dialog" aria-modal="true">
+      <h2 class="update-title">Qué hay de nuevo</h2>
+      <p class="update-version">Versión ${info.version}</p>
+      ${info.notes ? `<p class="update-notes">${info.notes}</p>` : ''}
+      <div class="update-actions">
+        <button type="button" class="update-btn update-download">Entendido</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const close = () => { overlay.remove(); activePrompt = null; };
+  overlay.querySelector('.update-download').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  activePrompt = overlay;
+  return overlay;
+}
+
+export async function checkWhatsNew({ endpoint = '/api/update', currentVersion } = {}) {
+  if (!currentVersion) return null;
+  const lastSeen = localStorage.getItem(CHANGELOG_KEY);
+  if (lastSeen === currentVersion) return null;
+  if (!lastSeen) {
+    // primera vez que corre esta versión del checker: no hay nada previo con qué comparar
+    localStorage.setItem(CHANGELOG_KEY, currentVersion);
+    return null;
+  }
+  try {
+    const res = await fetch(endpoint);
+    if (!res.ok) return null;
+    const info = await res.json();
+    if (info.version !== currentVersion) return null;
+    localStorage.setItem(CHANGELOG_KEY, currentVersion);
+    return info;
+  } catch (err) {
+    console.warn('[update] chequeo de novedades falló:', err);
+    return null;
+  }
+}
+
 export async function runUpdateCheck(options) {
   const info = await checkUpdate(options);
-  if (info) showUpdatePrompt(info);
-  return info;
+  if (info) {
+    showUpdatePrompt(info);
+    return info;
+  }
+  const whatsNew = await checkWhatsNew(options);
+  if (whatsNew) showWhatsNew(whatsNew);
+  return whatsNew;
 }
