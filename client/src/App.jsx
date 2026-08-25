@@ -613,11 +613,20 @@ export default function App() {
         <>
       <Toast message={toast} />
       <div className="mobile-header">
-        <div className="mobile-logo" onClick={() => navigateTo('library')} style={{ cursor: 'pointer' }}>
-          <img src={vybeIcon} alt="" width="24" height="24" style={{ borderRadius: 6 }} />
-          <span>Vybe</span>
-          <AppVersion />
-        </div>
+        {currentView !== 'library' ? (
+          <button className="mobile-back-btn" onClick={() => navigateTo('library')} title="Volver a Biblioteca">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+            <span>Biblioteca</span>
+          </button>
+        ) : (
+          <div className="mobile-logo" onClick={() => navigateTo('library')} style={{ cursor: 'pointer' }}>
+            <img src={vybeIcon} alt="" width="24" height="24" style={{ borderRadius: 6 }} />
+            <span>Vybe</span>
+            <AppVersion />
+          </div>
+        )}
         {user && (
           <div className="mobile-header-actions">
             <button className="mobile-logout-btn" onClick={() => setShowEq(true)} title="Ecualizador">
