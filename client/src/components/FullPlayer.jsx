@@ -76,6 +76,11 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
 
   return (
     <div className="fullplayer">
+      <div className="fp-art-wash" aria-hidden="true">
+        {isYT && song?.thumbnail && (
+          <img src={song.thumbnail} alt="" key={song.thumbnail} />
+        )}
+      </div>
       <div className="fp-drag-handle" />
       <div className="fullplayer-header">
         <button className="fp-close" onClick={onClose}>
