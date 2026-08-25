@@ -3,7 +3,7 @@ import AppVersion from './AppVersion.jsx';
 import vybeLogo from '../assets/vybe-logo.svg';
 import './Sidebar.css';
 
-export default function Sidebar({ playlists, folders, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewPlaylist, onCreatePlaylist, onCreateFolder, onDeleteFolder, onDeletePlaylist, user, onLogin, onLogout }) {
+export default function Sidebar({ playlists, folders, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewDownloads, onViewPlaylist, onCreatePlaylist, onCreateFolder, onDeleteFolder, onDeletePlaylist, user, onLogin, onLogout }) {
   const [newName, setNewName] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -132,6 +132,15 @@ export default function Sidebar({ playlists, folders, currentView, isOpen, onVie
             <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
           </svg>
           Tendencias
+        </button>
+        <button
+          className={`sidebar-item ${currentView === 'downloads' ? 'active' : ''}`}
+          onClick={onViewDownloads}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+          </svg>
+          Descargas
         </button>
       </nav>
 

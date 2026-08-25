@@ -7,6 +7,7 @@ import YouTubeSearch from './components/YouTubeSearch.jsx';
 import YouTubePlayer from './components/YouTubePlayer.jsx';
 import Artists from './components/Artists.jsx';
 import Trending from './components/Trending.jsx';
+import Downloads from './components/Downloads.jsx';
 import Auth from './components/Auth.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
 import EqPanel from './components/EqPanel.jsx';
@@ -680,6 +681,7 @@ export default function App() {
         onViewYouTube={() => navigateTo('youtube')}
         onViewArtists={() => navigateTo('artists')}
         onViewTrending={() => navigateTo('trending')}
+        onViewDownloads={() => navigateTo('downloads')}
         onViewPlaylist={viewPlaylist}
         onCreatePlaylist={createPlaylist}
         onCreateFolder={createFolder}
@@ -706,6 +708,10 @@ export default function App() {
           <button className={`mobile-nav-card ${currentView === 'trending' ? 'active' : ''}`} onClick={() => navigateTo('trending')}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
             <span>Tendencias</span>
+          </button>
+          <button className={`mobile-nav-card ${currentView === 'downloads' ? 'active' : ''}`} onClick={() => navigateTo('downloads')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            <span>Descargas</span>
           </button>
           <button className={`mobile-nav-card ${showEq ? 'active' : ''}`} onClick={() => setShowEq(true)}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
@@ -782,6 +788,13 @@ export default function App() {
             downloadingKey={downloadingKey}
             downloadProgress={downloadProgress}
             onCancelDownload={cancelDownload}
+          />
+        )}
+        {currentView === 'downloads' && (
+          <Downloads
+            onPlay={playSong}
+            onRemoveDownload={removeDownload}
+            offlineVersion={offlineVersion}
           />
         )}
         {currentView === 'playlist' && currentPlaylistId && (
