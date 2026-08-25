@@ -802,6 +802,7 @@ export default function App() {
             onCancelDownload={cancelDownload}
           />
         )}
+        <div className="scroll-spacer" />
       </main>
       <Player
         song={currentSong}
