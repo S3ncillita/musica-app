@@ -1,6 +1,6 @@
 {
-  "version": "1.3.7",
+  "version": "1.3.8",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Se arregló que al abrir con internet se fuera al navegador del celular en vez de quedarse dentro de la app.",
+  "notes": "Se arregló que el chequeo de actualizaciones no encontrara versiones nuevas al correr sin conexión al servidor real.",
   "force": false
 }

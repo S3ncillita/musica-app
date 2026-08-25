@@ -18,7 +18,11 @@ export async function checkUpdate({ endpoint = '/api/update', currentVersion, fo
     if (!res.ok) return null;
     const info = await res.json();
     if (!force && compareVersions(info.version, currentVersion) <= 0) return null;
-    const url = new URL(info.apkUrl || info.url, window.location.origin).href;
+    // Resolver contra el origin del propio endpoint, no window.location.origin:
+    // la app puede estar corriendo desde contenido empaquetado localmente,
+    // cuyo origin no es el servidor real.
+    const base = new URL(endpoint, window.location.origin).origin;
+    const url = new URL(info.apkUrl || info.url, base).href;
     return { ...info, url };
   } catch (err) {
     console.warn('[update] chequeo falló:', err);

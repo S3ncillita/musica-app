@@ -1,4 +1,5 @@
 import { runUpdateCheck } from './updateCheck.js';
+import { LIVE_SERVER_URL } from './config.js';
 import './updateCheck.css';
 
 export async function initUpdateCheck() {
@@ -6,7 +7,7 @@ export async function initUpdateCheck() {
   // ahí hay un APK instalado que puede quedar desactualizado. En el
   // navegador siempre se sirve el código más reciente, así que no hay
   // nada que "actualizar".
-  if (window.Capacitor?.getPlatform?.() !== 'android') return null;
+  if (!window.Capacitor?.isNativePlatform?.()) return null;
 
   let currentVersion = null;
   try {
@@ -18,8 +19,13 @@ export async function initUpdateCheck() {
   }
   if (!currentVersion) return null;
 
+  // Ojo: NO usar window.location.origin acá. La app puede estar corriendo
+  // desde el contenido empaquetado localmente (sin internet, u offline
+  // porque liveRedirect.js todavía no saltó), y en ese caso el origin no
+  // apunta al servidor real — el chequeo de actualización nunca
+  // encontraría nada nuevo.
   return runUpdateCheck({
-    endpoint: `${window.location.origin}/api/update`,
+    endpoint: `${LIVE_SERVER_URL}/api/update`,
     currentVersion,
   });
 }
