@@ -12,6 +12,10 @@ const YTM_CLIENT_VERSION = '1.20260818.08.00';
 const YTM_SONGS_FILTER = 'Eg-KAQwIARAAGAAgACgAMABqChAEEAUQAxAKEAk%3D';
 const YTM_CONTEXT = { client: { clientName: 'WEB_REMIX', clientVersion: YTM_CLIENT_VERSION, hl: 'es', gl: 'AR' } };
 
+// Canciones normales rara vez pasan los 15 min; por arriba de eso suele ser
+// una película/audio largo mal categorizado como canción en YouTube Music.
+const MAX_SONG_DURATION = 15 * 60;
+
 function parseYtMusicItems(list) {
   const items = [];
   for (const entry of list || []) {
@@ -27,6 +31,7 @@ function parseYtMusicItems(list) {
     const channel = subRuns[0]?.text || 'Desconocido';
     const durationText = subRuns[subRuns.length - 1]?.text;
     const duration = /^\d+:\d+(:\d+)?$/.test(durationText || '') ? parseDuration(durationText) : 0;
+    if (duration > MAX_SONG_DURATION) continue;
     const thumbs = r?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails || [];
     const thumbnail = thumbs[thumbs.length - 1]?.url || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
     items.push({ videoId, title, channel, thumbnail, duration });
