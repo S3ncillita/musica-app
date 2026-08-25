@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const MENU_WIDTH = 220;
 const MENU_MAX_HEIGHT = 360;
@@ -46,6 +46,26 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
     setMenuPos({ x: Math.max(8, x), y: Math.max(8, y) });
   };
 
+  useEffect(() => {
+    if (!menuPos) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const reclamp = () => {
+      const availableHeight = Math.max(120, vv.height - 16);
+      const maxHeight = Math.min(MENU_MAX_HEIGHT, availableHeight);
+      setMenuPos(prev => {
+        if (!prev) return prev;
+        const maxY = Math.max(8, vv.height - maxHeight - 8);
+        const y = Math.min(prev.y, maxY);
+        if (y === prev.y && maxHeight === prev.maxHeight) return prev;
+        return { ...prev, y, maxHeight };
+      });
+    };
+    reclamp();
+    vv.addEventListener('resize', reclamp);
+    return () => vv.removeEventListener('resize', reclamp);
+  }, [!!menuPos]);
+
   const handleAdd = async (playlistId, destName) => {
     setMenuPos(null);
     const savedSong = await onAddToLibrary(song, { inLibrary: !playlistId });
@@ -89,7 +109,7 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
       {menuPos && (
         <>
           <div className="context-menu-backdrop" onClick={(e) => { e.stopPropagation(); setMenuPos(null); }} onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setMenuPos(null); }} />
-          <div className="context-menu" style={{ top: menuPos.y, left: menuPos.x, maxHeight: MENU_MAX_HEIGHT, overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+          <div className="context-menu" style={{ top: menuPos.y, left: menuPos.x, maxHeight: menuPos.maxHeight || MENU_MAX_HEIGHT, overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
             <button onClick={() => handleAdd(null, null)}>Solo Biblioteca</button>
             <div className="context-divider" />
             {folders.map(f => (
