@@ -22,7 +22,7 @@ function toPlayableSong(entry) {
   };
 }
 
-export default function Downloads({ onPlay, onRemoveDownload, offlineVersion, downloadingSong, downloadProgress, onCancelDownload }) {
+export default function Downloads({ onPlay, onRemoveDownload, offlineVersion, downloadingSong, downloadProgress, onCancelDownload, downloadQueue = [], onRemoveFromQueue }) {
   const [entries, setEntries] = useState([]);
 
   useEffect(() => {
@@ -69,7 +69,19 @@ export default function Downloads({ onPlay, onRemoveDownload, offlineVersion, do
         </div>
       )}
 
-      {entries.length === 0 && !downloadingSong ? (
+      {downloadQueue.length > 0 && (
+        <div className="download-queue">
+          <span className="download-queue-title">En cola ({downloadQueue.length})</span>
+          {downloadQueue.map((song) => (
+            <div key={offline.songKey(song)} className="download-queue-item">
+              <span className="download-queue-item-title">{song.title}</span>
+              <button onClick={() => onRemoveFromQueue?.(song)} title="Quitar de la cola">✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {entries.length === 0 && !downloadingSong && downloadQueue.length === 0 ? (
         <div className="downloads-empty">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--text-muted)">
             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />

@@ -54,6 +54,7 @@ export default function App() {
   const [ytMuted, setYtMuted] = useState(true);
   const [downloadingKey, setDownloadingKey] = useState(null);
   const [downloadingSong, setDownloadingSong] = useState(null);
+  const [downloadQueue, setDownloadQueue] = useState([]);
   const [downloadProgress, setDownloadProgress] = useState({ pct: 0, loaded: 0, total: 0 });
   const [offlineVersion, setOfflineVersion] = useState(0);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
@@ -467,7 +468,10 @@ export default function App() {
     loadSongs();
   };
 
-  const downloadSong = async (song) => {
+  const downloadQueueRef = useRef([]);
+  const downloadingRef = useRef(false);
+
+  const runDownload = async (song) => {
     const key = offline.songKey(song);
     setDownloadingKey(key);
     setDownloadingSong(song);
@@ -506,8 +510,35 @@ export default function App() {
     setOfflineVersion(v => v + 1);
   };
 
+  const runQueue = async () => {
+    if (downloadingRef.current) return;
+    const next = downloadQueueRef.current[0];
+    if (!next) return;
+    downloadingRef.current = true;
+    await runDownload(next);
+    downloadQueueRef.current = downloadQueueRef.current.slice(1);
+    setDownloadQueue(downloadQueueRef.current);
+    downloadingRef.current = false;
+    runQueue();
+  };
+
+  const downloadSong = (song) => {
+    const key = offline.songKey(song);
+    if (downloadingKey === key) return;
+    if (downloadQueueRef.current.some(s => offline.songKey(s) === key)) return;
+    downloadQueueRef.current = [...downloadQueueRef.current, song];
+    setDownloadQueue(downloadQueueRef.current);
+    runQueue();
+  };
+
   const cancelDownload = () => {
     offline.cancelDownload();
+  };
+
+  const removeFromQueue = (song) => {
+    const key = offline.songKey(song);
+    downloadQueueRef.current = downloadQueueRef.current.filter(s => offline.songKey(s) !== key);
+    setDownloadQueue(downloadQueueRef.current);
   };
 
   const removeDownload = async (song) => {
@@ -802,6 +833,8 @@ export default function App() {
             downloadingSong={downloadingSong}
             downloadProgress={downloadProgress}
             onCancelDownload={cancelDownload}
+            downloadQueue={downloadQueue}
+            onRemoveFromQueue={removeFromQueue}
           />
         )}
         {currentView === 'playlist' && currentPlaylistId && (
