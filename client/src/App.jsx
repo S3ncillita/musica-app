@@ -514,16 +514,20 @@ export default function App() {
     if (downloadingRef.current) return;
     const next = downloadQueueRef.current[0];
     if (!next) return;
-    downloadingRef.current = true;
-    await runDownload(next);
     downloadQueueRef.current = downloadQueueRef.current.slice(1);
     setDownloadQueue(downloadQueueRef.current);
+    downloadingRef.current = true;
+    await runDownload(next);
     downloadingRef.current = false;
     runQueue();
   };
 
   const downloadSong = (song) => {
     const key = offline.songKey(song);
+    if (offline.isDownloaded(song)) {
+      showToast('✓ Ya está descargada');
+      return;
+    }
     if (downloadingKey === key) return;
     if (downloadQueueRef.current.some(s => offline.songKey(s) === key)) return;
     downloadQueueRef.current = [...downloadQueueRef.current, song];
