@@ -53,6 +53,7 @@ export default function App() {
   const [ytOfflineSrc, setYtOfflineSrc] = useState(null);
   const [ytMuted, setYtMuted] = useState(true);
   const [downloadingKey, setDownloadingKey] = useState(null);
+  const [downloadingSong, setDownloadingSong] = useState(null);
   const [downloadProgress, setDownloadProgress] = useState({ pct: 0, loaded: 0, total: 0 });
   const [offlineVersion, setOfflineVersion] = useState(0);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
@@ -469,6 +470,7 @@ export default function App() {
   const downloadSong = async (song) => {
     const key = offline.songKey(song);
     setDownloadingKey(key);
+    setDownloadingSong(song);
     setDownloadProgress({ pct: 0, loaded: 0, total: 0 });
     const mb = (n) => (n / (1024 * 1024)).toFixed(1);
     const start = performance.now();
@@ -499,6 +501,7 @@ export default function App() {
       }
     }
     setDownloadingKey(null);
+    setDownloadingSong(null);
     setDownloadProgress({ pct: 0, loaded: 0, total: 0 });
     setOfflineVersion(v => v + 1);
   };
@@ -796,6 +799,9 @@ export default function App() {
             onPlay={playSong}
             onRemoveDownload={removeDownload}
             offlineVersion={offlineVersion}
+            downloadingSong={downloadingSong}
+            downloadProgress={downloadProgress}
+            onCancelDownload={cancelDownload}
           />
         )}
         {currentView === 'playlist' && currentPlaylistId && (

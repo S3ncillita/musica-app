@@ -22,7 +22,7 @@ function toPlayableSong(entry) {
   };
 }
 
-export default function Downloads({ onPlay, onRemoveDownload, offlineVersion }) {
+export default function Downloads({ onPlay, onRemoveDownload, offlineVersion, downloadingSong, downloadProgress, onCancelDownload }) {
   const [entries, setEntries] = useState([]);
 
   useEffect(() => {
@@ -30,6 +30,8 @@ export default function Downloads({ onPlay, onRemoveDownload, offlineVersion }) 
   }, [offlineVersion]);
 
   const songs = entries.map(toPlayableSong);
+  const { pct = 0, loaded = 0, total = 0 } = downloadProgress || {};
+  const mb = (n) => (n / (1024 * 1024)).toFixed(1);
 
   return (
     <div className="downloads">
@@ -43,7 +45,31 @@ export default function Downloads({ onPlay, onRemoveDownload, offlineVersion }) 
         </div>
       </div>
 
-      {entries.length === 0 ? (
+      {downloadingSong && (
+        <div className="downloading-card">
+          <div className="downloading-thumb">
+            {downloadingSong.thumbnail ? (
+              <img src={downloadingSong.thumbnail} alt="" />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--text-muted)">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+              </svg>
+            )}
+          </div>
+          <div className="downloading-info">
+            <span className="downloading-title">{downloadingSong.title}</span>
+            <div className="downloading-bar">
+              <div className="downloading-bar-fill" style={{ width: `${pct}%` }} />
+            </div>
+            <span className="downloading-pct">
+              {total ? `${mb(loaded)}/${mb(total)} MB · ` : ''}{pct}%
+            </span>
+          </div>
+          <button className="downloading-cancel" onClick={onCancelDownload} title="Cancelar">✕</button>
+        </div>
+      )}
+
+      {entries.length === 0 && !downloadingSong ? (
         <div className="downloads-empty">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--text-muted)">
             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
