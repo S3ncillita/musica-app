@@ -5,6 +5,49 @@ const router = Router();
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 const YT_KEY = 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
 
+// YouTube Music: solo indexa contenido musical (canciones), evita que búsquedas
+// como "terror" devuelvan películas/videos de miedo en vez de música.
+const YTM_KEY = 'AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30';
+const YTM_CLIENT_VERSION = '1.20260818.08.00';
+const YTM_SONGS_FILTER = 'Eg-KAQwIARAAGAAgACgAMABqChAEEAUQAxAKEAk%3D';
+const YTM_CONTEXT = { client: { clientName: 'WEB_REMIX', clientVersion: YTM_CLIENT_VERSION, hl: 'es', gl: 'AR' } };
+
+function parseYtMusicItems(list) {
+  const items = [];
+  for (const entry of list || []) {
+    const r = entry?.musicResponsiveListItemRenderer;
+    if (!r) continue;
+    const videoId = r?.overlay?.musicItemThumbnailOverlayRenderer?.content?.musicPlayButtonRenderer
+      ?.playNavigationEndpoint?.watchEndpoint?.videoId;
+    if (!videoId) continue;
+    const flex = r.flexColumns || [];
+    const titleRuns = flex[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs || [];
+    const title = titleRuns.map(x => x.text).join('') || 'Sin título';
+    const subRuns = flex[1]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs || [];
+    const channel = subRuns[0]?.text || 'Desconocido';
+    const durationText = subRuns[subRuns.length - 1]?.text;
+    const duration = /^\d+:\d+(:\d+)?$/.test(durationText || '') ? parseDuration(durationText) : 0;
+    const thumbs = r?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails || [];
+    const thumbnail = thumbs[thumbs.length - 1]?.url || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+    items.push({ videoId, title, channel, thumbnail, duration });
+  }
+  return items;
+}
+
+async function ytMusicSearch(query, limit = 20) {
+  const res = await fetch(`https://music.youtube.com/youtubei/v1/search?key=${YTM_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'User-Agent': UA, 'Cookie': 'CONSENT=YES+1' },
+    body: JSON.stringify({ context: YTM_CONTEXT, query, params: YTM_SONGS_FILTER }),
+  });
+  const data = await res.json();
+  const shelf = data?.contents?.tabbedSearchResultsRenderer?.tabs?.[0]?.tabRenderer?.content
+    ?.sectionListRenderer?.contents?.[0]?.musicShelfRenderer;
+  const items = parseYtMusicItems(shelf?.contents);
+  if (limit > 0) items.splice(limit);
+  return { items, nextToken: null };
+}
+
 function parseDuration(text) {
   if (!text) return 0;
   const parts = String(text).split(':').map(Number);
@@ -85,7 +128,7 @@ router.get('/search', async (req, res) => {
   const { q, token } = req.query;
   if (!q) return res.json({ items: [], nextToken: null });
   try {
-    const result = token ? await ytSearchContinuation(token) : await ytSearch(q);
+    const result = token ? await ytSearchContinuation(token) : await ytMusicSearch(q);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Error buscando en YouTube' });
