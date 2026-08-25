@@ -188,8 +188,8 @@ h1, h2, h3 {
 
 @media (max-width: 768px) {
   .song-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+    gap: 12px;
   }
   .song-card-play {
     opacity: 1;
