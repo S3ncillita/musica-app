@@ -16,9 +16,18 @@
   to { transform: translateY(0); }
 }
 
+.fp-drag-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.25);
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
 .fullplayer-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   padding: 12px 16px;
 }
@@ -60,15 +69,28 @@
   overflow-y: auto;
 }
 
-.fp-cover-wrap {
+.fp-cover-frame {
   flex-shrink: 0;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.45), inset 0 1px 0 var(--glass-highlight);
+}
+
+.fp-cover-wrap {
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .fp-cover {
-  width: 280px;
-  height: 280px;
-  border-radius: 8px;
+  display: block;
+  width: 260px;
+  height: 260px;
+  border-radius: 12px;
   object-fit: cover;
   box-shadow: 0 8px 40px rgba(0,0,0,0.5);
 }
@@ -81,14 +103,22 @@
 }
 
 .fp-song-info {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: left;
   width: 100%;
   max-width: 500px;
   margin-bottom: 24px;
 }
 
+.fp-song-text {
+  min-width: 0;
+}
+
 .fp-title {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: #fff;
   white-space: nowrap;
@@ -98,8 +128,24 @@
 }
 
 .fp-artist {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
+  font-size: 0.9rem;
+  color: var(--accent-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fp-download-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+}
+.fp-download-btn.downloaded {
+  color: var(--accent);
 }
 
 .fp-progress {
@@ -173,8 +219,9 @@
 .fp-controls {
   display: flex;
   align-items: center;
-  gap: 24px;
-  margin-bottom: 24px;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 28px;
 }
 
 .fp-btn {
@@ -190,16 +237,20 @@
 .fp-btn.active {
   color: var(--accent);
 }
+.fp-btn-lg {
+  color: var(--text-primary);
+}
 
 .fp-play {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.1s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
 .fp-play:hover {
   transform: scale(1.06);
@@ -220,6 +271,14 @@
   gap: 10px;
   width: 100%;
   max-width: 300px;
+  margin-bottom: 20px;
+}
+
+.fp-secondary-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
 }
 
 .fp-volume-bar {
@@ -308,9 +367,14 @@
 }
 
 @media (max-width: 768px) {
+  .fp-cover-frame {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
   .fp-cover {
-    width: 220px;
-    height: 220px;
+    width: 200px;
+    height: 200px;
   }
 
   .fp-title {
@@ -318,12 +382,16 @@
   }
 
   .fp-controls {
-    gap: 16px;
+    gap: 24px;
+  }
+
+  .fp-secondary-controls {
+    gap: 28px;
   }
 
   .fp-play {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
   }
   .fp-play svg {
     width: 28px;

@@ -919,6 +919,12 @@ export default function App() {
           repeat={repeat}
           onToggleRepeat={() => setRepeat((repeat + 1) % 3)}
           onClose={() => setShowFullPlayer(false)}
+          onDownload={downloadSong}
+          onRemoveDownload={removeDownload}
+          isDownloaded={offline.isDownloaded}
+          downloadingKey={downloadingKey}
+          downloadProgress={downloadProgress}
+          onCancelDownload={cancelDownload}
         />
       )}
       {showEq && (
