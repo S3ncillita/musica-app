@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DownloadButton from './DownloadButton.jsx';
 import './Player.css';
 
@@ -7,7 +7,7 @@ export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onToggl
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
   const [vol, setVol] = useState(0.8);
-  const barRef = useState(null);
+  const barRef = useRef(null);
   const isYT = song?.videoId || song?.type === 'youtube';
 
   useEffect(() => {
