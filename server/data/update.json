@@ -1,6 +1,6 @@
 {
-  "version": "1.3.6",
+  "version": "1.3.7",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "La app ahora abre aunque no tengas internet, para poder ver tu biblioteca y escuchar las canciones descargadas sin conexión. Con internet, sigue funcionando igual que siempre (todo se actualiza solo).",
+  "notes": "Se arregló que al abrir con internet se fuera al navegador del celular en vez de quedarse dentro de la app.",
   "force": false
 }

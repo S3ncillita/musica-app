@@ -12,6 +12,10 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     cleartext: true,
+    // Sin esto, Capacitor manda la navegación hacia la IP real (ver
+    // src/liveRedirect.js) al navegador externo del celular en vez de
+    // mantenerla dentro del WebView de la app.
+    allowNavigation: ['181.94.245.250'],
   },
   android: {
     allowMixedContent: true,
