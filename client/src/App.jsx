@@ -92,18 +92,28 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const el = document.querySelector('.player');
-    if (!el) return;
+    let el = null;
+    let ro = null;
+    let retryTimer = null;
     const setVar = () => {
-      document.documentElement.style.setProperty('--player-height', `${el.offsetHeight}px`);
+      if (el) document.documentElement.style.setProperty('--player-height', `${el.offsetHeight}px`);
     };
-    setVar();
-    const ro = new ResizeObserver(setVar);
-    ro.observe(el);
+    const attach = () => {
+      el = document.querySelector('.player');
+      if (!el) {
+        retryTimer = setTimeout(attach, 200);
+        return;
+      }
+      setVar();
+      ro = new ResizeObserver(setVar);
+      ro.observe(el);
+    };
+    attach();
     window.addEventListener('resize', setVar);
     window.addEventListener('orientationchange', setVar);
     return () => {
-      ro.disconnect();
+      clearTimeout(retryTimer);
+      ro?.disconnect();
       window.removeEventListener('resize', setVar);
       window.removeEventListener('orientationchange', setVar);
     };
