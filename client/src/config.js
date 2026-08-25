@@ -1,7 +1,15 @@
 const CONFIG_KEY = 'musica_config';
 
+// En Android la app puede quedar empaquetada localmente (para funcionar sin
+// internet), así que window.location.origin ya no apunta al servidor real.
+// Ahí usamos siempre esta URL fija; en web, window.location.origin sigue
+// siendo correcto (dev local, etc).
+export const LIVE_SERVER_URL = 'http://181.94.245.250:48292';
+
+const isNative = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.();
+
 const defaults = {
-  serverUrl: window.location.origin,
+  serverUrl: isNative ? LIVE_SERVER_URL : window.location.origin,
 };
 
 function load() {

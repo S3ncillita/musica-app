@@ -16,7 +16,12 @@
     <title>Vybe</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot-splash" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#170f26;">
+        <span style="font-family:sans-serif;font-weight:700;font-size:22px;color:#a855f7;letter-spacing:0.02em;animation:boot-pulse 1.4s ease-in-out infinite;">Vybe</span>
+      </div>
+      <style>@keyframes boot-pulse{0%,100%{opacity:.5}50%{opacity:1}}</style>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

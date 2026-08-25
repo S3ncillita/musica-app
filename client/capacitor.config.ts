@@ -4,9 +4,13 @@ const config: CapacitorConfig = {
   appId: 'com.musica.app',
   appName: 'Vybe',
   webDir: 'dist',
+  // Sin `server.url`: la app arranca con el contenido empaquetado en la APK
+  // (funciona sin internet, incluida la reproducción de descargas offline).
+  // Si hay conexión al servidor real, src/liveRedirect.js salta a la versión
+  // en vivo apenas arranca, para seguir recibiendo cambios de JS/CSS sin
+  // necesitar una APK nueva en el uso normal (con internet).
   server: {
     androidScheme: 'https',
-    url: 'http://181.94.245.250:48292',
     cleartext: true,
   },
   android: {

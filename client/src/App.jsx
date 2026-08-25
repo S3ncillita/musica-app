@@ -195,16 +195,27 @@ export default function App() {
     }))
       .then(res => {
         if (res.ok) return res.json();
-        throw new Error();
+        // Token realmente inválido/expirado (401): ahí sí hay que cerrar sesión.
+        if (res.status === 401) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('authUser');
+          setUser(null);
+          return null;
+        }
+        throw new Error('server-error');
       })
       .then(data => {
+        if (!data) return;
         setUser(data.user);
         localStorage.setItem('authUser', JSON.stringify(data.user));
       })
       .catch(() => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('authUser');
-        setUser(null);
+        // Sin conexión (u otro error de red): no borramos la sesión guardada,
+        // seguimos con el usuario cacheado para poder usar la app offline.
+        try {
+          const cachedUser = JSON.parse(localStorage.getItem('authUser'));
+          if (cachedUser) setUser(cachedUser);
+        } catch {}
       })
       .finally(() => setAuthLoading(false));
   }, []);

@@ -1,6 +1,6 @@
 {
-  "version": "1.3.5",
+  "version": "1.3.6",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Carpetas para organizar tu música, con historial y sugerencias al buscar. Descargas offline que ahora sobreviven a una desinstalación (te lleva directo a Ajustes si falta el permiso), con botón para descargar toda una carpeta de una vez. Se arregló que la música se cortara al minimizar la app con el botón atrás y que no reanudara al volver de segundo plano.",
+  "notes": "La app ahora abre aunque no tengas internet, para poder ver tu biblioteca y escuchar las canciones descargadas sin conexión. Con internet, sigue funcionando igual que siempre (todo se actualiza solo).",
   "force": false
 }
