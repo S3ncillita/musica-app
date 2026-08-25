@@ -19,10 +19,17 @@
   --text-muted: #8d7aa8;
   --border: #3d2a5c;
   --glow: 0 0 8px rgba(168, 85, 247, 0.4);
+
+  /* Vidrio esmerilado */
+  --glass-fill: rgba(255, 255, 255, 0.08);
+  --glass-fill-strong: rgba(255, 255, 255, 0.14);
+  --glass-border: rgba(255, 255, 255, 0.20);
+  --glass-highlight: rgba(255, 255, 255, 0.5);
+  --glass-blur: blur(22px) saturate(160%);
 }
 
 body {
-  font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.6;
   background: var(--bg-primary);
@@ -83,7 +90,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 h1, h2, h3 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Sora', sans-serif;
 }
 
 /* ===== Tarjetas de canción (grid reutilizable) ===== */
@@ -101,14 +108,16 @@ h1, h2, h3 {
   gap: 8px;
   padding: 10px;
   border-radius: 8px;
-  background: var(--bg-card);
-  border: 1px solid transparent;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 .song-card:hover {
-  background: var(--bg-hover);
-  border-color: var(--border);
+  background: var(--glass-fill-strong);
+  border-color: var(--glass-highlight);
 }
 
 .song-card-thumb {
@@ -210,7 +219,7 @@ h1, h2, h3 {
   margin-bottom: 48px;
 }
 .view-title {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Sora', sans-serif;
   font-size: 48px;
   font-weight: 700;
   line-height: 1.1;

@@ -670,6 +670,11 @@ export default function App() {
 
   return (
     <div className={`app ${!user ? 'auth-required' : ''}`}>
+      <div className="app-art-wash" aria-hidden="true">
+        {currentSong?.thumbnail && (
+          <img src={currentSong.thumbnail} alt="" key={currentSong.thumbnail} />
+        )}
+      </div>
       {authLoading ? (
         <div className="auth-loading">
           <img src={vybeIcon} alt="Vybe" width="48" height="48" style={{ borderRadius: 12 }} />

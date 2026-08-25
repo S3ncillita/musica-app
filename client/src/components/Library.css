@@ -230,13 +230,15 @@
 
 .context-menu {
   position: fixed;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  background: var(--glass-fill-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-radius: 8px;
   padding: 6px;
   min-width: 180px;
   z-index: 350;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 1px 0 var(--glass-highlight);
 }
 .context-menu button {
   display: block;
