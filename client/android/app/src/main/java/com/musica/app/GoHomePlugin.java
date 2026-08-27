@@ -14,10 +14,14 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class GoHomePlugin extends Plugin {
     @PluginMethod
     public void goHome(PluginCall call) {
-        Intent startMain = new Intent(Intent.ACTION_MAIN);
-        startMain.addCategory(Intent.CATEGORY_HOME);
-        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getContext().startActivity(startMain);
-        call.resolve();
+        try {
+            Intent startMain = new Intent(Intent.ACTION_MAIN);
+            startMain.addCategory(Intent.CATEGORY_HOME);
+            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getActivity().startActivity(startMain);
+            call.resolve();
+        } catch (Exception e) {
+            call.reject("goHome failed: " + e.getMessage());
+        }
     }
 }

@@ -150,7 +150,10 @@ export default function App() {
         // moveTaskToBack() (lo que usa minimizeApp() de @capacitor/app) no
         // funciona en algunos MIUI/HyperOS de Xiaomi. Vamos directo a la
         // pantalla de inicio, que sí es confiable en todos los fabricantes.
-        GoHome.goHome().catch(() => CapacitorApp.minimizeApp());
+        GoHome.goHome().catch(err => {
+          showToast('DEBUG goHome falló: ' + (err?.message || err)); // TEMPORAL: diagnóstico
+          CapacitorApp.minimizeApp();
+        });
       }
     };
 
