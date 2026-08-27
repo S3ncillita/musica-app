@@ -1,8 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
-import { registerPlugin } from '@capacitor/core';
-
-const GoHome = registerPlugin('GoHome');
 import Sidebar from './components/Sidebar.jsx';
 import Library from './components/Library.jsx';
 import Player from './components/Player.jsx';
@@ -148,31 +145,15 @@ export default function App() {
       } else if (currentView !== 'library') {
         navigateTo('library');
       } else {
-        // moveTaskToBack() (lo que usa minimizeApp() de @capacitor/app) no
-        // funciona en algunos MIUI/HyperOS de Xiaomi. Vamos directo a la
-        // pantalla de inicio, que sí es confiable en todos los fabricantes.
-        // Tras el live-redirect, Capacitor deja de reconocerse como
-        // plataforma nativa en esta página (getPlatform() pasa a "web"), así
-        // que cualquier llamada a un plugin de Capacitor (minimizeApp,
-        // GoHome) se pierde. window.VybeNative es un puente directo
-        // (addJavascriptInterface) que no depende de eso.
-        console.log('[vybe-back] handleBack: rama minimizar. VybeNative=', !!window.VybeNative, 'Capacitor.platform=', window.Capacitor?.getPlatform?.());
-        if (window.VybeNative?.goHome) {
-          try {
-            window.VybeNative.goHome();
-            console.log('[vybe-back] VybeNative.goHome() llamado sin excepción');
-          } catch (e) {
-            console.error('[vybe-back] VybeNative.goHome() lanzó excepción:', e);
-          }
-        } else {
-          console.log('[vybe-back] VybeNative no existe, uso fallback GoHome/minimizeApp');
-          GoHome.goHome()
-            .then(() => console.log('[vybe-back] GoHome.goHome() resolvió'))
-            .catch(err => {
-              console.error('[vybe-back] GoHome.goHome() rechazado:', err);
-              CapacitorApp.minimizeApp();
-            });
-        }
+        // No intentamos llamar a nada nativo desde acá: tras el
+        // live-redirect a un origen externo, Capacitor deja de reconocerse
+        // como plataforma nativa en esta página (getPlatform() pasa a
+        // "web"), así que cualquier plugin de Capacitor (minimizeApp, etc.)
+        // se pierde de forma poco confiable. En cambio, devolvemos una señal
+        // y es MainActivity.java quien decide y ejecuta el "ir a inicio" del
+        // lado nativo, leyendo el resultado de este mismo evaluateJavascript
+        // que ya usa para invocar esta función.
+        return 'MINIMIZE';
       }
     };
 

@@ -5,39 +5,23 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.webkit.JavascriptInterface;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
-    // Puente directo, sin pasar por el sistema de plugins de Capacitor: una
-    // vez que la app salta a la versión en vivo (live-redirect) y el WebView
-    // navega a un origen externo, Capacitor deja de reconocerse como
-    // plataforma nativa en esa página (Capacitor.getPlatform() pasa a
-    // devolver "web"), así que cualquier llamada a un plugin (minimizeApp,
-    // etc.) se pierde silenciosamente o falla. addJavascriptInterface, en
-    // cambio, sigue funcionando sin importar el origen de la página cargada
-    // en este mismo WebView.
-    public class NativeBridge {
-        @JavascriptInterface
-        public void goHome() {
-            Intent startMain = new Intent(Intent.ACTION_MAIN);
-            startMain.addCategory(Intent.CATEGORY_HOME);
-            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(startMain);
-        }
+    private void goHome() {
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
+        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(startMain);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(StoragePermissionPlugin.class);
-        registerPlugin(GoHomePlugin.class);
         super.onCreate(savedInstanceState);
-        if (getBridge() != null && getBridge().getWebView() != null) {
-            getBridge().getWebView().addJavascriptInterface(new NativeBridge(), "VybeNative");
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -50,13 +34,28 @@ public class MainActivity extends BridgeActivity {
         // primero. En vez de depender del evento "backButton" del plugin (que en
         // algunos dispositivos no llega de forma confiable, sobre todo con el
         // gesto de deslizar), llamamos directo a una función JS por WebView.
+        //
+        // window.__vybeBackPressed() devuelve un string: 'MINIMIZE' cuando la
+        // UI de React ya cerró todo lo que tenía que cerrar (modales, cola,
+        // etc.) y lo que corresponde es mandar la app a segundo plano. Se
+        // decide y ejecuta directo acá, en nativo, en vez de pedirle a la
+        // página que llame de vuelta a algún puente JS→nativo (Capacitor
+        // deja de reconocerse como plataforma nativa después del
+        // live-redirect a un origen externo, así que cualquier plugin de
+        // Capacitor —o un addJavascriptInterface agregado antes de esa
+        // navegación— se pierde de forma poco confiable).
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
                 if (getBridge() != null && getBridge().getWebView() != null) {
                     getBridge().getWebView().post(() ->
                         getBridge().getWebView().evaluateJavascript(
-                            "window.__vybeBackPressed && window.__vybeBackPressed();", null
+                            "(window.__vybeBackPressed && window.__vybeBackPressed()) || ''",
+                            result -> {
+                                if (result != null && result.replace("\"", "").equals("MINIMIZE")) {
+                                    runOnUiThread(MainActivity.this::goHome);
+                                }
+                            }
                         )
                     );
                 }
