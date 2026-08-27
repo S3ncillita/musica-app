@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -52,7 +53,10 @@ public class MainActivity extends BridgeActivity {
                         getBridge().getWebView().evaluateJavascript(
                             "(window.__vybeBackPressed && window.__vybeBackPressed()) || ''",
                             result -> {
+                                // TEMPORAL: diagnóstico del valor real recibido.
+                                Toast.makeText(MainActivity.this, "DEBUG result=" + result, Toast.LENGTH_LONG).show();
                                 if (result != null && result.replace("\"", "").equals("MINIMIZE")) {
+                                    Toast.makeText(MainActivity.this, "DEBUG llamando goHome()", Toast.LENGTH_SHORT).show();
                                     runOnUiThread(MainActivity.this::goHome);
                                 }
                             }
