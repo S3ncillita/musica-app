@@ -45,10 +45,16 @@
 }
 
 .fp-drag-handle,
-.fullplayer-header,
 .fp-body {
   position: relative;
   z-index: 1;
+}
+
+.fullplayer-header {
+  position: relative;
+  /* Tiene que quedar siempre por encima de .fp-queue (position:fixed en
+     móvil, ver más abajo) — si no, la cola tapa la ✕ y no se puede cerrar. */
+  z-index: 320;
 }
 
 .fp-drag-handle {
