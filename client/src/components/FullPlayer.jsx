@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react';
 import DownloadButton from './DownloadButton.jsx';
 import './FullPlayer.css';
 
-export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onClose, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
+export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onClose, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload, showQueue, onToggleQueue }) {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
   const [vol, setVol] = useState(0.8);
-  const [showQueue, setShowQueue] = useState(false);
   const isYT = song?.videoId || song?.type === 'youtube';
 
   useEffect(() => {
@@ -83,7 +82,7 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
       </div>
       <div className="fp-drag-handle" />
       <div className="fullplayer-header">
-        <button className="fp-close" onClick={onClose}>
+        <button className="fp-close" onClick={showQueue ? onToggleQueue : onClose}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
           </svg>
@@ -184,7 +183,7 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
               </svg>
               {repeat === 2 && <span className="fp-repeat-badge">1</span>}
             </button>
-            <button className={`fp-btn ${showQueue ? 'active' : ''}`} onClick={() => setShowQueue(!showQueue)} title="Cola de reproducción">
+            <button className={`fp-btn ${showQueue ? 'active' : ''}`} onClick={onToggleQueue} title="Cola de reproducción">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>
               </svg>

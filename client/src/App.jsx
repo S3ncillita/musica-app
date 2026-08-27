@@ -58,6 +58,7 @@ export default function App() {
   const [downloadProgress, setDownloadProgress] = useState({ pct: 0, loaded: 0, total: 0 });
   const [offlineVersion, setOfflineVersion] = useState(0);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
+  const [showFpQueue, setShowFpQueue] = useState(false);
   const [showEq, setShowEq] = useState(false);
   const [eq, setEq] = useState({ preset: 'flat', low: 0, mid: 0, high: 0 });
   const eqCtxRef = useRef(null);
@@ -123,7 +124,7 @@ export default function App() {
   }, [currentSong]);
 
   const backButtonStateRef = useRef({});
-  backButtonStateRef.current = { showFullPlayer, showEq, sidebarOpen, currentView };
+  backButtonStateRef.current = { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView };
 
   useEffect(() => {
     let listenerHandle;
@@ -131,8 +132,10 @@ export default function App() {
     import('@capacitor/app').then(({ App: CapacitorApp }) => {
       if (cancelled) return;
       CapacitorApp.addListener('backButton', () => {
-        const { showFullPlayer, showEq, sidebarOpen, currentView } = backButtonStateRef.current;
-        if (showFullPlayer) {
+        const { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView } = backButtonStateRef.current;
+        if (showFpQueue) {
+          setShowFpQueue(false);
+        } else if (showFullPlayer) {
           setShowFullPlayer(false);
         } else if (showEq) {
           setShowEq(false);
@@ -918,7 +921,9 @@ export default function App() {
           onToggleShuffle={() => setShuffle(!shuffle)}
           repeat={repeat}
           onToggleRepeat={() => setRepeat((repeat + 1) % 3)}
-          onClose={() => setShowFullPlayer(false)}
+          onClose={() => { setShowFullPlayer(false); setShowFpQueue(false); }}
+          showQueue={showFpQueue}
+          onToggleQueue={() => setShowFpQueue(v => !v)}
           onDownload={downloadSong}
           onRemoveDownload={removeDownload}
           isDownloaded={offline.isDownloaded}
