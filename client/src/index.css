@@ -28,6 +28,10 @@
   --glass-blur: blur(22px) saturate(160%);
 }
 
+html {
+  touch-action: pan-y;
+}
+
 body {
   font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
@@ -36,6 +40,10 @@ body {
   color: var(--text-primary);
   overflow: hidden;
   height: 100vh;
+  /* Nada en la app necesita gestos horizontales: al restringir el touch
+     al eje vertical, el WebView deja de "comerse" el swipe desde el
+     borde, y Android puede reconocerlo como el gesto de volver atrás. */
+  touch-action: pan-y;
 }
 
 ::selection {

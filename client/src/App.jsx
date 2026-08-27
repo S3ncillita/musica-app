@@ -129,28 +129,42 @@ export default function App() {
   useEffect(() => {
     let listenerHandle;
     let cancelled = false;
+    let capacitorAppRef = null;
+
+    const handleBack = () => {
+      const { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView } = backButtonStateRef.current;
+      if (showFpQueue) {
+        setShowFpQueue(false);
+      } else if (showFullPlayer) {
+        setShowFullPlayer(false);
+      } else if (showEq) {
+        setShowEq(false);
+      } else if (sidebarOpen) {
+        setSidebarOpen(false);
+      } else if (currentView !== 'library') {
+        navigateTo('library');
+      } else {
+        capacitorAppRef?.minimizeApp();
+      }
+    };
+
     import('@capacitor/app').then(({ App: CapacitorApp }) => {
       if (cancelled) return;
-      CapacitorApp.addListener('backButton', () => {
-        const { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView } = backButtonStateRef.current;
-        if (showFpQueue) {
-          setShowFpQueue(false);
-        } else if (showFullPlayer) {
-          setShowFullPlayer(false);
-        } else if (showEq) {
-          setShowEq(false);
-        } else if (sidebarOpen) {
-          setSidebarOpen(false);
-        } else if (currentView !== 'library') {
-          navigateTo('library');
-        } else {
-          CapacitorApp.minimizeApp();
-        }
-      }).then(handle => { listenerHandle = handle; });
+      capacitorAppRef = CapacitorApp;
+      CapacitorApp.addListener('backButton', handleBack).then(handle => { listenerHandle = handle; });
     }).catch(() => {});
+
+    // Además del listener de Capacitor: la app también carga el puente
+    // Cordova (lo necesita cordova-plugin-apkupdater), que en algunos
+    // dispositivos dispara su propio evento "backbutton" y se queda con
+    // el botón antes de que llegue al listener de Capacitor. Escuchamos
+    // los dos apuntando a la misma lógica, como red de seguridad.
+    document.addEventListener('backbutton', handleBack, false);
+
     return () => {
       cancelled = true;
       listenerHandle?.remove();
+      document.removeEventListener('backbutton', handleBack, false);
     };
   }, []);
 
