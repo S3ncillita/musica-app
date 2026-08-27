@@ -3,7 +3,6 @@ package com.musica.app;
 import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -29,12 +28,6 @@ public class MainActivity extends BridgeActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                // TEMPORAL: cartel de diagnóstico. Si esto NO aparece al usar el
-                // botón/gesto de atrás, Android ni siquiera nos está avisando —
-                // el problema está antes de llegar a nuestro código. Si SÍ
-                // aparece pero la app no reacciona, el problema está más
-                // adelante (JS/WebView).
-                Toast.makeText(MainActivity.this, "DEBUG: atrás detectado", Toast.LENGTH_SHORT).show();
                 if (getBridge() != null && getBridge().getWebView() != null) {
                     getBridge().getWebView().post(() ->
                         getBridge().getWebView().evaluateJavascript(

@@ -1,6 +1,6 @@
 {
-  "version": "1.3.10",
+  "version": "1.3.11",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Otro intento para el botón/gesto de atrás: ahora se captura directo desde la app nativa en vez de depender del plugin.",
+  "notes": "Arreglado de una vez el botón/gesto de atrás en el reproductor completo.",
   "force": false
 }
