@@ -1,6 +1,6 @@
 {
-  "version": "1.3.9",
+  "version": "1.3.10",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Se arregló que la cola de reproducción tapara el botón de cerrar, y se agrega soporte para el gesto de volver atrás de Android moderno (puede seguir variando según el celular).",
+  "notes": "Otro intento para el botón/gesto de atrás: ahora se captura directo desde la app nativa en vez de depender del plugin.",
   "force": false
 }

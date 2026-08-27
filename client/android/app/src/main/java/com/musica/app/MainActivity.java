@@ -3,6 +3,7 @@ package com.musica.app;
 import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
@@ -18,5 +19,23 @@ public class MainActivity extends BridgeActivity {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
             }
         }
+
+        // Registrado DESPUÉS de super.onCreate() (que ya cargó el callback propio
+        // de @capacitor/app), así que este queda arriba en la pila y se ejecuta
+        // primero. En vez de depender del evento "backButton" del plugin (que en
+        // algunos dispositivos no llega de forma confiable, sobre todo con el
+        // gesto de deslizar), llamamos directo a una función JS por WebView.
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (getBridge() != null && getBridge().getWebView() != null) {
+                    getBridge().getWebView().post(() ->
+                        getBridge().getWebView().evaluateJavascript(
+                            "window.__vybeBackPressed && window.__vybeBackPressed();", null
+                        )
+                    );
+                }
+            }
+        });
     }
 }

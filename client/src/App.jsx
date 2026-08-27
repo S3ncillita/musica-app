@@ -161,7 +161,14 @@ export default function App() {
     // los dos apuntando a la misma lógica, como red de seguridad.
     document.addEventListener('backbutton', handleBack, false);
 
+    // Vía más directa: MainActivity.java llama esta función a través del
+    // WebView apenas capta el botón/gesto de atrás a nivel nativo, sin
+    // pasar por el evento del plugin (que en algunos dispositivos no
+    // llegaba de forma confiable).
+    window.__vybeBackPressed = handleBack;
+
     return () => {
+      delete window.__vybeBackPressed;
       cancelled = true;
       listenerHandle?.remove();
       document.removeEventListener('backbutton', handleBack, false);
