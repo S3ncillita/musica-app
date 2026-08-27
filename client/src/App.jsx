@@ -144,6 +144,7 @@ export default function App() {
       } else if (currentView !== 'library') {
         navigateTo('library');
       } else {
+        showToast('DEBUG: intentando minimizar'); // TEMPORAL: diagnóstico
         CapacitorApp.minimizeApp();
       }
     };
