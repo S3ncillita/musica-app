@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { App as CapacitorApp } from '@capacitor/app';
 import Sidebar from './components/Sidebar.jsx';
 import Library from './components/Library.jsx';
 import Player from './components/Player.jsx';
@@ -129,7 +130,6 @@ export default function App() {
   useEffect(() => {
     let listenerHandle;
     let cancelled = false;
-    let capacitorAppRef = null;
 
     const handleBack = () => {
       const { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView } = backButtonStateRef.current;
@@ -144,15 +144,14 @@ export default function App() {
       } else if (currentView !== 'library') {
         navigateTo('library');
       } else {
-        capacitorAppRef?.minimizeApp();
+        CapacitorApp.minimizeApp();
       }
     };
 
-    import('@capacitor/app').then(({ App: CapacitorApp }) => {
-      if (cancelled) return;
-      capacitorAppRef = CapacitorApp;
-      CapacitorApp.addListener('backButton', handleBack).then(handle => { listenerHandle = handle; });
-    }).catch(() => {});
+    CapacitorApp.addListener('backButton', handleBack).then(handle => {
+      if (cancelled) { handle.remove(); return; }
+      listenerHandle = handle;
+    });
 
     // Además del listener de Capacitor: la app también carga el puente
     // Cordova (lo necesita cordova-plugin-apkupdater), que en algunos

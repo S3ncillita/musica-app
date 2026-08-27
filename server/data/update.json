@@ -1,6 +1,6 @@
 {
-  "version": "1.3.13",
+  "version": "1.3.14",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Arreglado el botón físico/de 3 botones de atrás (el gesto ya andaba bien).",
+  "notes": "Arreglado que a veces el botón de atrás no minimizaba la app en la Biblioteca.",
   "force": false
 }
