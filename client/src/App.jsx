@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
+import { registerPlugin } from '@capacitor/core';
+
+const GoHome = registerPlugin('GoHome');
 import Sidebar from './components/Sidebar.jsx';
 import Library from './components/Library.jsx';
 import Player from './components/Player.jsx';
@@ -144,8 +147,10 @@ export default function App() {
       } else if (currentView !== 'library') {
         navigateTo('library');
       } else {
-        showToast('DEBUG: intentando minimizar'); // TEMPORAL: diagnóstico
-        CapacitorApp.minimizeApp();
+        // moveTaskToBack() (lo que usa minimizeApp() de @capacitor/app) no
+        // funciona en algunos MIUI/HyperOS de Xiaomi. Vamos directo a la
+        // pantalla de inicio, que sí es confiable en todos los fabricantes.
+        GoHome.goHome().catch(() => CapacitorApp.minimizeApp());
       }
     };
 
