@@ -150,19 +150,16 @@ export default function App() {
         // moveTaskToBack() (lo que usa minimizeApp() de @capacitor/app) no
         // funciona en algunos MIUI/HyperOS de Xiaomi. Vamos directo a la
         // pantalla de inicio, que sí es confiable en todos los fabricantes.
-        // TEMPORAL: diagnóstico — "GoHome is not implemented on web" indica
-        // que este WebView, tras el live-redirect, se está identificando
-        // como plataforma "web" en vez de "android" ante @capacitor/core.
-        // Un solo cartel con todo junto: el toast anterior no encolaba,
-        // se pisaba con el siguiente y solo se veía el último.
-        GoHome.goHome().catch(err => {
-          showToast(
-            'DEBUG plat=' + window.Capacitor?.getPlatform?.() +
-            ' native=' + window.Capacitor?.isNativePlatform?.() +
-            ' err=' + (err?.message || err)
-          );
-          CapacitorApp.minimizeApp();
-        });
+        // Tras el live-redirect, Capacitor deja de reconocerse como
+        // plataforma nativa en esta página (getPlatform() pasa a "web"), así
+        // que cualquier llamada a un plugin de Capacitor (minimizeApp,
+        // GoHome) se pierde. window.VybeNative es un puente directo
+        // (addJavascriptInterface) que no depende de eso.
+        if (window.VybeNative?.goHome) {
+          window.VybeNative.goHome();
+        } else {
+          GoHome.goHome().catch(() => CapacitorApp.minimizeApp());
+        }
       }
     };
 

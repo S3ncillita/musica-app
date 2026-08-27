@@ -1,6 +1,6 @@
 {
-  "version": "1.3.16",
+  "version": "1.3.17",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Diagnóstico extra para el botón de atrás en Xiaomi/MIUI.",
+  "notes": "Arreglado de raíz: el botón de atrás ahora minimiza la app en cualquier celular, incluso conectado a la versión en vivo.",
   "force": false
 }

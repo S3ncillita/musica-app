@@ -1,20 +1,43 @@
 package com.musica.app;
 
 import android.Manifest;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.webkit.JavascriptInterface;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
+    // Puente directo, sin pasar por el sistema de plugins de Capacitor: una
+    // vez que la app salta a la versión en vivo (live-redirect) y el WebView
+    // navega a un origen externo, Capacitor deja de reconocerse como
+    // plataforma nativa en esa página (Capacitor.getPlatform() pasa a
+    // devolver "web"), así que cualquier llamada a un plugin (minimizeApp,
+    // etc.) se pierde silenciosamente o falla. addJavascriptInterface, en
+    // cambio, sigue funcionando sin importar el origen de la página cargada
+    // en este mismo WebView.
+    public class NativeBridge {
+        @JavascriptInterface
+        public void goHome() {
+            Intent startMain = new Intent(Intent.ACTION_MAIN);
+            startMain.addCategory(Intent.CATEGORY_HOME);
+            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(startMain);
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(StoragePermissionPlugin.class);
         registerPlugin(GoHomePlugin.class);
         super.onCreate(savedInstanceState);
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().addJavascriptInterface(new NativeBridge(), "VybeNative");
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != android.content.pm.PackageManager.PERMISSION_GRANTED) {
