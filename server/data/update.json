@@ -1,6 +1,6 @@
 {
-  "version": "1.3.8",
+  "version": "1.3.9",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Se arregló que el chequeo de actualizaciones no encontrara versiones nuevas al correr sin conexión al servidor real.",
+  "notes": "Se arregló que la cola de reproducción tapara el botón de cerrar, y se agrega soporte para el gesto de volver atrás de Android moderno (puede seguir variando según el celular).",
   "force": false
 }
