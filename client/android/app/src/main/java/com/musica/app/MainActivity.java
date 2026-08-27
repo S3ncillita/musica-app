@@ -3,6 +3,7 @@ package com.musica.app;
 import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -37,5 +38,19 @@ public class MainActivity extends BridgeActivity {
                 }
             }
         });
+    }
+
+    // El WebView se queda con la tecla física/de 3 botones de "atrás" antes de
+    // que llegue al OnBackPressedDispatcher (por eso el gesto sí funcionaba
+    // pero el botón no: el gesto no pasa por dispatchKeyEvent). Interceptamos
+    // acá para que nunca llegue al WebView y la mandamos por el mismo camino
+    // que ya funciona para el gesto.
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+            getOnBackPressedDispatcher().onBackPressed();
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
     }
 }

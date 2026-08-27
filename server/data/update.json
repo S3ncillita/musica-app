@@ -1,6 +1,6 @@
 {
-  "version": "1.3.12",
+  "version": "1.3.13",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Se sacó el ecualizador duplicado del menú inferior.",
+  "notes": "Arreglado el botón físico/de 3 botones de atrás (el gesto ya andaba bien).",
   "force": false
 }
