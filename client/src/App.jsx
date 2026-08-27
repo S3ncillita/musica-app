@@ -136,6 +136,7 @@ export default function App() {
 
     const handleBack = () => {
       const { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView } = backButtonStateRef.current;
+      console.log('[vybe-back] handleBack invocado. estado=', { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView });
       if (showFpQueue) {
         setShowFpQueue(false);
       } else if (showFullPlayer) {
@@ -155,10 +156,22 @@ export default function App() {
         // que cualquier llamada a un plugin de Capacitor (minimizeApp,
         // GoHome) se pierde. window.VybeNative es un puente directo
         // (addJavascriptInterface) que no depende de eso.
+        console.log('[vybe-back] handleBack: rama minimizar. VybeNative=', !!window.VybeNative, 'Capacitor.platform=', window.Capacitor?.getPlatform?.());
         if (window.VybeNative?.goHome) {
-          window.VybeNative.goHome();
+          try {
+            window.VybeNative.goHome();
+            console.log('[vybe-back] VybeNative.goHome() llamado sin excepción');
+          } catch (e) {
+            console.error('[vybe-back] VybeNative.goHome() lanzó excepción:', e);
+          }
         } else {
-          GoHome.goHome().catch(() => CapacitorApp.minimizeApp());
+          console.log('[vybe-back] VybeNative no existe, uso fallback GoHome/minimizeApp');
+          GoHome.goHome()
+            .then(() => console.log('[vybe-back] GoHome.goHome() resolvió'))
+            .catch(err => {
+              console.error('[vybe-back] GoHome.goHome() rechazado:', err);
+              CapacitorApp.minimizeApp();
+            });
         }
       }
     };
