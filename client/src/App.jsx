@@ -133,7 +133,6 @@ export default function App() {
 
     const handleBack = () => {
       const { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView } = backButtonStateRef.current;
-      console.log('[vybe-back] handleBack invocado. estado=', { showFullPlayer, showFpQueue, showEq, sidebarOpen, currentView });
       if (showFpQueue) {
         setShowFpQueue(false);
       } else if (showFullPlayer) {

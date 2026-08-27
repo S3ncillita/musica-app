@@ -1,6 +1,6 @@
 {
-  "version": "1.3.18",
+  "version": "1.3.19",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Arreglado de raíz (de verdad): el botón de atrás ahora minimiza la app sin depender de ningún puente JS-nativo.",
+  "notes": "Confirmado: el botón/gesto de atrás ya minimiza bien la app en cualquier celular.",
   "force": false
 }

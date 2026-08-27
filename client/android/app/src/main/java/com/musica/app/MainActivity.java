@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
@@ -53,10 +52,7 @@ public class MainActivity extends BridgeActivity {
                         getBridge().getWebView().evaluateJavascript(
                             "(window.__vybeBackPressed && window.__vybeBackPressed()) || ''",
                             result -> {
-                                // TEMPORAL: diagnóstico del valor real recibido.
-                                Log.d("VybeBack", "evaluateJavascript result=" + result);
                                 if (result != null && result.replace("\"", "").equals("MINIMIZE")) {
-                                    Log.d("VybeBack", "llamando goHome()");
                                     runOnUiThread(MainActivity.this::goHome);
                                 }
                             }
