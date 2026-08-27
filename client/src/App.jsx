@@ -150,8 +150,12 @@ export default function App() {
         // moveTaskToBack() (lo que usa minimizeApp() de @capacitor/app) no
         // funciona en algunos MIUI/HyperOS de Xiaomi. Vamos directo a la
         // pantalla de inicio, que sí es confiable en todos los fabricantes.
+        // TEMPORAL: diagnóstico — "GoHome is not implemented on web" indica
+        // que este WebView, tras el live-redirect, se está identificando
+        // como plataforma "web" en vez de "android" ante @capacitor/core.
+        showToast('DEBUG plat=' + window.Capacitor?.getPlatform?.() + ' native=' + window.Capacitor?.isNativePlatform?.());
         GoHome.goHome().catch(err => {
-          showToast('DEBUG goHome falló: ' + (err?.message || err)); // TEMPORAL: diagnóstico
+          showToast('DEBUG goHome falló: ' + (err?.message || err));
           CapacitorApp.minimizeApp();
         });
       }
