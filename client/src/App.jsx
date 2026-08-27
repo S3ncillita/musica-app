@@ -153,9 +153,14 @@ export default function App() {
         // TEMPORAL: diagnóstico — "GoHome is not implemented on web" indica
         // que este WebView, tras el live-redirect, se está identificando
         // como plataforma "web" en vez de "android" ante @capacitor/core.
-        showToast('DEBUG plat=' + window.Capacitor?.getPlatform?.() + ' native=' + window.Capacitor?.isNativePlatform?.());
+        // Un solo cartel con todo junto: el toast anterior no encolaba,
+        // se pisaba con el siguiente y solo se veía el último.
         GoHome.goHome().catch(err => {
-          showToast('DEBUG goHome falló: ' + (err?.message || err));
+          showToast(
+            'DEBUG plat=' + window.Capacitor?.getPlatform?.() +
+            ' native=' + window.Capacitor?.isNativePlatform?.() +
+            ' err=' + (err?.message || err)
+          );
           CapacitorApp.minimizeApp();
         });
       }
