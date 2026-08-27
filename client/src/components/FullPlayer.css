@@ -448,6 +448,7 @@
     width: 100%;
     border-left: none;
     z-index: 310;
+    padding-top: 76px;
   }
 
   .fp-body.with-queue .fp-main {
