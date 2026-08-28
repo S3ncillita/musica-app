@@ -5,12 +5,35 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.webkit.JavascriptInterface;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
+    // DIAGNÓSTICO TEMPORAL: confirmar si esta vez sí sobrevive al
+    // live-redirect. Se reagrega en onResume() (no solo en onCreate) por si
+    // Capacitor recrea el WebView interno después de la creación inicial.
+    public class DiagBridge {
+        @JavascriptInterface
+        public String ping() {
+            return "pong";
+        }
+    }
+
+    private void reinjectDiagBridge() {
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().addJavascriptInterface(new DiagBridge(), "VybeDiag");
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        reinjectDiagBridge();
+    }
+
     private void goHome() {
         Intent startMain = new Intent(Intent.ACTION_MAIN);
         startMain.addCategory(Intent.CATEGORY_HOME);
@@ -22,6 +45,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(StoragePermissionPlugin.class);
         super.onCreate(savedInstanceState);
+        reinjectDiagBridge();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != android.content.pm.PackageManager.PERMISSION_GRANTED) {

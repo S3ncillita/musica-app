@@ -22,6 +22,22 @@ export async function maybeRedirectToLive() {
     return false;
   }
 
-  window.location.replace(LIVE_SERVER_URL);
+  // Una vez que saltamos a este origen externo, Capacitor deja de
+  // reconocerse como plataforma nativa ahí (getPlatform() pasa a "web") y
+  // App.getInfo() ya no funciona — así que estos datos hay que leerlos ACÁ,
+  // todavía en el origen nativo real, y llevarlos como query params para
+  // que el código que corre después de saltar los pueda recuperar sin
+  // depender de ningún plugin de Capacitor.
+  let nativeVersion = '';
+  try {
+    const { App } = await import('@capacitor/app');
+    const info = await App.getInfo();
+    nativeVersion = info?.version || '';
+  } catch {}
+
+  const url = new URL(LIVE_SERVER_URL);
+  url.searchParams.set('vybeNative', '1');
+  if (nativeVersion) url.searchParams.set('vybeNativeVersion', nativeVersion);
+  window.location.replace(url.toString());
   return true;
 }

@@ -1,21 +1,29 @@
 import { runUpdateCheck } from './updateCheck.js';
-import { LIVE_SERVER_URL } from './config.js';
+import { LIVE_SERVER_URL, isNative, nativeAppVersion } from './config.js';
 import './updateCheck.css';
 
 export async function initUpdateCheck() {
   // El chequeo de versión solo tiene sentido en la app Android nativa:
   // ahí hay un APK instalado que puede quedar desactualizado. En el
   // navegador siempre se sirve el código más reciente, así que no hay
-  // nada que "actualizar".
-  if (!window.Capacitor?.isNativePlatform?.()) return null;
+  // nada que "actualizar". `isNative` viene de config.js: usa el query
+  // param que liveRedirect.js deja antes de saltar, porque
+  // Capacitor.isNativePlatform() ya no es confiable en este origen.
+  if (!isNative) return null;
 
-  let currentVersion = null;
-  try {
-    const { App } = await import('@capacitor/app');
-    const info = await App.getInfo();
-    currentVersion = info?.version || null;
-  } catch (err) {
-    console.warn('[update] no se pudo leer la versión nativa:', err);
+  // nativeAppVersion: capturado por liveRedirect.js con App.getInfo() antes
+  // de saltar (acá App.getInfo() ya no funciona). Si por algún motivo no
+  // llegó (ej: la app abrió directo en este origen sin pasar por el
+  // redirect), probamos igual por si Capacitor sí es nativo acá.
+  let currentVersion = nativeAppVersion;
+  if (!currentVersion) {
+    try {
+      const { App } = await import('@capacitor/app');
+      const info = await App.getInfo();
+      currentVersion = info?.version || null;
+    } catch (err) {
+      console.warn('[update] no se pudo leer la versión nativa:', err);
+    }
   }
   if (!currentVersion) return null;
 

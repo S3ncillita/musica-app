@@ -6,7 +6,15 @@ const CONFIG_KEY = 'musica_config';
 // siendo correcto (dev local, etc).
 export const LIVE_SERVER_URL = 'http://181.94.245.250:48292';
 
-const isNative = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.();
+// window.Capacitor.isNativePlatform() deja de ser confiable después de que
+// liveRedirect.js navega a este origen: Capacitor no se reconoce a sí mismo
+// como nativo en un origen externo. liveRedirect.js, mientras todavía
+// estaba en el origen nativo real (donde esta llamada SÍ es confiable), deja
+// esta marca como query param antes de saltar, así que la leemos primero.
+const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+const isNative = urlParams?.get('vybeNative') === '1' || (typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.());
+export const nativeAppVersion = urlParams?.get('vybeNativeVersion') || null;
+export { isNative };
 
 const defaults = {
   serverUrl: isNative ? LIVE_SERVER_URL : window.location.origin,
