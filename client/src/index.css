@@ -21,11 +21,11 @@
   --glow: 0 0 8px rgba(168, 85, 247, 0.4);
 
   /* Vidrio esmerilado */
-  --glass-fill: rgba(255, 255, 255, 0.08);
-  --glass-fill-strong: rgba(255, 255, 255, 0.14);
-  --glass-border: rgba(255, 255, 255, 0.20);
-  --glass-highlight: rgba(255, 255, 255, 0.5);
-  --glass-blur: blur(22px) saturate(160%);
+  --glass-fill: var(--bg-card);
+  --glass-fill-strong: var(--bg-hover);
+  --glass-border: var(--border);
+  --glass-highlight: transparent;
+  --glass-blur: none;
 }
 
 html {
