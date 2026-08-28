@@ -24,6 +24,7 @@ let handlers = null;
 export function registerMediaSessionHandlers({ onPlay, onPause, onPrev, onNext }) {
   handlers = { onPlay, onPause, onPrev, onNext };
   window.__vybeMediaAction = (action) => {
+    console.log('[vybe-media] acción recibida desde la notificación:', action);
     if (!handlers) return;
     if (action === 'play') handlers.onPlay();
     else if (action === 'pause') handlers.onPause();
