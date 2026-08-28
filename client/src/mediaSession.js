@@ -24,7 +24,6 @@ let handlers = null;
 export function registerMediaSessionHandlers({ onPlay, onPause, onPrev, onNext }) {
   handlers = { onPlay, onPause, onPrev, onNext };
   window.__vybeMediaAction = (action) => {
-    console.log('[vybe-media] acción recibida desde la notificación:', action);
     if (!handlers) return;
     if (action === 'play') handlers.onPlay();
     else if (action === 'pause') handlers.onPause();
@@ -40,19 +39,16 @@ let lastArtworkBase64 = '';
 export async function updateMediaMetadata(song) {
   lastSong = song;
   lastArtworkBase64 = '';
-  console.log('[vybe-media] updateMediaMetadata', song?.title, 'VybeNative=', !!window.VybeNative?.updateNotification);
   if (!song || !window.VybeNative?.updateNotification) return;
   lastArtworkBase64 = await fetchArtworkBase64(song.thumbnail);
   // El usuario pudo haber cambiado de canción de nuevo mientras esperábamos
   // la descarga/codificación del artwork.
   if (lastSong !== song) return;
-  console.log('[vybe-media] llamando updateNotification tras fetch de artwork, len=', lastArtworkBase64.length);
   window.VybeNative.updateNotification(song.title || '', song.artist || '', lastArtworkBase64, lastIsPlaying);
 }
 
 export function updateMediaPlaybackState(isPlaying) {
   lastIsPlaying = isPlaying;
-  console.log('[vybe-media] updateMediaPlaybackState', isPlaying, 'lastSong=', !!lastSong, 'VybeNative=', !!window.VybeNative?.updateNotification);
   if (!lastSong || !window.VybeNative?.updateNotification) return;
   // Cada notificación se reconstruye entera del lado nativo, así que hay
   // que volver a mandar el mismo artwork o se pierde en el próximo update.
