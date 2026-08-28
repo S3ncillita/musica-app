@@ -1,23 +1,17 @@
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Capacitor, registerPlugin } from '@capacitor/core';
-
-const StoragePermission = registerPlugin('StoragePermission');
+// Las descargas offline usaban @capacitor/filesystem (Filesystem.writeFile,
+// getUri, etc). Después de que la app salta a la versión en vivo
+// (liveRedirect.js), Capacitor deja de reconocerse como plataforma nativa
+// ahí y esas llamadas se pierden en silencio o fallan — así que usamos
+// window.VybeNative (addJavascriptInterface en MainActivity.java), que
+// sigue funcionando sin importar el origen de la página. De paso, los
+// archivos ahora quedan en el almacenamiento propio de la app
+// (getExternalFilesDir), que no necesita el permiso "Acceso a todos los
+// archivos" que hacía falta antes para el almacenamiento compartido.
 
 const INDEX_KEY = 'offlineSongs';
-const DIR = Directory.ExternalStorage;
-const FOLDER = 'Music/Vybe';
 
-async function ensureStoragePermission() {
-  if (Capacitor.getPlatform() !== 'android') return true;
-  try {
-    const { granted } = await StoragePermission.isAllFilesAccessGranted();
-    if (!granted) {
-      await StoragePermission.openAllFilesAccessSettings().catch(() => {});
-    }
-    return granted;
-  } catch {
-    return true;
-  }
+function nativeBridge() {
+  return typeof window !== 'undefined' ? window.VybeNative : null;
 }
 
 function readIndex() {
@@ -96,38 +90,38 @@ export function listDownloaded() {
 export async function getOfflineSrc(song) {
   const entry = readIndex()[songKey(song)];
   if (!entry) return null;
+  const bridge = nativeBridge();
+  if (!bridge?.songFileUrl) return null;
   try {
-    const { uri } = await Filesystem.getUri({ directory: DIR, path: entry.path });
-    return Capacitor.convertFileSrc(uri);
+    const url = bridge.songFileUrl(entry.filename);
+    return url || null;
   } catch {
     return null;
   }
 }
 
 export async function downloadSong(song, apiBase, onProgress) {
-  const hasPermission = await ensureStoragePermission();
-  if (!hasPermission) {
-    throw new Error('Activá "Acceso a todos los archivos" para Vybe y volvé a intentar la descarga');
+  const bridge = nativeBridge();
+  if (!bridge?.writeSongFile) {
+    throw new Error('Las descargas offline solo funcionan en la app instalada');
   }
   const key = songKey(song);
   const isYt = song.videoId || song.type === 'youtube';
   const url = isYt ? `${apiBase}/ytdlp/stream/${song.videoId}` : `${apiBase}/stream/${song.id}`;
   const blob = await downloadBlob(url, onProgress);
   const ext = isYt ? 'm4a' : (song.filename?.split('.').pop() || 'mp3');
-  const path = `${FOLDER}/${key}.${ext}`;
+  const filename = `${key}.${ext}`;
 
   const base64 = await blobToBase64(blob);
-  await Filesystem.mkdir({ path: FOLDER, directory: DIR, recursive: true }).catch(() => {});
-  try {
-    await Filesystem.writeFile({ path, directory: DIR, data: base64 });
-  } catch (err) {
-    throw new Error('Activá el permiso "Acceso a todos los archivos" para Vybe en Ajustes > Apps, y probá de nuevo');
+  const ok = bridge.writeSongFile(filename, base64);
+  if (!ok) {
+    throw new Error('No se pudo guardar la descarga en el celular');
   }
 
   const index = readIndex();
   index[key] = {
     key,
-    path,
+    filename,
     title: song.title,
     artist: song.artist,
     thumbnail: song.thumbnail || null,
@@ -141,7 +135,7 @@ export async function removeDownload(song) {
   const index = readIndex();
   const entry = index[key];
   if (!entry) return;
-  try { await Filesystem.deleteFile({ path: entry.path, directory: DIR }); } catch {}
+  try { nativeBridge()?.deleteSongFile?.(entry.filename); } catch {}
   delete index[key];
   writeIndex(index);
 }

@@ -35,7 +35,11 @@ let activePrompt = null;
 export function showUpdatePrompt(info) {
   if (activePrompt) return activePrompt;
 
-  const isNative = !!(window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android');
+  // window.Capacitor.getPlatform() ya no es confiable después del
+  // live-redirect (ver config.js) — window.VybeNative es el puente directo
+  // que sí sigue andando ahí, así que su presencia es la señal real de que
+  // estamos en la app nativa.
+  const isNative = !!window.VybeNative?.installUpdate;
 
   const overlay = document.createElement('div');
   overlay.className = 'update-overlay';
@@ -70,25 +74,36 @@ export function showUpdatePrompt(info) {
     downloadBtn.textContent = 'Descargando...';
     progressWrap.style.display = 'block';
     overlay.querySelector('.update-later')?.remove();
-    try {
-      const ApkUpdater = (await import('cordova-plugin-apkupdater')).default;
-      await ApkUpdater.download(info.url, {
-        onDownloadProgress: (e) => {
-          const p = Math.round(e.progress);
-          progressFill.style.width = `${p}%`;
-          progressLabel.textContent = `${p}%`;
-        },
-      });
-      downloadBtn.textContent = 'Instalando...';
-      await ApkUpdater.install();
-      close();
-    } catch (err) {
-      console.error('[update] actualización falló:', err);
+
+    const onError = (msg) => {
+      console.error('[update] actualización falló:', msg);
       downloadBtn.disabled = false;
       downloadBtn.textContent = 'Reintentar';
-      const detail = err?.message || (typeof err === 'string' ? err : JSON.stringify(err));
-      progressLabel.textContent = `Error: ${detail || 'desconocido'}`;
+      progressLabel.textContent = `Error: ${msg || 'desconocido'}`;
       progressLabel.classList.add('update-progress-error');
+      cleanup();
+    };
+    const onProgress = (pct) => {
+      progressFill.style.width = `${pct}%`;
+      progressLabel.textContent = `${pct}%`;
+    };
+    const onDone = () => {
+      downloadBtn.textContent = 'Instalando...';
+      cleanup();
+    };
+    const cleanup = () => {
+      delete window.__vybeUpdateError;
+      delete window.__vybeUpdateProgress;
+      delete window.__vybeUpdateDone;
+    };
+    window.__vybeUpdateError = onError;
+    window.__vybeUpdateProgress = onProgress;
+    window.__vybeUpdateDone = onDone;
+
+    try {
+      window.VybeNative.installUpdate(info.url);
+    } catch (err) {
+      onError(err?.message || String(err));
     }
   });
   overlay.querySelector('.update-later')?.addEventListener('click', close);
