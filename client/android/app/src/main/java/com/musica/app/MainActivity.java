@@ -276,11 +276,11 @@ public class MainActivity extends BridgeActivity {
             .setOnlyAlertOnce(true)
             .setOngoing(isPlaying)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .addAction(new NotificationCompat.Action(0, "Anterior", mediaAction(ACTION_PREV)))
+            .addAction(new NotificationCompat.Action(android.R.drawable.ic_media_previous, "Anterior", mediaAction(ACTION_PREV)))
             .addAction(isPlaying
-                ? new NotificationCompat.Action(0, "Pausar", mediaAction(ACTION_PAUSE))
-                : new NotificationCompat.Action(0, "Reproducir", mediaAction(ACTION_PLAY)))
-            .addAction(new NotificationCompat.Action(0, "Siguiente", mediaAction(ACTION_NEXT)))
+                ? new NotificationCompat.Action(android.R.drawable.ic_media_pause, "Pausar", mediaAction(ACTION_PAUSE))
+                : new NotificationCompat.Action(android.R.drawable.ic_media_play, "Reproducir", mediaAction(ACTION_PLAY)))
+            .addAction(new NotificationCompat.Action(android.R.drawable.ic_media_next, "Siguiente", mediaAction(ACTION_NEXT)))
             .setStyle(new MediaStyle().setShowActionsInCompactView(0, 1, 2));
 
         if (artwork != null) builder.setLargeIcon(artwork);
