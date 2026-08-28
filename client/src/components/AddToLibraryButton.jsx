@@ -102,9 +102,14 @@ export default function AddToLibraryButton({ song, folders = [], playlists = [],
       <button
         className={`add-lib-btn ${added ? 'added' : ''} ${className}`}
         disabled={added}
+        title={added ? 'Añadida' : 'Añadir'}
         onClick={openMenu}
       >
-        {added ? 'Añadida' : '+'}
+        {added ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+        ) : '+'}
       </button>
       {menuPos && (
         <>
