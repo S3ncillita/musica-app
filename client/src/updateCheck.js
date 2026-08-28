@@ -1,6 +1,10 @@
 export function compareVersions(a, b) {
-  const pa = String(a).split('.').map(Number);
-  const pb = String(b).split('.').map(Number);
+  // parseInt (no Number) para tolerar sufijos tipo "22-debug": si no, esa
+  // parte da NaN, las comparaciones con NaN son siempre false, y una build
+  // de diagnóstico queda para siempre sin poder detectar que hay una
+  // versión más nueva.
+  const pa = String(a).split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b).split('.').map(n => parseInt(n, 10) || 0);
   const len = Math.max(pa.length, pb.length);
   for (let i = 0; i < len; i++) {
     const na = pa[i] || 0;
