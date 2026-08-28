@@ -40,10 +40,6 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
       <div className="view-header">
         <div>
           <h1 className="view-title">Biblioteca</h1>
-          <div className="view-status">
-            <span className="led" />
-            <span>{librarySongs.length} TRACKS · SYNCED</span>
-          </div>
         </div>
         <div className="library-actions">
           <input
