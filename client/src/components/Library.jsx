@@ -116,7 +116,7 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
           <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--text-muted)">
             <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
           </svg>
-          <p>{search ? 'Sin resultados' : 'Arrastrá archivos de música acá'}</p>
+          <p>{search ? 'Sin resultados' : 'Tu biblioteca está vacía. Buscá música para agregar.'}</p>
         </div>
       ) : (
         <div className="song-grid">

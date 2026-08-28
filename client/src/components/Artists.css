@@ -247,7 +247,7 @@
   }
 
   .artist-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
     gap: 12px;
   }
 
@@ -256,8 +256,10 @@
   }
 
   .artist-card-img {
-    width: 100px;
-    height: 100px;
+    width: 100%;
+    max-width: 100px;
+    height: auto;
+    aspect-ratio: 1 / 1;
   }
 
   .artist-card-name {
