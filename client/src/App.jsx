@@ -59,6 +59,7 @@ export default function App() {
   const [downloadProgress, setDownloadProgress] = useState({ pct: 0, loaded: 0, total: 0 });
   const [offlineVersion, setOfflineVersion] = useState(0);
   const [showFullPlayer, setShowFullPlayer] = useState(false);
+  const [showPlayer, setShowPlayer] = useState(true);
   const [showFpQueue, setShowFpQueue] = useState(false);
   const [showEq, setShowEq] = useState(false);
   const [eq, setEq] = useState({ preset: 'flat', low: 0, mid: 0, high: 0 });
@@ -492,6 +493,7 @@ export default function App() {
   useEffect(() => {
     if (!currentSong) return;
     updateMediaMetadata(currentSong);
+    setShowPlayer(true);
   }, [currentSong]);
 
   useEffect(() => {
@@ -904,30 +906,33 @@ export default function App() {
         )}
         <div className="scroll-spacer" />
       </main>
-      <Player
-        song={currentSong}
-        isPlaying={isPlaying}
-        audioRef={audioRef}
-        ytPlayerRef={ytPlayerRef}
-        onTogglePlay={togglePlay}
-        onPrev={prev}
-        onNext={next}
-        onSeek={seek}
-        onVolume={volume}
-        shuffle={shuffle}
-        onToggleShuffle={() => setShuffle(!shuffle)}
-        repeat={repeat}
-        onToggleRepeat={() => setRepeat((repeat + 1) % 3)}
-        currentSong={currentSong}
-        onOpenFullPlayer={() => setShowFullPlayer(true)}
-        onDownload={downloadSong}
-        onRemoveDownload={removeDownload}
-        isDownloaded={offline.isDownloaded}
-        downloadingKey={downloadingKey}
-            downloadProgress={downloadProgress}
-            onCancelDownload={cancelDownload}
-        offlineVersion={offlineVersion}
-      />
+      {showPlayer && (
+        <Player
+          song={currentSong}
+          isPlaying={isPlaying}
+          audioRef={audioRef}
+          ytPlayerRef={ytPlayerRef}
+          onTogglePlay={togglePlay}
+          onPrev={prev}
+          onNext={next}
+          onSeek={seek}
+          onVolume={volume}
+          shuffle={shuffle}
+          onToggleShuffle={() => setShuffle(!shuffle)}
+          repeat={repeat}
+          onToggleRepeat={() => setRepeat((repeat + 1) % 3)}
+          currentSong={currentSong}
+          onOpenFullPlayer={() => setShowFullPlayer(true)}
+          onClose={() => setShowPlayer(false)}
+          onDownload={downloadSong}
+          onRemoveDownload={removeDownload}
+          isDownloaded={offline.isDownloaded}
+          downloadingKey={downloadingKey}
+          downloadProgress={downloadProgress}
+          onCancelDownload={cancelDownload}
+          offlineVersion={offlineVersion}
+        />
+      )}
       {showFullPlayer && currentSong && (
         <FullPlayer
           song={currentSong}
