@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.JavascriptInterface;
 import androidx.activity.OnBackPressedCallback;
@@ -187,9 +188,12 @@ public class MainActivity extends BridgeActivity {
             try (Cursor c = dm.query(q)) {
                 if (c != null && c.moveToFirst()) {
                     int statusIdx = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                    int reasonIdx = c.getColumnIndex(DownloadManager.COLUMN_REASON);
                     int status = statusIdx >= 0 ? c.getInt(statusIdx) : -1;
+                    int reason = reasonIdx >= 0 ? c.getInt(reasonIdx) : -1;
                     long soFar = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
                     long total = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                    Log.d("VybeUpdate", "poll status=" + status + " reason=" + reason + " soFar=" + soFar + " total=" + total);
                     if (total > 0) {
                         int pct = (int) (soFar * 100 / total);
                         callJs("window.__vybeUpdateProgress && window.__vybeUpdateProgress(" + pct + ");");
@@ -197,12 +201,18 @@ public class MainActivity extends BridgeActivity {
                     if (status == DownloadManager.STATUS_RUNNING || status == DownloadManager.STATUS_PENDING) {
                         pollDownloadProgress(dm, downloadId, dest);
                     } else if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                        Log.d("VybeUpdate", "descarga OK, archivo existe=" + dest.exists() + " tamaño=" + dest.length());
                         onApkDownloadComplete(dest);
                     } else {
-                        callJs("window.__vybeUpdateError && window.__vybeUpdateError('Descarga falló');");
+                        Log.d("VybeUpdate", "descarga falló, status=" + status + " reason=" + reason);
+                        callJs("window.__vybeUpdateError && window.__vybeUpdateError('Descarga falló (status=" + status + " reason=" + reason + ")');");
                     }
+                } else {
+                    Log.d("VybeUpdate", "cursor vacío al consultar downloadId=" + downloadId);
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                Log.d("VybeUpdate", "excepción en poll: " + e);
+            }
         }, 400);
     }
 
@@ -213,8 +223,10 @@ public class MainActivity extends BridgeActivity {
             installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
             installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(installIntent);
+            Log.d("VybeUpdate", "startActivity del instalador OK");
             callJs("window.__vybeUpdateDone && window.__vybeUpdateDone();");
         } catch (Exception e) {
+            Log.d("VybeUpdate", "excepción al instalar: " + e);
             callJs("window.__vybeUpdateError && window.__vybeUpdateError(" + jsonString(e.getMessage()) + ");");
         }
     }
