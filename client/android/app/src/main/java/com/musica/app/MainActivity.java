@@ -154,13 +154,19 @@ public class MainActivity extends BridgeActivity {
     private void startApkDownload(String apkUrl) {
         try {
             DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-            File dest = new File(getCacheDir(), "vybe-update.apk");
+            // DownloadManager corre como un proceso/servicio del sistema
+            // aparte, no puede escribir en el almacenamiento privado de la
+            // app (getCacheDir()/getFilesDir()) — solo en almacenamiento
+            // externo. Usamos el propio de la app (getExternalFilesDir), que
+            // no necesita ningún permiso especial.
+            String filename = "vybe-update.apk";
+            File dest = new File(getExternalFilesDir(null), filename);
             if (dest.exists()) dest.delete();
 
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(apkUrl));
             request.setTitle("Actualizando Vybe");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setDestinationUri(Uri.fromFile(dest));
+            request.setDestinationInExternalFilesDir(this, null, filename);
             long downloadId = dm.enqueue(request);
 
             if (downloadCompleteReceiver != null) {

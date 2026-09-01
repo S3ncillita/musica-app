@@ -1,6 +1,6 @@
 {
-  "version": "1.3.24",
+  "version": "1.3.25",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Prueba del actualizador automático nuevo (sin cordova-plugin-apkupdater).",
+  "notes": "Arreglada la descarga del actualizador (DownloadManager no podía escribir en la carpeta privada de la app).",
   "force": false
 }
