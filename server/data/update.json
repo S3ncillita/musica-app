@@ -1,6 +1,6 @@
 {
-  "version": "1.3.27",
+  "version": "1.3.28",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Arreglado que la instalación no se disparaba tras completar la descarga (RECEIVER_NOT_EXPORTED bloqueaba el aviso del sistema).",
+  "notes": "Prueba final de punta a punta del auto-actualizador.",
   "force": false
 }
