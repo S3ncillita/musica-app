@@ -1,6 +1,6 @@
 {
-  "version": "1.3.25",
+  "version": "1.3.26",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "Arreglada la descarga del actualizador (DownloadManager no podía escribir en la carpeta privada de la app).",
+  "notes": "Prueba real del auto-actualizador ya arreglado.",
   "force": false
 }
