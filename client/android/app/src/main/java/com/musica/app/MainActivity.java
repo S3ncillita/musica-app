@@ -46,7 +46,6 @@ public class MainActivity extends BridgeActivity {
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private BroadcastReceiver mediaButtonReceiver;
-    private BroadcastReceiver downloadCompleteReceiver;
 
     // Puente directo con JS (addJavascriptInterface), sin pasar por el
     // sistema de plugins de Capacitor: una vez que la app salta a la
@@ -169,32 +168,20 @@ public class MainActivity extends BridgeActivity {
             request.setDestinationInExternalFilesDir(this, null, filename);
             long downloadId = dm.enqueue(request);
 
-            if (downloadCompleteReceiver != null) {
-                try { unregisterReceiver(downloadCompleteReceiver); } catch (Exception ignored) {}
-            }
-            downloadCompleteReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    long finishedId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                    if (finishedId != downloadId) return;
-                    unregisterReceiver(this);
-                    downloadCompleteReceiver = null;
-                    onApkDownloadComplete(dm, downloadId, dest);
-                }
-            };
-            int flag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                ? Context.RECEIVER_NOT_EXPORTED : 0;
-            ContextCompat.registerReceiver(this, downloadCompleteReceiver,
-                new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-                flag == 0 ? ContextCompat.RECEIVER_NOT_EXPORTED : flag);
-
-            pollDownloadProgress(dm, downloadId);
+            // No usamos DownloadManager.ACTION_DOWNLOAD_COMPLETE: ese aviso lo
+            // manda el propio sistema Android, no nuestra app, así que con
+            // RECEIVER_NOT_EXPORTED (obligatorio en Android 13+ para
+            // receptores que no necesitan aceptar broadcasts externos) queda
+            // bloqueado y nunca llega — la descarga se completaba pero nunca
+            // se disparaba la instalación. El polling ya se entera solo del
+            // final igual, sin depender de ningún broadcast.
+            pollDownloadProgress(dm, downloadId, dest);
         } catch (Exception e) {
             callJs("window.__vybeUpdateError && window.__vybeUpdateError(" + jsonString(e.getMessage()) + ");");
         }
     }
 
-    private void pollDownloadProgress(DownloadManager dm, long downloadId) {
+    private void pollDownloadProgress(DownloadManager dm, long downloadId, File dest) {
         mainHandler.postDelayed(() -> {
             DownloadManager.Query q = new DownloadManager.Query().setFilterById(downloadId);
             try (Cursor c = dm.query(q)) {
@@ -208,26 +195,18 @@ public class MainActivity extends BridgeActivity {
                         callJs("window.__vybeUpdateProgress && window.__vybeUpdateProgress(" + pct + ");");
                     }
                     if (status == DownloadManager.STATUS_RUNNING || status == DownloadManager.STATUS_PENDING) {
-                        pollDownloadProgress(dm, downloadId);
+                        pollDownloadProgress(dm, downloadId, dest);
+                    } else if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                        onApkDownloadComplete(dest);
+                    } else {
+                        callJs("window.__vybeUpdateError && window.__vybeUpdateError('Descarga falló');");
                     }
                 }
             } catch (Exception ignored) {}
         }, 400);
     }
 
-    private void onApkDownloadComplete(DownloadManager dm, long downloadId, File dest) {
-        DownloadManager.Query q = new DownloadManager.Query().setFilterById(downloadId);
-        try (Cursor c = dm.query(q)) {
-            if (c != null && c.moveToFirst()) {
-                int statusIdx = c.getColumnIndex(DownloadManager.COLUMN_STATUS);
-                int status = statusIdx >= 0 ? c.getInt(statusIdx) : -1;
-                if (status != DownloadManager.STATUS_SUCCESSFUL) {
-                    callJs("window.__vybeUpdateError && window.__vybeUpdateError('Descarga falló');");
-                    return;
-                }
-            }
-        } catch (Exception ignored) {}
-
+    private void onApkDownloadComplete(File dest) {
         try {
             Uri apkUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", dest);
             Intent installIntent = new Intent(Intent.ACTION_VIEW);
@@ -377,9 +356,6 @@ public class MainActivity extends BridgeActivity {
         super.onDestroy();
         if (mediaButtonReceiver != null) {
             try { unregisterReceiver(mediaButtonReceiver); } catch (Exception ignored) {}
-        }
-        if (downloadCompleteReceiver != null) {
-            try { unregisterReceiver(downloadCompleteReceiver); } catch (Exception ignored) {}
         }
     }
 
