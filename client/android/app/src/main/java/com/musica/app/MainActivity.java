@@ -43,6 +43,7 @@ public class MainActivity extends BridgeActivity {
     private static final String ACTION_PAUSE = "com.musica.app.ACTION_PAUSE";
     private static final String ACTION_NEXT = "com.musica.app.ACTION_NEXT";
     private static final String ACTION_PREV = "com.musica.app.ACTION_PREV";
+    private static final String ACTION_STOP = "com.musica.app.ACTION_STOP";
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private BroadcastReceiver mediaButtonReceiver;
@@ -261,13 +262,14 @@ public class MainActivity extends BridgeActivity {
             .setContentTitle(title)
             .setContentText(artist)
             .setOnlyAlertOnce(true)
-            .setOngoing(isPlaying)
+            .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .addAction(new NotificationCompat.Action(android.R.drawable.ic_media_previous, "Anterior", mediaAction(ACTION_PREV)))
             .addAction(isPlaying
                 ? new NotificationCompat.Action(android.R.drawable.ic_media_pause, "Pausar", mediaAction(ACTION_PAUSE))
                 : new NotificationCompat.Action(android.R.drawable.ic_media_play, "Reproducir", mediaAction(ACTION_PLAY)))
             .addAction(new NotificationCompat.Action(android.R.drawable.ic_media_next, "Siguiente", mediaAction(ACTION_NEXT)))
+            .addAction(new NotificationCompat.Action(android.R.drawable.ic_menu_close_clear_cancel, "Detener", mediaAction(ACTION_STOP)))
             .setStyle(new MediaStyle().setShowActionsInCompactView(0, 1, 2));
 
         if (artwork != null) builder.setLargeIcon(artwork);
@@ -281,6 +283,12 @@ public class MainActivity extends BridgeActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
+                if (ACTION_STOP.equals(action)) {
+                    NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    nm.cancel(PLAYBACK_NOTIFICATION_ID);
+                    callJs("window.__vybeMediaAction && window.__vybeMediaAction('stop');");
+                    return;
+                }
                 String jsAction = ACTION_PLAY.equals(action) ? "play"
                     : ACTION_PAUSE.equals(action) ? "pause"
                     : ACTION_NEXT.equals(action) ? "next"
@@ -294,6 +302,7 @@ public class MainActivity extends BridgeActivity {
         filter.addAction(ACTION_PLAY);
         filter.addAction(ACTION_PAUSE);
         filter.addAction(ACTION_NEXT);
+        filter.addAction(ACTION_STOP);
         filter.addAction(ACTION_PREV);
         int flag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
             ? ContextCompat.RECEIVER_NOT_EXPORTED : ContextCompat.RECEIVER_NOT_EXPORTED;

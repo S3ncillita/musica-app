@@ -479,7 +479,7 @@ export default function App() {
   const next = () => nextSong();
 
   const mediaActionsRef = useRef({});
-  mediaActionsRef.current = { togglePlay, prev, next };
+  mediaActionsRef.current = { togglePlay, prev, next, isPlaying };
 
   useEffect(() => {
     registerMediaSessionHandlers({
@@ -487,6 +487,10 @@ export default function App() {
       onPause: () => mediaActionsRef.current.togglePlay(),
       onPrev: () => mediaActionsRef.current.prev(),
       onNext: () => mediaActionsRef.current.next(),
+      // Botón "Detener" de la notificación: solo pausa si está sonando (no
+      // togglePlay, que reanudaría si ya estaba en pausa). La notificación
+      // en sí ya se cierra del lado nativo apenas se toca el botón.
+      onStop: () => { if (mediaActionsRef.current.isPlaying) mediaActionsRef.current.togglePlay(); },
     });
   }, []);
 

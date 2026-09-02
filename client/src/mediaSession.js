@@ -21,14 +21,15 @@ function fetchArtworkBase64(url) {
 
 let handlers = null;
 
-export function registerMediaSessionHandlers({ onPlay, onPause, onPrev, onNext }) {
-  handlers = { onPlay, onPause, onPrev, onNext };
+export function registerMediaSessionHandlers({ onPlay, onPause, onPrev, onNext, onStop }) {
+  handlers = { onPlay, onPause, onPrev, onNext, onStop };
   window.__vybeMediaAction = (action) => {
     if (!handlers) return;
     if (action === 'play') handlers.onPlay();
     else if (action === 'pause') handlers.onPause();
     else if (action === 'next') handlers.onNext();
     else if (action === 'prev') handlers.onPrev();
+    else if (action === 'stop') handlers.onStop?.();
   };
 }
 
