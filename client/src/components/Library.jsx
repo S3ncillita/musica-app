@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import DownloadButton from './DownloadButton.jsx';
+import { songKey } from '../offline.js';
 import './Library.css';
 import './Artists.css';
 
-export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, folders, onCreateFolder, onViewFolder, onDeleteFolder, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
+export default function Library({ songs, onPlay, onDelete, onFiles, playlists, onAddToPlaylist, folders, onCreateFolder, onViewFolder, onDeleteFolder, onLogout, onOpenEq, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload, currentSong, isPlaying }) {
   const [search, setSearch] = useState('');
   const [contextMenu, setContextMenu] = useState(null);
   const [showFolderInput, setShowFolderInput] = useState(false);
@@ -116,10 +117,12 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
         </div>
       ) : (
         <div className="song-grid">
-          {filtered.map((song, i) => (
+          {filtered.map((song, i) => {
+            const isCurrent = currentSong && songKey(song) === songKey(currentSong);
+            return (
             <div
               key={song.id}
-              className="song-card"
+              className={`song-card ${isCurrent ? 'song-card-current' : ''}`}
               onClick={() => onPlay(song, filtered)}
               onContextMenu={(e) => handleContext(e, song)}
             >
@@ -131,11 +134,17 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                   </svg>
                 )}
-                <button className="song-card-play" onClick={(e) => { e.stopPropagation(); onPlay(song, filtered); }} title="Reproducir">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </button>
+                {isCurrent && isPlaying ? (
+                  <div className="song-card-playing-bars">
+                    <span /><span /><span />
+                  </div>
+                ) : (
+                  <button className="song-card-play" onClick={(e) => { e.stopPropagation(); onPlay(song, filtered); }} title="Reproducir">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </button>
+                )}
               </div>
               <div className="song-card-info">
                 <span className="song-card-title">{song.title}</span>
@@ -154,7 +163,8 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
                 />
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

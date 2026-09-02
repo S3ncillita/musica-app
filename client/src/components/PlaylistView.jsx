@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { getApiBase } from '../config.js';
 import { api } from '../api.js';
 import DownloadButton from './DownloadButton.jsx';
+import { songKey } from '../offline.js';
 import './PlaylistView.css';
 
 const API = getApiBase();
 
-export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSong, folders, onDeleteFolder, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
+export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSong, folders, onDeleteFolder, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload, currentSong, isPlaying }) {
   const [playlist, setPlaylist] = useState(null);
   const [downloadingAll, setDownloadingAll] = useState(false);
 
@@ -64,8 +65,10 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
 
       {playlist.songs?.length > 0 ? (
         <div className="song-grid">
-          {playlist.songs.map((song, i) => (
-            <div key={song.id} className="song-card" onClick={() => onPlay(song, playlist.songs)}>
+          {playlist.songs.map((song, i) => {
+            const isCurrent = currentSong && songKey(song) === songKey(currentSong);
+            return (
+            <div key={song.id} className={`song-card ${isCurrent ? 'song-card-current' : ''}`} onClick={() => onPlay(song, playlist.songs)}>
               <div className="song-card-thumb">
                 {song.thumbnail ? (
                   <img src={song.thumbnail} alt="" />
@@ -74,11 +77,17 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                   </svg>
                 )}
-                <button className="song-card-play" onClick={(e) => { e.stopPropagation(); onPlay(song, playlist.songs); }} title="Reproducir">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </button>
+                {isCurrent && isPlaying ? (
+                  <div className="song-card-playing-bars">
+                    <span /><span /><span />
+                  </div>
+                ) : (
+                  <button className="song-card-play" onClick={(e) => { e.stopPropagation(); onPlay(song, playlist.songs); }} title="Reproducir">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </button>
+                )}
               </div>
               <div className="song-card-info">
                 <span className="song-card-title">{song.title}</span>
@@ -98,7 +107,8 @@ export default function PlaylistView({ playlistId, onPlay, onDelete, onRemoveSon
                 <button className="remove-btn" onClick={(e) => { e.stopPropagation(); onRemoveSong(playlist.id, song.id); }} title="Quitar">✕</button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="playlist-empty">

@@ -809,6 +809,8 @@ export default function App() {
         {currentView === 'library' && (
           <Library
             songs={songs}
+            currentSong={currentSong}
+            isPlaying={isPlaying}
             onPlay={playSong}
             onDelete={deleteSong}
             onFiles={handleFiles}
@@ -893,6 +895,8 @@ export default function App() {
         {currentView === 'playlist' && currentPlaylistId && (
           <PlaylistView
             playlistId={currentPlaylistId}
+            currentSong={currentSong}
+            isPlaying={isPlaying}
             onPlay={playSong}
             onDelete={deletePlaylist}
             onRemoveSong={removeFromPlaylist}
