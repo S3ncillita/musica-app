@@ -11,8 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,7 +24,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import androidx.media.app.NotificationCompat.MediaStyle;
 import com.getcapacitor.BridgeActivity;
 
 import java.io.File;
@@ -37,7 +34,6 @@ import java.net.HttpURLConnection;
 public class MainActivity extends BridgeActivity {
     private static final String UPDATE_CHANNEL = "vybe_update";
     private static final String PLAYBACK_CHANNEL = "vybe_playback";
-    private static final int PLAYBACK_NOTIFICATION_ID = 42;
 
     private static final String ACTION_PLAY = "com.musica.app.ACTION_PLAY";
     private static final String ACTION_PAUSE = "com.musica.app.ACTION_PAUSE";
@@ -119,15 +115,20 @@ public class MainActivity extends BridgeActivity {
 
         @JavascriptInterface
         public void updateNotification(String title, String artist, String artworkBase64, boolean isPlaying) {
-            mainHandler.post(() -> showPlaybackNotification(title, artist, artworkBase64, isPlaying));
+            mainHandler.post(() -> {
+                Intent svcIntent = new Intent(MainActivity.this, PlaybackNotificationService.class);
+                svcIntent.putExtra(PlaybackNotificationService.EXTRA_TITLE, title);
+                svcIntent.putExtra(PlaybackNotificationService.EXTRA_ARTIST, artist);
+                svcIntent.putExtra(PlaybackNotificationService.EXTRA_ARTWORK, artworkBase64);
+                svcIntent.putExtra(PlaybackNotificationService.EXTRA_PLAYING, isPlaying);
+                ContextCompat.startForegroundService(MainActivity.this, svcIntent);
+            });
         }
 
         @JavascriptInterface
         public void clearNotification() {
-            mainHandler.post(() -> {
-                NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                nm.cancel(PLAYBACK_NOTIFICATION_ID);
-            });
+            mainHandler.post(() ->
+                stopService(new Intent(MainActivity.this, PlaybackNotificationService.class)));
         }
     }
 
@@ -242,41 +243,6 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
-    private PendingIntent mediaAction(String action) {
-        Intent intent = new Intent(action).setPackage(getPackageName());
-        int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
-        return PendingIntent.getBroadcast(this, action.hashCode(), intent, flags);
-    }
-
-    private void showPlaybackNotification(String title, String artist, String artworkBase64, boolean isPlaying) {
-        Bitmap artwork = null;
-        if (artworkBase64 != null && !artworkBase64.isEmpty()) {
-            try {
-                byte[] bytes = Base64.decode(artworkBase64, Base64.DEFAULT);
-                artwork = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            } catch (Exception ignored) {}
-        }
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, PLAYBACK_CHANNEL)
-            .setSmallIcon(getApplicationInfo().icon)
-            .setContentTitle(title)
-            .setContentText(artist)
-            .setOnlyAlertOnce(true)
-            .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .addAction(new NotificationCompat.Action(android.R.drawable.ic_media_previous, "Anterior", mediaAction(ACTION_PREV)))
-            .addAction(isPlaying
-                ? new NotificationCompat.Action(android.R.drawable.ic_media_pause, "Pausar", mediaAction(ACTION_PAUSE))
-                : new NotificationCompat.Action(android.R.drawable.ic_media_play, "Reproducir", mediaAction(ACTION_PLAY)))
-            .addAction(new NotificationCompat.Action(android.R.drawable.ic_media_next, "Siguiente", mediaAction(ACTION_NEXT)))
-            .addAction(new NotificationCompat.Action(android.R.drawable.ic_menu_close_clear_cancel, "Detener", mediaAction(ACTION_STOP)))
-            .setStyle(new MediaStyle().setShowActionsInCompactView(0, 1, 2));
-
-        if (artwork != null) builder.setLargeIcon(artwork);
-
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        nm.notify(PLAYBACK_NOTIFICATION_ID, builder.build());
-    }
 
     private void registerMediaButtonReceiver() {
         mediaButtonReceiver = new BroadcastReceiver() {
@@ -284,8 +250,7 @@ public class MainActivity extends BridgeActivity {
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
                 if (ACTION_STOP.equals(action)) {
-                    NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                    nm.cancel(PLAYBACK_NOTIFICATION_ID);
+                    stopService(new Intent(MainActivity.this, PlaybackNotificationService.class));
                     callJs("window.__vybeMediaAction && window.__vybeMediaAction('stop');");
                     return;
                 }

@@ -1,6 +1,6 @@
 {
-  "version": "1.3.32",
+  "version": "1.3.33",
   "apkUrl": "/api/update/apk/vybe.apk",
-  "notes": "La notificación de reproducción ya no se puede borrar por accidente, y se agrega un botón de Detener aparte.",
+  "notes": "La notificación ahora usa un servicio en primer plano de verdad — ya no se puede deslizar y borrar en ningún fabricante.",
   "force": false
 }
