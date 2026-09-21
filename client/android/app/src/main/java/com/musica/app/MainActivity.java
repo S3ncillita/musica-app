@@ -61,6 +61,18 @@ public class MainActivity extends BridgeActivity {
             return "pong";
         }
 
+        // Almacenamiento común a los dos orígenes de la app (la copia
+        // empaquetada y la versión en vivo tienen localStorage separados).
+        @JavascriptInterface
+        public void setPref(String key, String value) {
+            getSharedPreferences("vybe_prefs", Context.MODE_PRIVATE).edit().putString(key, value).apply();
+        }
+
+        @JavascriptInterface
+        public String getPref(String key) {
+            return getSharedPreferences("vybe_prefs", Context.MODE_PRIVATE).getString(key, "");
+        }
+
         // ===== Descargas offline (reemplaza @capacitor/filesystem) =====
         // Usa almacenamiento propio de la app (getExternalFilesDir), que no
         // necesita ningún permiso especial de Android — a diferencia del

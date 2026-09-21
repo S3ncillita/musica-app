@@ -8,6 +8,8 @@
 // (getExternalFilesDir), que no necesita el permiso "Acceso a todos los
 // archivos" que hacía falta antes para el almacenamiento compartido.
 
+import { mirrorToNative } from './nativeStore.js';
+
 const INDEX_KEY = 'offlineSongs';
 
 function nativeBridge() {
@@ -20,6 +22,7 @@ function readIndex() {
 
 function writeIndex(index) {
   localStorage.setItem(INDEX_KEY, JSON.stringify(index));
+  mirrorToNative();
 }
 
 function blobToBase64(blob) {

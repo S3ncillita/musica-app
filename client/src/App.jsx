@@ -20,6 +20,7 @@ import { api } from './api.js';
 import { getAppVersion } from './appVersion.js';
 import { initUpdateCheck } from './update.js';
 import * as offline from './offline.js';
+import { mirrorToNative, clearNativeSession } from './nativeStore.js';
 import { registerMediaSessionHandlers, updateMediaMetadata, updateMediaPlaybackState } from './mediaSession.js';
 import './App.css';
 
@@ -231,6 +232,7 @@ export default function App() {
         if (res.status === 401) {
           localStorage.removeItem('authToken');
           localStorage.removeItem('authUser');
+          clearNativeSession();
           setUser(null);
           return null;
         }
@@ -240,6 +242,7 @@ export default function App() {
         if (!data) return;
         setUser(data.user);
         localStorage.setItem('authUser', JSON.stringify(data.user));
+        mirrorToNative();
       })
       .catch(() => {
         // Sin conexión (u otro error de red): no borramos la sesión guardada,
@@ -248,23 +251,32 @@ export default function App() {
           const cachedUser = JSON.parse(localStorage.getItem('authUser'));
           if (cachedUser) setUser(cachedUser);
         } catch {}
+        // Sin servidor: lo único que sirve son las descargas, así que
+        // arrancamos ahí en vez de en una Biblioteca vacía.
+        if (offline.listDownloaded().length > 0) setCurrentView('downloads');
       })
       .finally(() => setAuthLoading(false));
   }, []);
 
   const loadSongs = useCallback(async () => {
-    const res = await api('/songs');
-    setSongs(await res.json());
+    try {
+      const res = await api('/songs');
+      if (res.ok) setSongs(await res.json());
+    } catch {} // sin conexión: se queda con lo que ya hay
   }, []);
 
   const loadPlaylists = useCallback(async () => {
-    const res = await api('/playlists');
-    setPlaylists(await res.json());
+    try {
+      const res = await api('/playlists');
+      if (res.ok) setPlaylists(await res.json());
+    } catch {} // sin conexión: se queda con lo que ya hay
   }, []);
 
   const loadFolders = useCallback(async () => {
-    const res = await api('/folders');
-    setFolders(await res.json());
+    try {
+      const res = await api('/folders');
+      if (res.ok) setFolders(await res.json());
+    } catch {} // sin conexión: se queda con lo que ya hay
   }, []);
 
   useEffect(() => {
@@ -664,6 +676,7 @@ export default function App() {
 
   const handleLogin = (userData) => {
     setUser(userData);
+    mirrorToNative();
     showToast(`¡Bienvenido, ${userData.username}!`);
   };
 
@@ -671,6 +684,7 @@ export default function App() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('authUser');
     localStorage.removeItem('musicPlayerState');
+    clearNativeSession();
     try { audioRef.current.pause(); } catch {}
     try { ytPlayerRef.current?.pause(); } catch {}
     setSongs([]);
