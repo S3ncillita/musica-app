@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import DownloadButton from './DownloadButton.jsx';
+import { saneDuration } from '../duration.js';
 import './Player.css';
 
 export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onOpenFullPlayer, onClose, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
@@ -36,7 +37,7 @@ export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onToggl
       if (ytPlayerRef.current) {
         try {
           const t = ytPlayerRef.current.getCurrentTime?.() || 0;
-          const d = ytPlayerRef.current.getDuration?.() || 0;
+          const d = saneDuration(ytPlayerRef.current.getDuration?.() || 0, song?.duration);
           setProgress(t);
           setDuration(d);
           setBuffered(d);
@@ -44,7 +45,7 @@ export default function Player({ song, isPlaying, audioRef, ytPlayerRef, onToggl
       }
     }, 500);
     return () => clearInterval(interval);
-  }, [isYT, ytPlayerRef]);
+  }, [isYT, ytPlayerRef, song?.duration]);
 
   const fmt = (s) => {
     if (!s || isNaN(s)) return '0:00';

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import DownloadButton from './DownloadButton.jsx';
+import { saneDuration } from '../duration.js';
 import './FullPlayer.css';
 
 export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onClose, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload, showQueue, onToggleQueue }) {
@@ -35,12 +36,12 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
       if (ytPlayerRef.current) {
         try {
           setProgress(ytPlayerRef.current.getCurrentTime?.() || 0);
-          setDuration(ytPlayerRef.current.getDuration?.() || 0);
+          setDuration(saneDuration(ytPlayerRef.current.getDuration?.() || 0, song?.duration));
         } catch {}
       }
     }, 500);
     return () => clearInterval(interval);
-  }, [isYT, ytPlayerRef]);
+  }, [isYT, ytPlayerRef, song?.duration]);
 
   const fmt = (s) => {
     if (!s || isNaN(s)) return '0:00';
