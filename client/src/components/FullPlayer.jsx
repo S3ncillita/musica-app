@@ -98,19 +98,20 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
 
       <div className={`fp-body ${showQueue ? 'with-queue' : ''}`}>
         <div className="fp-main">
-          <div className="fp-cover-frame">
-            <div className="fp-cover-wrap">
-              {isYT && song?.thumbnail ? (
-                <img src={song.thumbnail} alt="" className="fp-cover" />
-              ) : (
+          {/* Con miniatura, la tapa ya se ve de fondo en .fp-art-wash — este
+              recuadro solo hace falta como reemplazo para lo que no tiene
+              (canciones locales sin miniatura). */}
+          {!(isYT && song?.thumbnail) && (
+            <div className="fp-cover-frame">
+              <div className="fp-cover-wrap">
                 <div className="fp-cover fp-cover-placeholder">
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--text-muted)">
                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                   </svg>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="fp-song-info">
             <div className="fp-song-text">
