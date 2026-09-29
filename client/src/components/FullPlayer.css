@@ -216,15 +216,16 @@
   pointer-events: none;
 }
 
-/* La pista completa: una línea recta gris, de punta a punta. */
+/* La pista completa: la misma onda, sin recortar, en gris. */
 .fp-bar-track {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  left: 0;
+  top: 0;
   height: 100%;
   pointer-events: none;
 }
-.fp-bar-track line {
+.fp-bar-track path {
+  fill: none;
   stroke: rgba(255, 255, 255, 0.25);
   stroke-width: 3;
   stroke-linecap: round;
