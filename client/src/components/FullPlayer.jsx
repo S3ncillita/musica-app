@@ -98,20 +98,19 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
 
       <div className={`fp-body ${showQueue ? 'with-queue' : ''}`}>
         <div className="fp-main">
-          {/* Con miniatura, la tapa ya se ve de fondo en .fp-art-wash — este
-              recuadro solo hace falta como reemplazo para lo que no tiene
-              (canciones locales sin miniatura). */}
-          {!(isYT && song?.thumbnail) && (
-            <div className="fp-cover-frame">
-              <div className="fp-cover-wrap">
+          <div className="fp-cover-frame">
+            <div className="fp-cover-wrap">
+              {isYT && song?.thumbnail ? (
+                <img src={song.thumbnail} alt="" className="fp-cover" />
+              ) : (
                 <div className="fp-cover fp-cover-placeholder">
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="var(--text-muted)">
                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
                   </svg>
                 </div>
-              </div>
+              )}
             </div>
-          )}
+          </div>
 
           <div className="fp-song-info">
             <div className="fp-song-text">
@@ -136,7 +135,14 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
           <div className="fp-progress">
             <div className="fp-bar" onClick={handleSeek} onTouchMove={handleTouchSeek}>
               <div className="fp-bar-buffered" style={{ width: `${duration ? (buffered / duration) * 100 : 0}%` }} />
-              <div className="fp-bar-fill" style={{ width: `${pctProgress}%` }} />
+              <svg className="fp-bar-track" viewBox="0 0 500 16" preserveAspectRatio="none" aria-hidden="true">
+                <line x1="0" y1="8" x2="500" y2="8" />
+              </svg>
+              <div className="fp-bar-wave-clip" style={{ width: `${pctProgress}%` }}>
+                <svg className={`fp-bar-wave ${isPlaying ? 'is-playing' : ''}`} height="16" viewBox="0 0 564 16" aria-hidden="true">
+                  <path d="M0,8 C8,2 16,14 24,8 C32,2 40,14 48,8 C56,2 64,14 72,8 C80,2 88,14 96,8 C104,2 112,14 120,8 C128,2 136,14 144,8 C152,2 160,14 168,8 C176,2 184,14 192,8 C200,2 208,14 216,8 C224,2 232,14 240,8 C248,2 256,14 264,8 C272,2 280,14 288,8 C296,2 304,14 312,8 C320,2 328,14 336,8 C344,2 352,14 360,8 C368,2 376,14 384,8 C392,2 400,14 408,8 C416,2 424,14 432,8 C440,2 448,14 456,8 C464,2 472,14 480,8 C488,2 496,14 504,8 C512,2 520,14 528,8 C536,2 544,14 552,8 C560,2 568,14 576,8" />
+                </svg>
+              </div>
               <div className="fp-bar-thumb" style={{ left: `${pctProgress}%` }} />
             </div>
             <div className="fp-times">
@@ -146,7 +152,7 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
           </div>
 
           <div className="fp-controls">
-            <button className="fp-btn fp-btn-lg" onClick={onPrev}>
+            <button className="fp-btn fp-btn-lg fp-btn-round" onClick={onPrev}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
               </svg>
@@ -162,7 +168,7 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
                 </svg>
               )}
             </button>
-            <button className="fp-btn fp-btn-lg" onClick={onNext}>
+            <button className="fp-btn fp-btn-lg fp-btn-round" onClick={onNext}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
               </svg>
