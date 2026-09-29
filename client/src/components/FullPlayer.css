@@ -202,6 +202,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 /* Línea de lo que ya se descargó (streaming), abajo de todo. */
