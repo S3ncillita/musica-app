@@ -25,7 +25,7 @@ const MAX_SONG_DURATION = 15 * 60;
 // "infla" la imagen si el original es más chico).
 function upscaleThumbnail(url) {
   if (!url) return url;
-  return url.replace(/=w\d+-h\d+/, '=w544-h544');
+  return url.replace(/=w\d+-h\d+/, '=w720-h720');
 }
 
 function parseYtMusicItems(list) {

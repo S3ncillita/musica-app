@@ -40,6 +40,12 @@
   width: 102%;
   height: 102%;
   object-fit: cover;
+  /* Las tapas cuadradas se recortan a los costados al estirarse a una
+     pantalla angosta y alta (sin corte vertical, ahí no hay margen).
+     Las miniaturas panorámicas de respaldo (video 16:9) sí se recortan
+     arriba/abajo, y centrado corta justo donde suele estar la cara — se
+     ancla un poco más arriba en vez del centro exacto. */
+  object-position: center 30%;
   filter: blur(2px);
 }
 .fp-art-wash::after {
