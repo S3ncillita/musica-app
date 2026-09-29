@@ -145,7 +145,7 @@
   .scroll-spacer {
     display: block;
     width: 100%;
-    height: max(calc(var(--player-height, 140px) + var(--mobile-nav-height, 64px) + 40px), 254px);
+    height: max(calc(var(--player-height, 140px) + var(--mobile-nav-height, 74px) + 40px), 254px);
     flex-shrink: 0;
   }
 
@@ -202,62 +202,63 @@
     gap: 4px;
   }
 
+  /* Nav flotante tipo cápsula, despegada del borde (antes era una barra
+     plana esquina a esquina) — ver mockup aprobado. */
   .mobile-nav {
     display: flex;
-    gap: 4px;
-    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
-    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: fit-content;
+    padding: 0 10px;
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: var(--mobile-nav-height, 64px);
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    height: 58px;
     box-sizing: border-box;
     z-index: 90;
-    background: var(--glass-fill);
+    border-radius: 29px;
+    background: var(--glass-fill-strong);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
-    border-top: 1px solid var(--glass-border);
-  }
-  .mobile-nav::-webkit-scrollbar {
-    display: none;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
   }
 
   .mobile-nav-card {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 4px;
-    border-radius: 4px;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
     background: none;
     color: var(--text-muted);
-    font-size: 0.65rem;
-    font-weight: 500;
-    transition: color 0.15s;
+    transition: color 0.15s, background 0.15s;
     border: none;
   }
   .mobile-nav-card span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
+    display: none;
   }
   .mobile-nav-card:hover {
     color: var(--text-primary);
   }
   .mobile-nav-card.active {
     color: var(--accent);
+    background: rgba(168, 85, 247, 0.22);
   }
   .mobile-nav-card svg {
     width: 20px;
     height: 20px;
   }
 
+  /* Reproductor flotante: tarjeta redondeada con margen a los costados,
+     apoyada arriba de la cápsula de navegación (antes tocaba los tres
+     bordes de la pantalla). */
   .player {
-    bottom: var(--mobile-nav-height, 64px);
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px) + 58px + 10px);
   }
 }
