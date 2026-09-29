@@ -29,17 +29,18 @@
     var(--bg-primary);
 }
 /* La tapa de la canción llena toda la pantalla, en vez del recuadro chico
-   + fondo difuminado violeta de antes. Las miniaturas de YouTube no son de
-   muy alta resolución, así que estirarlas a pantalla completa se ve
-   pixelado — un blur bien sutil (nada que ver con los 60px de antes) lo
-   disimula sin perder el efecto de tapa completa. */
+   + fondo difuminado violeta de antes. El server ahora pide la miniatura
+   en una resolución más grande (server/src/routes/youtube.js,
+   upscaleThumbnail), así que esto ya no necesita disimular pixelado — un
+   blur mínimo nomás, por si algún thumbnail llega igual en baja
+   resolución (el de respaldo mqdefault.jpg, por ejemplo). */
 .fp-art-wash img {
   position: absolute;
-  inset: -2%;
-  width: 104%;
-  height: 104%;
+  inset: -1%;
+  width: 102%;
+  height: 102%;
   object-fit: cover;
-  filter: blur(6px);
+  filter: blur(2px);
 }
 .fp-art-wash::after {
   content: "";

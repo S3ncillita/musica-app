@@ -16,6 +16,18 @@ const YTM_CONTEXT = { client: { clientName: 'WEB_REMIX', clientVersion: YTM_CLIE
 // una película/audio largo mal categorizado como canción en YouTube Music.
 const MAX_SONG_DURATION = 15 * 60;
 
+
+// Los thumbnails de YouTube Music (yt3.googleusercontent.com) vienen pedidos
+// en un tamaño chico (ej. =w120-h120), pensado para una lista de resultados
+// - de fondo de pantalla completa en el reproductor grande se ve borroso/
+// pixelado. La misma URL sirve una versión más grande cambiando ese
+// parámetro; Google devuelve la mejor resolución real que tenga (no
+// "infla" la imagen si el original es más chico).
+function upscaleThumbnail(url) {
+  if (!url) return url;
+  return url.replace(/=w\d+-h\d+/, '=w544-h544');
+}
+
 function parseYtMusicItems(list) {
   const items = [];
   for (const entry of list || []) {
@@ -33,7 +45,7 @@ function parseYtMusicItems(list) {
     const duration = /^\d+:\d+(:\d+)?$/.test(durationText || '') ? parseDuration(durationText) : 0;
     if (duration > MAX_SONG_DURATION) continue;
     const thumbs = r?.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails || [];
-    const thumbnail = thumbs[thumbs.length - 1]?.url || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+    const thumbnail = upscaleThumbnail(thumbs[thumbs.length - 1]?.url) || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
     items.push({ videoId, title, channel, thumbnail, duration });
   }
   return items;
@@ -84,7 +96,7 @@ function parseItems(contents) {
       videoId: video.videoId,
       title: video.title?.runs?.[0]?.text || 'Sin título',
       channel: video.ownerText?.runs?.[0]?.text || 'Desconocido',
-      thumbnail: video.thumbnail?.thumbnails?.slice(-1)?.[0]?.url || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`,
+      thumbnail: upscaleThumbnail(video.thumbnail?.thumbnails?.slice(-1)?.[0]?.url) || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`,
       duration: parseDuration(video.lengthText?.simpleText),
     });
   }
