@@ -99,6 +99,64 @@ export default function App() {
     initUpdateCheck();
   }, []);
 
+  // El scroll-spacer (App.css) reserva espacio al final de .main para que el
+  // reproductor/nav flotantes no tapen el último elemento visible — pero si
+  // el contenido real ya entra en la pantalla sin él, ese espacio de más
+  // igual sumaba al scrollHeight y forzaba un scroll "fantasma" hacia nada
+  // (el reclamo: "en Biblioteca/Buscar hace scroll aunque no haya para
+  // hacer scroll"). Ahora se mide el alto real del contenido y el spacer
+  // solo se activa cuando hace falta.
+  useEffect(() => {
+    let timer = null;
+    let retryTimer = null;
+    let mo = null;
+    let ro = null;
+    let scheduleRef = null;
+    const update = (main, spacer) => {
+      const naturalHeight = main.scrollHeight - spacer.offsetHeight;
+      // +4px de margen para no parpadear por redondeos de subpíxel cuando
+      // el contenido queda justo al límite del alto disponible.
+      spacer.style.height = naturalHeight > main.clientHeight + 4 ? '' : '0px';
+    };
+    const attach = () => {
+      const main = document.querySelector('.main');
+      const spacer = document.querySelector('.scroll-spacer');
+      // .main no existe hasta que se resuelve el login (async); sin este
+      // reintento el effect corría una sola vez, no encontraba nada y se
+      // quedaba sin hacer nada para siempre.
+      if (!main || !spacer) {
+        retryTimer = setTimeout(attach, 200);
+        return;
+      }
+      const schedule = () => {
+        // Debounce: contenido async (imágenes, resultados de búsqueda) puede
+        // seguir cambiando de alto varias veces en pocos ms; se espera a que
+        // se asiente antes de medir.
+        clearTimeout(timer);
+        timer = setTimeout(() => update(main, spacer), 120);
+      };
+      scheduleRef = schedule;
+      schedule();
+      mo = new MutationObserver(schedule);
+      mo.observe(main, { childList: true, subtree: true });
+      ro = new ResizeObserver(schedule);
+      ro.observe(main);
+      window.addEventListener('resize', schedule);
+      window.addEventListener('orientationchange', schedule);
+    };
+    attach();
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(retryTimer);
+      mo?.disconnect();
+      ro?.disconnect();
+      if (scheduleRef) {
+        window.removeEventListener('resize', scheduleRef);
+        window.removeEventListener('orientationchange', scheduleRef);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     let el = null;
     let ro = null;

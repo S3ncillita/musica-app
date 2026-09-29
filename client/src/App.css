@@ -142,10 +142,14 @@
     border-radius: 0;
   }
 
+  /* Antes tenía un piso fijo de 254px sin importar el contenido real, así
+     que en vistas cortas (Biblioteca/Buscar con pocos resultados) forzaba
+     scroll aunque no hubiera nada más para ver — ahora solo reserva lo que
+     realmente ocupan el reproductor y la cápsula de navegación flotantes. */
   .scroll-spacer {
     display: block;
     width: 100%;
-    height: max(calc(var(--player-height, 140px) + var(--mobile-nav-height, 74px) + 40px), 254px);
+    height: calc(var(--player-height, 0px) + var(--mobile-nav-height, 74px) + 24px);
     flex-shrink: 0;
   }
 
