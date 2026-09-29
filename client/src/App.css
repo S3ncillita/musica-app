@@ -100,6 +100,22 @@
   background: rgba(14, 10, 23, 0.58);
 }
 
+/* Con el panel fijo de reproducción (DesktopPlayerPanel.css) a partir de
+   1001px, se agrega la tercera columna y se esconde la barra de abajo, que
+   ahí queda redundante. */
+@media (min-width: 1001px) {
+  .app {
+    grid-template-columns: 260px 1fr 340px;
+    /* Antes reservaba 90px abajo para la barra del mini reproductor; sin
+       fila reservada, esos 90px quedaban vacíos (dejando ver el fondo
+       general de la app sin la capa oscura de .main encima). */
+    grid-template-rows: 1fr;
+  }
+  .player {
+    display: none;
+  }
+}
+
 .scroll-spacer {
   display: none;
 }

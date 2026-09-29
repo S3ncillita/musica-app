@@ -1,78 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import DownloadButton from './DownloadButton.jsx';
-import { saneDuration } from '../duration.js';
+import WavyProgressBar from './WavyProgressBar.jsx';
+import { usePlaybackProgress } from '../usePlaybackProgress.js';
 import './FullPlayer.css';
 
 export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRef, ytPlayerRef, onTogglePlay, onPrev, onNext, onSeek, onVolume, shuffle, onToggleShuffle, repeat, onToggleRepeat, onClose, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload, showQueue, onToggleQueue }) {
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [buffered, setBuffered] = useState(0);
   const [vol, setVol] = useState(0.8);
-  const isYT = song?.videoId || song?.type === 'youtube';
-
-  useEffect(() => {
-    if (isYT) return;
-    const audio = audioRef.current;
-    const update = () => {
-      setProgress(audio.currentTime);
-      setDuration(audio.duration || 0);
-      if (audio.buffered.length > 0) {
-        setBuffered(audio.buffered.end(audio.buffered.length - 1));
-      }
-    };
-    audio.addEventListener('timeupdate', update);
-    audio.addEventListener('loadedmetadata', update);
-    audio.addEventListener('progress', update);
-    return () => {
-      audio.removeEventListener('timeupdate', update);
-      audio.removeEventListener('loadedmetadata', update);
-      audio.removeEventListener('progress', update);
-    };
-  }, [audioRef, isYT]);
-
-  useEffect(() => {
-    if (!isYT) return;
-    const interval = setInterval(() => {
-      if (ytPlayerRef.current) {
-        try {
-          setProgress(ytPlayerRef.current.getCurrentTime?.() || 0);
-          setDuration(saneDuration(ytPlayerRef.current.getDuration?.() || 0, song?.duration));
-        } catch {}
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [isYT, ytPlayerRef, song?.duration]);
-
-  const fmt = (s) => {
-    if (!s || isNaN(s)) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
-
-  const handleSeek = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const pct = Math.max(0, Math.min(1, x / rect.width));
-    onSeek(pct * (duration || 0));
-  };
-
-  const handleTouchSeek = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const touch = e.touches[0];
-    const x = touch.clientX - rect.left;
-    const pct = Math.max(0, Math.min(1, x / rect.width));
-    onSeek(pct * (duration || 0));
-  };
+  const { progress, duration, buffered, pctProgress, remaining, fmt, handleSeek, handleTouchSeek, isYT } =
+    usePlaybackProgress({ song, audioRef, ytPlayerRef, onSeek });
 
   const handleVolume = (e) => {
     const v = parseFloat(e.target.value);
     setVol(v);
     onVolume(v);
   };
-
-  const pctProgress = duration ? (progress / duration) * 100 : 0;
-  const remaining = Math.max(0, duration - progress);
 
   return (
     <div className="fullplayer">
@@ -133,18 +74,14 @@ export default function FullPlayer({ song, isPlaying, queue, queueIndex, audioRe
           </div>
 
           <div className="fp-progress">
-            <div className="fp-bar" onClick={handleSeek} onTouchMove={handleTouchSeek}>
-              <div className="fp-bar-buffered" style={{ width: `${duration ? (buffered / duration) * 100 : 0}%` }} />
-              <svg className="fp-bar-track" viewBox="0 0 500 16" preserveAspectRatio="none" aria-hidden="true">
-                <line x1="0" y1="8" x2="500" y2="8" />
-              </svg>
-              <div className="fp-bar-wave-clip" style={{ width: `${pctProgress}%` }}>
-                <svg className={`fp-bar-wave ${isPlaying ? 'is-playing' : ''}`} height="16" viewBox="0 0 564 16" aria-hidden="true">
-                  <path d="M0,8 C8,2 16,14 24,8 C32,2 40,14 48,8 C56,2 64,14 72,8 C80,2 88,14 96,8 C104,2 112,14 120,8 C128,2 136,14 144,8 C152,2 160,14 168,8 C176,2 184,14 192,8 C200,2 208,14 216,8 C224,2 232,14 240,8 C248,2 256,14 264,8 C272,2 280,14 288,8 C296,2 304,14 312,8 C320,2 328,14 336,8 C344,2 352,14 360,8 C368,2 376,14 384,8 C392,2 400,14 408,8 C416,2 424,14 432,8 C440,2 448,14 456,8 C464,2 472,14 480,8 C488,2 496,14 504,8 C512,2 520,14 528,8 C536,2 544,14 552,8 C560,2 568,14 576,8" />
-                </svg>
-              </div>
-              <div className="fp-bar-thumb" style={{ left: `${pctProgress}%` }} />
-            </div>
+            <WavyProgressBar
+              buffered={buffered}
+              duration={duration}
+              pctProgress={pctProgress}
+              isPlaying={isPlaying}
+              onSeek={handleSeek}
+              onTouchSeek={handleTouchSeek}
+            />
             <div className="fp-times">
               <span className="fp-time-current">{fmt(progress)}</span>
               <span>-{fmt(remaining)}</span>

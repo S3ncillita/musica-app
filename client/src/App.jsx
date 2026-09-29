@@ -11,6 +11,7 @@ import Trending from './components/Trending.jsx';
 import Downloads from './components/Downloads.jsx';
 import Auth from './components/Auth.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
+import DesktopPlayerPanel from './components/DesktopPlayerPanel.jsx';
 import EqPanel from './components/EqPanel.jsx';
 import AppVersion from './components/AppVersion.jsx';
 import Toast, { useToast } from './components/Toast.jsx';
@@ -955,6 +956,27 @@ export default function App() {
           offlineVersion={offlineVersion}
         />
       )}
+      <DesktopPlayerPanel
+        song={currentSong}
+        isPlaying={isPlaying}
+        audioRef={audioRef}
+        ytPlayerRef={ytPlayerRef}
+        onTogglePlay={togglePlay}
+        onPrev={prev}
+        onNext={next}
+        onSeek={seek}
+        onVolume={volume}
+        shuffle={shuffle}
+        onToggleShuffle={() => setShuffle(!shuffle)}
+        repeat={repeat}
+        onToggleRepeat={() => setRepeat((repeat + 1) % 3)}
+        onDownload={downloadSong}
+        onRemoveDownload={removeDownload}
+        isDownloaded={offline.isDownloaded}
+        downloadingKey={downloadingKey}
+        downloadProgress={downloadProgress}
+        onCancelDownload={cancelDownload}
+      />
       {showFullPlayer && currentSong && (
         <FullPlayer
           song={currentSong}
