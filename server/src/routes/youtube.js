@@ -51,7 +51,7 @@ function parseYtMusicItems(list) {
   return items;
 }
 
-async function ytMusicSearch(query, limit = 20) {
+async function ytMusicSearch(query) {
   const res = await fetch(`https://music.youtube.com/youtubei/v1/search?key=${YTM_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'User-Agent': UA, 'Cookie': 'CONSENT=YES+1' },
@@ -61,8 +61,26 @@ async function ytMusicSearch(query, limit = 20) {
   const shelf = data?.contents?.tabbedSearchResultsRenderer?.tabs?.[0]?.tabRenderer?.content
     ?.sectionListRenderer?.contents?.[0]?.musicShelfRenderer;
   const items = parseYtMusicItems(shelf?.contents);
-  if (limit > 0) items.splice(limit);
-  return { items, nextToken: null };
+  const contToken = shelf?.continuations?.[0]?.nextContinuationData?.continuation;
+  return { items, nextToken: contToken || null };
+}
+
+// Página siguiente de una búsqueda de YouTube Music: mismo endpoint, pero el
+// resultado viene en `continuationContents.musicShelfContinuation` en vez de
+// `contents.tabbedSearchResultsRenderer...`. Antes /search devolvía
+// nextToken:null siempre, así que el cliente nunca pedía más de 20 canciones
+// aunque hubiera muchas más disponibles.
+async function ytMusicSearchContinuation(token) {
+  const res = await fetch(`https://music.youtube.com/youtubei/v1/search?key=${YTM_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'User-Agent': UA, 'Cookie': 'CONSENT=YES+1' },
+    body: JSON.stringify({ context: YTM_CONTEXT, continuation: token }),
+  });
+  const data = await res.json();
+  const shelf = data?.continuationContents?.musicShelfContinuation;
+  const items = parseYtMusicItems(shelf?.contents);
+  const contToken = shelf?.continuations?.[0]?.nextContinuationData?.continuation;
+  return { items, nextToken: contToken || null };
 }
 
 function parseDuration(text) {
@@ -145,7 +163,7 @@ router.get('/search', async (req, res) => {
   const { q, token } = req.query;
   if (!q) return res.json({ items: [], nextToken: null });
   try {
-    const result = token ? await ytSearchContinuation(token) : await ytMusicSearch(q);
+    const result = token ? await ytMusicSearchContinuation(token) : await ytMusicSearch(q);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: 'Error buscando en YouTube' });
