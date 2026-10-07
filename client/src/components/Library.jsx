@@ -96,11 +96,21 @@ export default function Library({ songs, onPlay, onDelete, onFiles, playlists, o
             >
               ✕
             </button>
-            <div className="artist-card-img artist-placeholder">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--text-muted)">
-                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-              </svg>
-            </div>
+            {f.thumbnails && f.thumbnails.length > 0 ? (
+              <div className="folder-card-collage">
+                {f.thumbnails.length < 4 ? (
+                  <img src={f.thumbnails[0]} alt="" />
+                ) : (
+                  f.thumbnails.map((url, i) => <img key={i} src={url} alt="" />)
+                )}
+              </div>
+            ) : (
+              <div className="artist-card-img artist-placeholder">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="var(--text-muted)">
+                  <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                </svg>
+              </div>
+            )}
             <span className="artist-card-name">{f.name}</span>
             <span className="artist-card-count">{f.songCount} canciones</span>
           </div>

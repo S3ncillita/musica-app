@@ -219,7 +219,17 @@ export function getFolders(ownerId) {
     .filter(f => f.ownerId === ownerId)
     .map(f => {
       const pl = db.playlists.find(p => p.id === f.playlistId && p.ownerId === ownerId);
-      return { ...f, songCount: pl ? pl.songs.length : 0 };
+      // Miniaturas para el collage estilo Spotify en la tarjeta de carpeta
+      // (las primeras 4 canciones por posición).
+      const thumbnails = pl
+        ? pl.songs
+            .slice()
+            .sort((a, b) => a.position - b.position)
+            .slice(0, 4)
+            .map(ps => db.songs.find(s => s.id === ps.songId && s.ownerId === ownerId)?.thumbnail)
+            .filter(Boolean)
+        : [];
+      return { ...f, songCount: pl ? pl.songs.length : 0, thumbnails };
     });
 }
 

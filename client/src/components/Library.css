@@ -385,6 +385,36 @@
   color: #fff;
 }
 
+/* Collage tipo Spotify: 2x2 con las primeras 4 canciones de la carpeta,
+   o una sola portada grande si tiene menos de 4. Cuadrada y redondeada
+   (no circular como .artist-card-img) para que se note el recorte de
+   cada miniatura, como en una playlist de Spotify. */
+.folder-card-collage {
+  width: 140px;
+  height: 140px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.folder-card-collage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .folder-card-collage {
+    width: 100%;
+    max-width: 100px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+
 .add-folder-card {
   cursor: pointer;
   border: 1px dashed var(--border);
