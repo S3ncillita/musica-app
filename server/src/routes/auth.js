@@ -8,6 +8,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'cambia-este-secreto-en-tu-env';
 
 const router = Router();
 
+// Días de prueba gratis al registrarse (0 = la cuenta nace vencida).
+const TRIAL_DAYS = Math.max(0, Number.parseInt(process.env.TRIAL_DAYS ?? '7', 10) || 0);
+
 const SECURITY_QUESTIONS = [
   '¿Cuál es el nombre de tu primera mascota?',
   '¿Cuál es tu color favorito?',
@@ -71,8 +74,8 @@ router.post('/register', async (req, res) => {
       createdAt: new Date().toISOString()
     };
     await pool.query(
-      'INSERT INTO users (id, username, email, password, securityQuestion, securityAnswer, createdAt, appVersion, lastSeen, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
-      [user.id, user.username, user.email, user.password, user.securityQuestion, user.securityAnswer, user.createdAt, appVersion || null]
+      'INSERT INTO users (id, username, email, password, securityQuestion, securityAnswer, createdAt, appVersion, lastSeen, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY))',
+      [user.id, user.username, user.email, user.password, user.securityQuestion, user.securityAnswer, user.createdAt, appVersion || null, TRIAL_DAYS]
     );
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: await publicUser(user.id, user.username, user.email) });
