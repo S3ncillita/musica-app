@@ -462,9 +462,14 @@ export default function App() {
       (song.videoId || song.type === 'youtube') ? s.videoId === song.videoId : s.id === song.id
     );
     const selected = targetList[idx >= 0 ? idx : 0];
-    playingFromClick.current = true;
+    const newIndex = idx >= 0 ? idx : 0;
+    // El efecto de [queue, queueIndex] baja este flag al correr. Si ni la cola
+    // ni el índice cambian (tocar la canción que ya está sonando, misma lista),
+    // el efecto no corre y el flag quedaba prendido: el siguiente cambio
+    // automático de canción lo consumía y no cargaba el audio.
+    playingFromClick.current = targetList !== queue || newIndex !== queueIndex;
     setQueue(targetList);
-    setQueueIndex(idx >= 0 ? idx : 0);
+    setQueueIndex(newIndex);
     setCurrentSong(selected);
     setIsPlaying(true);
 
