@@ -206,6 +206,14 @@
 }
 
 /* Línea de lo que ya se descargó (streaming), abajo de todo. */
+.fp-bar-inner {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 5px;
+  right: 5px;
+}
+
 .fp-bar-buffered {
   position: absolute;
   left: 0;
@@ -224,6 +232,7 @@
   top: 0;
   height: 100%;
   pointer-events: none;
+  overflow: visible;
 }
 .fp-bar-track path {
   fill: none;
@@ -258,7 +267,7 @@
 }
 @keyframes fp-wave-flow {
   from { transform: translateX(0); }
-  to { transform: translateX(-32px); }
+  to { transform: translateX(calc(-1 * var(--wave-period, 24px))); }
 }
 
 .fp-bar-thumb {
@@ -269,12 +278,7 @@
   border-radius: 50%;
   background: var(--accent-hover);
   transform: translate(-50%, -50%);
-  opacity: 0;
-  transition: opacity 0.15s;
   pointer-events: none;
-}
-.fp-bar:hover .fp-bar-thumb {
-  opacity: 1;
 }
 
 .fp-times {
