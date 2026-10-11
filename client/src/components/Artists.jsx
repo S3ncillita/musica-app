@@ -48,7 +48,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, playlists, fold
       setLoadingPopular(true);
       try {
         const seed = Math.floor(Math.random() * 8);
-        const res = await fetch(`${API}/youtube/artists/discover?seed=${seed}`);
+        const res = await api(`/youtube/artists/discover?seed=${seed}`);
         const data = await res.json();
         setPopularArtists(data.items || []);
         setPopularNextToken(data.nextToken || null);
@@ -71,7 +71,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, playlists, fold
     loadingMorePopularRef.current = true;
     setLoadingMorePopular(true);
     try {
-      const res = await fetch(`${API}/youtube/artists/discover?token=${encodeURIComponent(popularNextTokenRef.current)}`);
+      const res = await api(`/youtube/artists/discover?token=${encodeURIComponent(popularNextTokenRef.current)}`);
       const data = await res.json();
       setPopularArtists(prev => {
         const known = new Set(prev.map(a => a.name));
@@ -112,7 +112,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, playlists, fold
     const load = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(selectedArtist + ' official')}`);
+        const res = await api(`/youtube/search?q=${encodeURIComponent(selectedArtist + ' official')}`);
         const data = await res.json();
         if (!cancelled) setYtSongs(data.items || []);
       } catch {
@@ -148,7 +148,7 @@ export default function Artists({ songs, onPlay, onAddToLibrary, playlists, fold
     if (!artistQuery.trim()) return;
     setSearching(true);
     try {
-      const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(artistQuery.trim() + ' official artist')}`);
+      const res = await api(`/youtube/search?q=${encodeURIComponent(artistQuery.trim() + ' official artist')}`);
       const data = await res.json();
       const grouped = {};
       const list = data.items || [];

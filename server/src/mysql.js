@@ -31,14 +31,40 @@ export async function initDb() {
   await ensureColumn(conn, 'users', 'securityAnswer', 'VARCHAR(100)');
   await ensureColumn(conn, 'users', 'appVersion', 'VARCHAR(20)');
   await ensureColumn(conn, 'users', 'lastSeen', 'DATETIME');
+
+  // expiresAt: fecha hasta la que la cuenta tiene plan activo. NULL = sin
+  // vencimiento (cuenta gratis permanente, como la del administrador).
+  // La primera vez que se crea la columna, los usuarios que ya existían
+  // reciben 30 días de gracia en vez de quedar bloqueados de golpe.
+  const addedExpires = await ensureColumn(conn, 'users', 'expiresAt', 'DATETIME NULL');
+  if (addedExpires) {
+    await conn.query(
+      'UPDATE users SET expiresAt = DATE_ADD(NOW(), INTERVAL 30 DAY) WHERE username <> ?',
+      [process.env.ADMIN_USERNAME || '']
+    );
+  }
+
+  await conn.query(`
+    CREATE TABLE IF NOT EXISTS payments (
+      id BIGINT AUTO_INCREMENT PRIMARY KEY,
+      userId BIGINT NOT NULL,
+      days INT NOT NULL,
+      amount VARCHAR(40),
+      note VARCHAR(255),
+      createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      KEY idx_payments_user (userId)
+    )
+  `);
   await conn.end();
 }
 
 async function ensureColumn(conn, table, column, definition) {
   try {
     await conn.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    return true;
   } catch (err) {
     if (err.code !== 'ER_DUP_FIELDNAME') throw err;
+    return false;
   }
 }
 

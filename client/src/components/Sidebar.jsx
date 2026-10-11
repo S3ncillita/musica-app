@@ -3,7 +3,7 @@ import AppVersion from './AppVersion.jsx';
 import vybeLogo from '../assets/vybe-logo.svg';
 import './Sidebar.css';
 
-export default function Sidebar({ playlists, folders, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewDownloads, onViewPlaylist, onCreatePlaylist, onCreateFolder, onDeleteFolder, onDeletePlaylist, user, onLogin, onLogout }) {
+export default function Sidebar({ playlists, folders, currentView, isOpen, onViewLibrary, onViewYouTube, onViewArtists, onViewTrending, onViewDownloads, onViewAdmin, onViewPlaylist, onCreatePlaylist, onCreateFolder, onDeleteFolder, onDeletePlaylist, user, onLogin, onLogout }) {
   const [newName, setNewName] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -142,6 +142,17 @@ export default function Sidebar({ playlists, folders, currentView, isOpen, onVie
           </svg>
           Descargas
         </button>
+        {user?.isAdmin && (
+          <button
+            className={`sidebar-item ${currentView === 'admin' ? 'active' : ''}`}
+            onClick={onViewAdmin}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </svg>
+            Planes
+          </button>
+        )}
       </nav>
 
       <div className="sidebar-playlists">

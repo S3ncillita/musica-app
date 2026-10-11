@@ -27,7 +27,7 @@ export default function Trending({ onPlay, onAddToLibrary, playlists, folders, o
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${API}/youtube/trending`);
+        const res = await api(`/youtube/trending`);
         setTrending(await res.json());
       } catch {
         setTrending([]);

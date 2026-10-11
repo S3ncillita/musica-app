@@ -1,0 +1,52 @@
+.plan-expired {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--bg-primary);
+}
+.plan-expired-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 24px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  text-align: center;
+}
+.plan-expired-card h2 { margin: 0 0 6px; }
+.plan-expired-date { color: var(--text-muted); margin: 0 0 12px; font-size: 13px; }
+.plan-expired-instructions {
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 14px;
+}
+.plan-expired-hint { font-size: 13px; color: var(--text-muted); }
+.plan-expired-error { color: #ff6b6b; font-size: 13px; }
+.plan-expired-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.plan-expired-btn:disabled { opacity: 0.6; cursor: default; }
+.plan-expired-link {
+  margin-top: 12px;
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+}

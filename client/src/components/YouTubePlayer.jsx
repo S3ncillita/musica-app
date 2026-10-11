@@ -1,7 +1,5 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { getApiBase } from '../config.js';
-
-const API = getApiBase();
+import { mediaUrl } from '../api.js';
 
 const YouTubePlayer = forwardRef(({ videoId, offlineSrc, onReady, onStateChange, onError }, ref) => {
   const audioRef = useRef(null);
@@ -53,7 +51,7 @@ const YouTubePlayer = forwardRef(({ videoId, offlineSrc, onReady, onStateChange,
       audioRef.current.load();
     }
 
-    const proxyUrl = srcOverride || `${API}/ytdlp/stream/${vid}`;
+    const proxyUrl = srcOverride || mediaUrl(`/ytdlp/stream/${vid}`);
 
     const onCanPlay = () => {
       if (currentIdRef.current !== vid) return;

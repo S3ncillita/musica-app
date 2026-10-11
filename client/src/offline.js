@@ -9,6 +9,7 @@
 // archivos" que hacía falta antes para el almacenamiento compartido.
 
 import { mirrorToNative } from './nativeStore.js';
+import { mediaUrl } from './api.js';
 
 const INDEX_KEY = 'offlineSongs';
 
@@ -110,7 +111,7 @@ export async function downloadSong(song, apiBase, onProgress) {
   }
   const key = songKey(song);
   const isYt = song.videoId || song.type === 'youtube';
-  const url = isYt ? `${apiBase}/ytdlp/stream/${song.videoId}` : `${apiBase}/stream/${song.id}`;
+  const url = mediaUrl(isYt ? `/ytdlp/stream/${song.videoId}` : `/stream/${song.id}`);
   const blob = await downloadBlob(url, onProgress);
   const ext = isYt ? 'm4a' : (song.filename?.split('.').pop() || 'mp3');
   const filename = `${key}.${ext}`;

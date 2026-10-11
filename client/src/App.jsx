@@ -10,6 +10,8 @@ import Artists from './components/Artists.jsx';
 import Trending from './components/Trending.jsx';
 import Downloads from './components/Downloads.jsx';
 import Auth from './components/Auth.jsx';
+import PlanExpired from './components/PlanExpired.jsx';
+import Admin from './components/Admin.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
 import DesktopPlayerPanel from './components/DesktopPlayerPanel.jsx';
 import EqPanel from './components/EqPanel.jsx';
@@ -17,7 +19,7 @@ import AppVersion from './components/AppVersion.jsx';
 import Toast, { useToast } from './components/Toast.jsx';
 import vybeIcon from './assets/vybe-icon.svg';
 import { getApiBase } from './config.js';
-import { api } from './api.js';
+import { api, mediaUrl } from './api.js';
 import { getAppVersion } from './appVersion.js';
 import { initUpdateCheck } from './update.js';
 import * as offline from './offline.js';
@@ -40,6 +42,7 @@ export default function App() {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('authUser')) || null; } catch { return null; }
   });
+  const [planExpired, setPlanExpired] = useState(!!user?.expired);
   const [toast, showToast] = useToast();
   const [songs, setSongs] = useState([]);
   const [playlists, setPlaylists] = useState([]);
@@ -277,6 +280,31 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    setPlanExpired(!!user?.expired);
+  }, [user]);
+
+  useEffect(() => {
+    const onExpired = () => setPlanExpired(true);
+    window.addEventListener('plan-expired', onExpired);
+    return () => window.removeEventListener('plan-expired', onExpired);
+  }, []);
+
+  // Vuelve a pedir el estado de la cuenta (después de pagar). true = ya activa.
+  const refreshPlan = async () => {
+    try {
+      const res = await api('/auth/me');
+      if (!res.ok) return false;
+      const data = await res.json();
+      setUser(data.user);
+      localStorage.setItem('authUser', JSON.stringify(data.user));
+      if (!data.user.expired) { setPlanExpired(false); loadSongs(); loadPlaylists(); loadFolders(); }
+      return !data.user.expired;
+    } catch {
+      return false;
+    }
+  };
+
+  useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       setAuthLoading(false);
@@ -434,7 +462,7 @@ export default function App() {
       } else if (song.filename) {
         setYtVideoId(null);
         offline.getOfflineSrc(song).then(offlineSrc => {
-          audioRef.current.src = offlineSrc || `${API}/stream/${song.id}`;
+          audioRef.current.src = offlineSrc || mediaUrl(`/stream/${song.id}`);
           audioRef.current.load();
           audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error('AUTO PLAY ERROR:', e));
         });
@@ -485,7 +513,7 @@ export default function App() {
     } else if (selected?.filename) {
       setYtVideoId(null);
       offline.getOfflineSrc(selected).then(offlineSrc => {
-        audioRef.current.src = offlineSrc || `${API}/stream/${selected.id}`;
+        audioRef.current.src = offlineSrc || mediaUrl(`/stream/${selected.id}`);
         audioRef.current.load();
         audioRef.current.play().catch(e => console.error('PLAY ERROR:', e));
       });
@@ -510,7 +538,7 @@ export default function App() {
         setIsPlaying(false);
       } else {
         offline.getOfflineSrc(currentSong).then(offlineSrc => {
-          audioRef.current.src = offlineSrc || `${API}/stream/${currentSong.id}`;
+          audioRef.current.src = offlineSrc || mediaUrl(`/stream/${currentSong.id}`);
           audioRef.current.load();
           audioRef.current.play().then(() => setIsPlaying(true)).catch(e => console.error('PLAY ERROR:', e));
         });
@@ -807,6 +835,8 @@ export default function App() {
         </div>
       ) : !user ? (
         <Auth onLogin={handleLogin} required />
+      ) : planExpired && !user.isAdmin ? (
+        <PlanExpired user={user} onRefresh={refreshPlan} onLogout={handleLogout} />
       ) : (
         <>
       <Toast message={toast} />
@@ -856,6 +886,7 @@ export default function App() {
         onViewArtists={() => navigateTo('artists')}
         onViewTrending={() => navigateTo('trending')}
         onViewDownloads={() => navigateTo('downloads')}
+        onViewAdmin={() => navigateTo('admin')}
         onViewPlaylist={viewPlaylist}
         onCreatePlaylist={createPlaylist}
         onCreateFolder={createFolder}
@@ -960,6 +991,7 @@ export default function App() {
             onCancelDownload={cancelDownload}
           />
         )}
+        {currentView === 'admin' && user.isAdmin && <Admin />}
         {currentView === 'downloads' && (
           <Downloads
             onPlay={playSong}

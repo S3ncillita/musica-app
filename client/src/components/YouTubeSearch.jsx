@@ -59,7 +59,7 @@ export default function YouTubeSearch({ currentSong, isPlaying, onPlay, onAddToL
     setLoading(true);
     setNextToken(null);
     try {
-      const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(term.trim())}`);
+      const res = await api(`/youtube/search?q=${encodeURIComponent(term.trim())}`);
       const data = await res.json();
       setResults(data.items || []);
       setNextToken(data.nextToken || null);
@@ -79,7 +79,7 @@ export default function YouTubeSearch({ currentSong, isPlaying, onPlay, onAddToL
     }
     suggestTimer.current = setTimeout(async () => {
       try {
-        const res = await fetch(`${API}/youtube/suggest?q=${encodeURIComponent(value.trim())}`);
+        const res = await api(`/youtube/suggest?q=${encodeURIComponent(value.trim())}`);
         setSuggestions(await res.json());
       } catch {
         setSuggestions([]);
@@ -96,7 +96,7 @@ export default function YouTubeSearch({ currentSong, isPlaying, onPlay, onAddToL
     if (loadingMore || !nextToken) return;
     setLoadingMore(true);
     try {
-      const res = await fetch(`${API}/youtube/search?q=${encodeURIComponent(query.trim())}&token=${encodeURIComponent(nextToken)}`);
+      const res = await api(`/youtube/search?q=${encodeURIComponent(query.trim())}&token=${encodeURIComponent(nextToken)}`);
       const data = await res.json();
       setResults(prev => {
         const known = new Set(prev.map(r => r.videoId));

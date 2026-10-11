@@ -14,7 +14,7 @@ import youtubeRouter from './routes/youtube.js';
 import authRouter from './routes/auth.js';
 import ytDlpRouter from './routes/yt-dlp.js';
 import updateRoute from '../../update-module/server/update-route.js';
-import { authRequired } from './middleware/auth.js';
+import { authRequired, mediaAuthRequired, planRequired } from './middleware/auth.js';
 import { initDb } from './mysql.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,13 +24,13 @@ const PORT = process.env.PORT || 48291;
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/songs', authRequired, songsRouter);
-app.use('/api/playlists', authRequired, playlistsRouter);
-app.use('/api/folders', authRequired, foldersRouter);
-app.use('/api/stream', streamRouter);
-app.use('/api/youtube', youtubeRouter);
+app.use('/api/songs', authRequired, planRequired, songsRouter);
+app.use('/api/playlists', authRequired, planRequired, playlistsRouter);
+app.use('/api/folders', authRequired, planRequired, foldersRouter);
+app.use('/api/stream', mediaAuthRequired, planRequired, streamRouter);
+app.use('/api/youtube', authRequired, planRequired, youtubeRouter);
 app.use('/api/auth', authRouter);
-app.use('/api/ytdlp', ytDlpRouter);
+app.use('/api/ytdlp', mediaAuthRequired, planRequired, ytDlpRouter);
 app.use('/api/update', updateRoute({
   express,
   updateFile: path.join(__dirname, '..', 'data', 'update.json'),

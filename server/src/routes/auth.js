@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../mysql.js';
+import { authRequired, adminRequired, isAdmin } from '../middleware/auth.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'cambia-este-secreto-en-tu-env';
 
@@ -14,6 +15,23 @@ const SECURITY_QUESTIONS = [
   '¿Cuál es tu comida favorita?',
   '¿Cuál es el nombre de tu mejor amigo/a de la infancia?',
 ];
+
+// Datos públicos del usuario + estado del plan. La comparación del vencimiento
+// se hace en SQL (ver planRequired) para no depender de la zona horaria.
+async function publicUser(id, username, email) {
+  const admin = isAdmin(username);
+  let expiresAt = null;
+  let expired = false;
+  if (!admin) {
+    const [rows] = await pool.query(
+      'SELECT expiresAt, (expiresAt IS NOT NULL AND expiresAt <= NOW()) AS expired FROM users WHERE id = ?',
+      [id]
+    );
+    expiresAt = rows[0]?.expiresAt || null;
+    expired = !!rows[0]?.expired;
+  }
+  return { id, username, email, isAdmin: admin, expiresAt, expired };
+}
 
 function normalizeAnswer(answer) {
   return String(answer || '').trim().toLowerCase();
@@ -53,11 +71,11 @@ router.post('/register', async (req, res) => {
       createdAt: new Date().toISOString()
     };
     await pool.query(
-      'INSERT INTO users (id, username, email, password, securityQuestion, securityAnswer, createdAt, appVersion, lastSeen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+      'INSERT INTO users (id, username, email, password, securityQuestion, securityAnswer, createdAt, appVersion, lastSeen, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
       [user.id, user.username, user.email, user.password, user.securityQuestion, user.securityAnswer, user.createdAt, appVersion || null]
     );
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+    res.json({ token, user: await publicUser(user.id, user.username, user.email) });
   } catch (err) {
     console.error('register error:', err.message);
     res.status(500).json({ error: 'Error al registrar' });
@@ -83,7 +101,7 @@ router.post('/login', async (req, res) => {
       pool.query('UPDATE users SET appVersion = ?, lastSeen = NOW() WHERE id = ?', [appVersion, user.id]).catch(() => {});
     }
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+    res.json({ token, user: await publicUser(user.id, user.username, user.email) });
   } catch (err) {
     console.error('login error:', err.message);
     res.status(500).json({ error: 'Error al iniciar sesión' });
@@ -133,43 +151,97 @@ router.post('/recovery/reset', async (req, res) => {
   }
 });
 
-router.get('/me', (req, res) => {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No autenticado' });
-  }
+router.get('/me', authRequired, async (req, res) => {
   try {
-    const decoded = jwt.verify(auth.split(' ')[1], JWT_SECRET);
     const appVersion = req.headers['x-app-version'];
     if (appVersion) {
-      pool.query('UPDATE users SET appVersion = ?, lastSeen = NOW() WHERE id = ?', [appVersion, decoded.id]).catch(() => {});
+      pool.query('UPDATE users SET appVersion = ?, lastSeen = NOW() WHERE id = ?', [appVersion, req.user.id]).catch(() => {});
     } else {
-      pool.query('UPDATE users SET lastSeen = NOW() WHERE id = ?', [decoded.id]).catch(() => {});
+      pool.query('UPDATE users SET lastSeen = NOW() WHERE id = ?', [req.user.id]).catch(() => {});
     }
-    res.json({ user: { id: decoded.id, username: decoded.username, email: decoded.email } });
-  } catch {
-    res.status(401).json({ error: 'Token inválido' });
+    const [rows] = await pool.query('SELECT email FROM users WHERE id = ?', [req.user.id]);
+    if (!rows[0]) return res.status(401).json({ error: 'Usuario no encontrado' });
+    res.json({ user: await publicUser(req.user.id, req.user.username, rows[0].email) });
+  } catch (err) {
+    console.error('me error:', err.message);
+    res.status(500).json({ error: 'Error al consultar el usuario' });
   }
 });
 
-router.get('/users', async (req, res) => {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No autenticado' });
-  }
+// Datos para que el usuario con el plan vencido sepa cómo pagar. Se leen del
+// .env (PAYMENT_INSTRUCTIONS, con \n para los saltos de línea).
+router.get('/payment-info', (req, res) => {
+  res.json({
+    instructions: (process.env.PAYMENT_INSTRUCTIONS || '').replace(/\\n/g, '\n'),
+  });
+});
+
+router.get('/users', authRequired, adminRequired, async (req, res) => {
   try {
-    const decoded = jwt.verify(auth.split(' ')[1], JWT_SECRET);
-    const adminUsername = process.env.ADMIN_USERNAME;
-    if (!adminUsername || decoded.username !== adminUsername) {
-      return res.status(403).json({ error: 'No autorizado' });
-    }
     const [rows] = await pool.query(
-      'SELECT id, username, email, appVersion, lastSeen, createdAt FROM users ORDER BY lastSeen DESC'
+      `SELECT id, username, email, appVersion, lastSeen, createdAt, expiresAt,
+              (expiresAt IS NOT NULL AND expiresAt <= NOW()) AS expired
+       FROM users ORDER BY lastSeen DESC`
+    );
+    res.json(rows.map(r => ({ ...r, expired: !!r.expired, infinite: r.expiresAt === null })));
+  } catch (err) {
+    console.error('users list error:', err.message);
+    res.status(500).json({ error: 'Error al listar usuarios' });
+  }
+});
+
+// Suma días al plan, contando desde hoy si ya venció o desde el vencimiento
+// actual si todavía está vigente. Una cuenta sin vencimiento no cambia.
+router.post('/users/:id/extend', authRequired, adminRequired, async (req, res) => {
+  const days = Number(req.body.days ?? 30);
+  if (!Number.isInteger(days) || days < 1 || days > 3650) {
+    return res.status(400).json({ error: 'Cantidad de días inválida' });
+  }
+  const amount = req.body.amount ? String(req.body.amount).slice(0, 40) : null;
+  const note = req.body.note ? String(req.body.note).slice(0, 255) : null;
+  try {
+    const [result] = await pool.query(
+      'UPDATE users SET expiresAt = DATE_ADD(GREATEST(NOW(), expiresAt), INTERVAL ? DAY) WHERE id = ? AND expiresAt IS NOT NULL',
+      [days, req.params.id]
+    );
+    if (!result.affectedRows) {
+      return res.status(404).json({ error: 'Usuario no encontrado o con plan sin vencimiento' });
+    }
+    await pool.query('INSERT INTO payments (userId, days, amount, note) VALUES (?, ?, ?, ?)', [req.params.id, days, amount, note]);
+    const [rows] = await pool.query('SELECT expiresAt FROM users WHERE id = ?', [req.params.id]);
+    res.json({ ok: true, expiresAt: rows[0].expiresAt });
+  } catch (err) {
+    console.error('extend error:', err.message);
+    res.status(500).json({ error: 'Error al extender el plan' });
+  }
+});
+
+// Plan infinito (sin pagar) para quienes vos elijas. Quitarlo deja la cuenta
+// vencida desde ahora; hay que sumarle días para reactivarla.
+router.post('/users/:id/infinite', authRequired, adminRequired, async (req, res) => {
+  const infinite = !!req.body.infinite;
+  try {
+    const [result] = await pool.query(
+      infinite ? 'UPDATE users SET expiresAt = NULL WHERE id = ?' : 'UPDATE users SET expiresAt = NOW() WHERE id = ?',
+      [req.params.id]
+    );
+    if (!result.affectedRows) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json({ ok: true, infinite });
+  } catch (err) {
+    console.error('infinite error:', err.message);
+    res.status(500).json({ error: 'Error al cambiar el plan' });
+  }
+});
+
+router.get('/payments', authRequired, adminRequired, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT p.id, p.userId, u.username, p.days, p.amount, p.note, p.createdAt FROM payments p LEFT JOIN users u ON u.id = p.userId ORDER BY p.id DESC LIMIT 200'
     );
     res.json(rows);
   } catch (err) {
-    console.error('users list error:', err.message);
-    res.status(401).json({ error: 'Token inválido' });
+    console.error('payments list error:', err.message);
+    res.status(500).json({ error: 'Error al listar pagos' });
   }
 });
 
