@@ -10,6 +10,7 @@ const YouTubePlayer = forwardRef(({ videoId, offlineSrc, onReady, onStateChange,
   const currentIdRef = useRef(null);
   const switchingRef = useRef(false);
   const hasErrorRef = useRef(false);
+  const currentSrcRef = useRef(null);
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -60,15 +61,34 @@ const YouTubePlayer = forwardRef(({ videoId, offlineSrc, onReady, onStateChange,
       switchingRef.current = false;
       callbacksRef.current.onReady?.(audioRef.current);
       if (autoPlay) {
-        audioRef.current.muted = false;
-        audioRef.current.play().catch(e => console.error('play error:', e));
+        playWithRecovery();
         callbacksRef.current.onStateChange?.(1);
       }
     };
 
     audioRef.current.addEventListener('canplay', onCanPlay);
+    currentSrcRef.current = proxyUrl;
     audioRef.current.src = proxyUrl;
     audioRef.current.load();
+  };
+
+  // La precarga al abrir la app puede fallar (servidor frío, red que todavía
+  // no volvió) y dejar el <audio> en error sin avisar. Antes de reproducir se
+  // vuelve a pedir el src si quedó roto.
+  const playWithRecovery = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.muted = false;
+    if ((audio.error || !audio.src) && currentSrcRef.current) {
+      hasErrorRef.current = false;
+      audio.src = currentSrcRef.current;
+      audio.load();
+    }
+    audio.play().catch(e => {
+      console.error('play error:', e);
+      if (e?.name === 'AbortError') return;
+      callbacksRef.current.onError?.(150);
+    });
   };
 
   useEffect(() => {
@@ -81,8 +101,7 @@ const YouTubePlayer = forwardRef(({ videoId, offlineSrc, onReady, onStateChange,
   useImperativeHandle(ref, () => ({
     play: () => {
       if (audioRef.current) {
-        audioRef.current.muted = false;
-        audioRef.current.play().catch(e => console.error('play error:', e));
+        playWithRecovery();
         callbacksRef.current.onStateChange?.(1);
       }
     },

@@ -906,6 +906,8 @@ export default function App() {
         )}
         {currentView === 'youtube' && (
           <YouTubeSearch
+            currentSong={currentSong}
+            isPlaying={isPlaying}
             onPlay={playSong}
             onAddToLibrary={loadSongs}
             playlists={playlists}

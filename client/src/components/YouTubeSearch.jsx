@@ -35,7 +35,7 @@ const toSong = (item) => ({
   duration: item.duration,
 });
 
-export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folders, onAddToPlaylist, onCreatePlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
+export default function YouTubeSearch({ currentSong, isPlaying, onPlay, onAddToLibrary, playlists, folders, onAddToPlaylist, onCreatePlaylist, onDownload, onRemoveDownload, isDownloaded, downloadingKey, downloadProgress, onCancelDownload }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -229,20 +229,28 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
 
       <div className="yt-results">
       <div className="song-grid">
-        {results.map((item) => (
+        {results.map((item) => {
+          const isCurrent = currentSong?.videoId === item.videoId;
+          return (
           <div
             key={item.videoId}
-            className="song-card"
+            className={`song-card ${isCurrent ? 'song-card-current' : ''}`}
             onClick={() => playItem(item)}
             onContextMenu={(e) => handleContext(e, item)}
           >
             <div className="song-card-thumb">
               <img src={item.thumbnail} alt="" />
-              <button className="song-card-play" onClick={(e) => { e.stopPropagation(); playItem(item); }} title="Reproducir">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-              </button>
+              {isCurrent && isPlaying ? (
+                <div className="song-card-playing-bars">
+                  <span /><span /><span />
+                </div>
+              ) : (
+                <button className="song-card-play" onClick={(e) => { e.stopPropagation(); playItem(item); }} title="Reproducir">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </button>
+              )}
             </div>
             <div className="song-card-info">
               <span className="song-card-title">{item.title}</span>
@@ -272,7 +280,8 @@ export default function YouTubeSearch({ onPlay, onAddToLibrary, playlists, folde
               />
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       {results.length === 0 && !loading && (
         <div className="yt-empty">Buscá tu música favorita</div>

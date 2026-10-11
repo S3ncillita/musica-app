@@ -93,11 +93,25 @@ const urlCache = new Map();
 
 const AUDIO_FORMATS = ['bestaudio[ext=m4a]/bestaudio', 'bestaudio/best', 'best'];
 
-async function getDirectUrl(videoId) {
+const inflight = new Map();
+
+// Una sola corrida de yt-dlp por video aunque lleguen varios pedidos a la vez
+// (precarga al abrir la app + play, por ejemplo).
+function getDirectUrl(videoId, { fresh = false } = {}) {
+  if (fresh) urlCache.delete(videoId);
   const cached = urlCache.get(videoId);
   if (cached && Date.now() - cached.at < 4 * 60 * 60 * 1000) {
-    return cached.url;
+    return Promise.resolve(cached.url);
   }
+  let p = inflight.get(videoId);
+  if (!p) {
+    p = resolveDirectUrl(videoId).finally(() => inflight.delete(videoId));
+    inflight.set(videoId, p);
+  }
+  return p;
+}
+
+async function resolveDirectUrl(videoId) {
   let lastErr;
   for (const format of AUDIO_FORMATS) {
     try {
@@ -127,7 +141,6 @@ router.get('/stream/:videoId', async (req, res) => {
   }
 
   try {
-    const directUrl = await getDirectUrl(videoId);
     const headers = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
       'Referer': `https://www.youtube.com/watch?v=${videoId}`,
@@ -136,8 +149,27 @@ router.get('/stream/:videoId', async (req, res) => {
     const range = req.headers.range;
     if (range) headers['Range'] = range;
 
-    const upstream = await fetch(directUrl, { headers, redirect: 'follow' });
-    if (!upstream.ok) throw new Error('Error upstream: ' + upstream.status);
+    const abort = new AbortController();
+    res.on('close', () => abort.abort());
+
+    // La URL cacheada puede estar vencida o rechazada por el CDN: si falla,
+    // se descarta y se reintenta una vez con una URL nueva.
+    let upstream;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const directUrl = await getDirectUrl(videoId, { fresh: attempt > 0 });
+      try {
+        upstream = await fetch(directUrl, { headers, redirect: 'follow', signal: abort.signal });
+      } catch (err) {
+        if (abort.signal.aborted) return;
+        upstream = null;
+        if (attempt === 1) throw err;
+        urlCache.delete(videoId);
+        continue;
+      }
+      if (upstream.ok) break;
+      urlCache.delete(videoId);
+      if (attempt === 1) throw new Error('Error upstream: ' + upstream.status);
+    }
 
     const out = {
       'Content-Type': upstream.headers.get('content-type') || 'audio/mp4',
@@ -152,7 +184,9 @@ router.get('/stream/:videoId', async (req, res) => {
 
     res.writeHead(upstream.status, out);
     if (upstream.body) {
-      Readable.fromWeb(upstream.body).pipe(res);
+      const body = Readable.fromWeb(upstream.body);
+      body.on('error', () => res.end());
+      body.pipe(res);
     } else {
       res.end();
     }
