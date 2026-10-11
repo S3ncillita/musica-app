@@ -3,9 +3,11 @@ import { pool } from '../mysql.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'cambia-este-secreto-en-tu-env';
 
+// Sin distinguir mayúsculas: MySQL tampoco lo hace (la columna es única sin
+// importar mayúsculas), así que "koreko" y "Koreko" son la misma cuenta.
 export function isAdmin(username) {
-  const admin = process.env.ADMIN_USERNAME;
-  return !!admin && username === admin;
+  const admin = (process.env.ADMIN_USERNAME || '').trim().toLowerCase();
+  return !!admin && String(username || '').trim().toLowerCase() === admin;
 }
 
 function verify(token, req, res, next) {
