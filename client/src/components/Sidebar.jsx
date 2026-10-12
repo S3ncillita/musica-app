@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AppVersion from './AppVersion.jsx';
+import PlanBadge from './PlanBadge.jsx';
 import vybeLogo from '../assets/vybe-logo.svg';
 import './Sidebar.css';
 
@@ -70,6 +71,7 @@ export default function Sidebar({ playlists, folders, currentView, isOpen, onVie
                 </svg>
               </div>
               <span className="sidebar-user-name">{user.username}</span>
+              <PlanBadge user={user} />
             </div>
             {showUserCard && (
               <>

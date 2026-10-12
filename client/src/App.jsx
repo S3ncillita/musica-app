@@ -11,6 +11,7 @@ import Trending from './components/Trending.jsx';
 import Downloads from './components/Downloads.jsx';
 import Auth from './components/Auth.jsx';
 import PlanExpired from './components/PlanExpired.jsx';
+import PlanBadge from './components/PlanBadge.jsx';
 import Admin from './components/Admin.jsx';
 import FullPlayer from './components/FullPlayer.jsx';
 import DesktopPlayerPanel from './components/DesktopPlayerPanel.jsx';
@@ -863,6 +864,7 @@ export default function App() {
         )}
         {user && (
           <div className="mobile-header-actions">
+            <PlanBadge user={user} />
             <button className="mobile-logout-btn" onClick={() => navigateTo('downloads')} title="Descargas">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
