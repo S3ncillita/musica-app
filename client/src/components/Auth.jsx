@@ -20,6 +20,16 @@ export default function Auth({ onLogin, onClose, required = false }) {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [trialDays, setTrialDays] = useState(0);
+
+  // Días de prueba gratis que da el servidor, para avisarlos al registrarse.
+  useEffect(() => {
+    if (mode !== 'register') return;
+    fetch(`${API}/auth/payment-info`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => data && setTrialDays(Number(data.trialDays) || 0))
+      .catch(() => {});
+  }, [mode]);
 
   useEffect(() => {
     if (mode === 'register' && securityQuestions.length === 0) {
@@ -76,7 +86,7 @@ export default function Auth({ onLogin, onClose, required = false }) {
       }
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('authUser', JSON.stringify(data.user));
-      onLogin(data.user);
+      onLogin(data.user, mode === 'register');
     } catch {
       setError('Error de conexión');
     }
@@ -151,6 +161,12 @@ export default function Auth({ onLogin, onClose, required = false }) {
             : mode === 'recover-answer' ? 'Verificá tu identidad'
             : 'Iniciar sesión'}
         </h2>
+
+        {mode === 'register' && trialDays > 0 && (
+          <div className="auth-info">
+            Probá gratis {trialDays} {trialDays === 1 ? 'día' : 'días'}. No necesitás pagar para empezar.
+          </div>
+        )}
 
         {mode === 'login' || mode === 'register' ? (
           <form onSubmit={handleSubmit}>

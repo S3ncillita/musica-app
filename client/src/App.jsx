@@ -766,10 +766,16 @@ export default function App() {
     setSidebarOpen(false);
   };
 
-  const handleLogin = (userData) => {
+  const handleLogin = (userData, isNew = false) => {
     setUser(userData);
     mirrorToNative();
-    showToast(`¡Bienvenido, ${userData.username}!`);
+    let plan = '';
+    if (!userData.isAdmin && userData.expiresAt && !userData.expired) {
+      const days = Math.max(1, Math.ceil((new Date(userData.expiresAt) - Date.now()) / 86400000));
+      const unit = days === 1 ? 'día' : 'días';
+      plan = isNew ? ` Tenés ${days} ${unit} de prueba gratis.` : ` Te quedan ${days} ${unit} de plan.`;
+    }
+    showToast(`¡Bienvenido, ${userData.username}!${plan}`);
   };
 
   const handleLogout = () => {

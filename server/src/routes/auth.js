@@ -176,6 +176,7 @@ router.get('/me', authRequired, async (req, res) => {
 router.get('/payment-info', (req, res) => {
   res.json({
     instructions: (process.env.PAYMENT_INSTRUCTIONS || '').replace(/\\n/g, '\n'),
+    trialDays: TRIAL_DAYS,
   });
 });
 
